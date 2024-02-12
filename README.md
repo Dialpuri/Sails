@@ -71,8 +71,3 @@ To build for other platformrs run
 
     make -j
 
-
-
-## License
-
-Include information about the project's licensing.
