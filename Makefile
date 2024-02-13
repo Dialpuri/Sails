@@ -5,7 +5,8 @@
 # NAMES OF LIBRARY FILES E.G nautilus-join 
 SHARED = sails-lib \
 sails-find \
-sails-model
+sails-model \
+sails-score
 
 LIBS = \
 -lccp4c \

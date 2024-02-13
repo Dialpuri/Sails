@@ -13,11 +13,14 @@
 
 class SailsFind {
 public:
-    SailsFind(clipper::MiniMol& work_model);
+    SailsFind(clipper::MiniMol& work_model, clipper::Xmap<float>& work_map, clipper::Xmap<float>& pred_map);
 
     clipper::MiniMol find();
 
 private:
     clipper::MiniMol mol;
+    clipper::Xmap<float> pred;
+    clipper::Xmap<float> map;
+
 };
 #endif //SAILS_FIND_H

@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     clipper::Xmap<float> pred_map = sails_input.get_predicted_map();
     clipper::MiniMol work_model = sails_input.get_minimol();
 
-    SailsFind sails_find = SailsFind(work_model);
+    SailsFind sails_find = SailsFind(work_model, work_map, pred_map);
     work_model = sails_find.find();
 
 

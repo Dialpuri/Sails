@@ -165,6 +165,22 @@ SailsInput::SailsInput( const std::string& input_pdb,
  * SAILS MONOMERS
  */
 
+/**
+ * @brief Load a monomer from a PDB file
+ *
+ * Loads a monomer from the specified PDB file. It reads the file, imports it into an MMDBfile object, and returns the first monomer from the MiniMol object.
+ *
+ * @param code The code for the monomer to load.
+ *
+ * @return The loaded monomer.
+ *
+ * @note This method assumes that the necessary external libraries are available and properly configured.
+ * @note If the specified monomer file cannot be found, the method will output an error message and exit the program.
+ *
+ * @see load_monomer() in sails-lib.cpp
+ * @see MMonomer class in minimol.h
+ * @see MMDBfile class in minimol_io.h
+ */
 clipper::MMonomer SailsMonomers::load_momomer(const std::string& code) {
 
     std::string path = "data/monomers/" + code + ".pdb";
