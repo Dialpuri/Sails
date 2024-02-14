@@ -44,7 +44,7 @@ BUILD_PRINT = @echo "\e[1;34mBuilding $<\e[0m"
 COMPLETE_PRINT = @echo "\e[1;32mBuilding complete!\e[0m"
 
 MKDIR_P = mkdir -p
-#$(shell mkdir -p $(BIN_DIR))
+$(shell mkdir -p $(BIN_DIR))
 
 all: sails
 
