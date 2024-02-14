@@ -27,8 +27,7 @@ FLAGS = \
 -g
 
 INCDIR = -Iinclude
-LIBDIR = -L/opt/xtal/ccp4-8.0/lib
-# LIBDIR = -Llib
+LIBDIR = -Llib
 CFLAGS = ${FLAGS} ${INCDIR} -c
 LFLAGS = ${FLAGS} ${LIBDIR} ${LIBS}
 
