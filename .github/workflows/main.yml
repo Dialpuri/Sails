@@ -1,0 +1,43 @@
+name: Sails Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: make 
+      run: make -j -f makefile.test
+
+    - name: sails
+      run: | 
+          export LD_LIBRARY_PATH=./lib
+          export CLIBD=./data
+          export CCP4=./
+          ./sails \
+          -pdbin data/5fji_dg.pdb \
+          -mtzin data/5fji.mtz \
+          -colin-fo FP,SIGFP \
+          -colin-fc FWT,PHWT \
+          -colin-free FREE \
+          -predin data/a.map
+          
+  debug:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Notify chat
+        uses: teknatha136/actions-google-chat-text-message@main
+        with:
+          google-chat-webhook: ${{ secrets.WEBHOOK_URL }}
+          text-message: ${{ github.actor }} attempted to merge a change into Sails, but the automatic deployment failed.\nThis message was generated due to a ${{ github.event_name }}.\nLink ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n 
