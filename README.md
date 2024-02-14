@@ -5,7 +5,7 @@
 Sails is a software package for automatic addition of glycans to protein models obtained through X-ray crystallography. 
 Sails uses the output of GlycoFind to be able to build glycans quickly and accurately. 
 
-## Contributors
+## Authors
 
 Jordan Dialpuri - York Structural Biology Laboratory, University of York
 
