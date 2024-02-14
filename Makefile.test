@@ -1,25 +1,20 @@
 # SAILS Makefile - Jordan Dialpuri 2024
 
-
-
 SHARED = sails-lib \
-         sails-find \
-         sails-model \
-         sails-score \
-		 sails-refine
+sails-find \
+sails-model \
+sails-refine
 
 LIBS = \
--lccp4c \
--lclipper-ccp4 \
--lclipper-contrib \
--lclipper-core \
--lclipper-minimol \
--lclipper-mmdb \
--lfftw \
--lmmdb2 \
--lrfftw \
--lm \
--lstdc++ \
+-l:libccp4c.so.8.0 \
+-l:libclipper-ccp4.so.2 \
+-l:libclipper-contrib.so.2 \
+-l:libclipper-core.so.2 \
+-l:libclipper-minimol.so.2 \
+-l:libclipper-mmdb.so.2 \
+-l:libfftw.so.2 \
+-l:libmmdb2.so.0 \
+-l:librfftw.so.2 \
 
 FLAGS = \
 -std=c++11 \
@@ -32,9 +27,9 @@ FLAGS = \
 -g
 
 INCDIR = -Iinclude
-LIBDIR = -L${CCP4}/lib
+LIBDIR = -L/opt/xtal/ccp4-8.0/lib
 # LIBDIR = -Llib
-CFLAGS = ${FLAGS} ${INCDIR} -c -g
+CFLAGS = ${FLAGS} ${INCDIR} -c
 LFLAGS = ${FLAGS} ${LIBDIR} ${LIBS}
 
 SRC_DIR = src
@@ -49,22 +44,22 @@ BUILD_PRINT = @echo "\e[1;34mBuilding $<\e[0m"
 COMPLETE_PRINT = @echo "\e[1;32mBuilding complete!\e[0m"
 
 MKDIR_P = mkdir -p
-$(shell mkdir -p $(BIN_DIR))
+#$(shell mkdir -p $(BIN_DIR))
 
 all: sails
 
 sails: ${TARGET_SRC} sails.o
 	$(BUILD_PRINT)
-	@arch -x86_64 g++ ${TARGET_OBJS} ${BIN_DIR}/sails.o -o $@ ${LFLAGS}
+	g++ ${TARGET_OBJS} ${BIN_DIR}/sails.o -o $@ ${LFLAGS}
 	$(COMPLETE_PRINT)
 
 sails.o: ${SRC_DIR}/sails.cpp
 	$(BUILD_PRINT)
-	@arch -x86_64 g++ ${CFLAGS} $< -o ${BIN_DIR}/$(@F)
+	g++ ${CFLAGS} $< -o ${BIN_DIR}/$(@F)
 
 %.o: %.cpp %.h
 	$(BUILD_PRINT)
-	@arch -x86_64 g++ ${CFLAGS} $< -o ${BIN_DIR}/$(@F)
+	gcc ${CFLAGS} $< -o ${BIN_DIR}/$(@F)
 
 clean:
 	rm bin/*.o csails

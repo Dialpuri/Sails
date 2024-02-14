@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: make 
-      run: make -j -f makefile.test
+      run: make -j -f Makefile.test
 
     - name: sails
       run: | 
@@ -29,7 +29,7 @@ jobs:
           -colin-fc FWT,PHWT \
           -colin-free FREE \
           -predin data/a.map
-          
+
   debug:
     needs: [build]
     runs-on: ubuntu-latest
