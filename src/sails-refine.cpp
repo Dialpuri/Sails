@@ -146,7 +146,7 @@ double Sails::TargetFunctionSugar::operator()(const std::vector<double>& args) c
     return -score; 
 }
 
-clipper::RTop_orth Sails::TargetFunctionSugar::refine() { 
+clipper::RTop_orth Sails::TargetFunctionSugar::refine(Sails::LinkageSet& linkage) { 
     std::vector<double> args = {0,0,0};
     std::vector<std::vector<double>> args_init = {
         args, 

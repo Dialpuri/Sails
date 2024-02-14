@@ -11,6 +11,7 @@
 
 namespace Sails {
     struct LinkageParams {
+        LinkageParams() = default;
         LinkageParams(
             const float phi_torsion_angle, const float psi_torsion_angle, const float theta_torsion_angle,
             const float phi_atoms_angle, const float psi_atoms_angle, const float theta_atoms_angle, const float bond_len
@@ -56,6 +57,8 @@ namespace Sails {
                                             const clipper::MMonomer&acceptor_residue,
                                             const DonorSet&donor, const AcceptorSet&acceptor,
                                             const LinkageParams&params);
+        LinkageParams params;
+
     };
 
 
@@ -87,13 +90,24 @@ namespace Sails {
                                             105, 120, 105, 1.45);
 
         ASN_NAG(const clipper::MMonomer& donor_residue, const clipper::MMonomer& acceptor_residue) {
-            transformation = calculate(donor_residue, acceptor_residue, donor, acceptor, params);
+            m_transformation = calculate(donor_residue, acceptor_residue, donor, acceptor, params);
+            m_donor_residue = donor_residue;
+            m_acceptor_residue = acceptor_residue;
         }
 
-        clipper::RTop_orth get_transformation() const {return transformation;}
+        clipper::RTop_orth update_transformation(LinkageParams& params) {
+            return calculate(m_donor_residue, m_acceptor_residue, donor, acceptor, params)
+        }
+
+        clipper::RTop_orth get_transformation() const {return m_transformation;}
+
+        clipper::MMonomer get_donor_monomer() const {return m_donor_residue;}
 
     private:
-        clipper::RTop_orth transformation;
+        clipper::RTop_orth m_transformation;
+        clipper::MMonomer m_donor_residue; 
+        clipper::MMonomer m_acceptor_residue;
+    
     };
 
 

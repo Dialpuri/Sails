@@ -7,6 +7,7 @@
 
 #include <clipper/clipper.h>
 #include <clipper/clipper-minimol.h>
+#include "sails-model.h"
 
 namespace Sails { 
 
@@ -57,7 +58,7 @@ namespace Sails {
 
         double operator()(const std::vector<double>& args) const; 
 
-        clipper::RTop_orth refine(); 
+        clipper::RTop_orth refine(Sails::LinkageSet& linkage); 
 
     private:
         clipper::Xmap<float> *m_xmap{};
