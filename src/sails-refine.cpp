@@ -1,6 +1,6 @@
 #include "sails-refine.h"
 
-std::vector<double> Sails::SimplexOptimiser::operator()(const TargetFunctionBase& target_function, const std::vector<std::vector<double>>& args) const { 
+std::vector<double> Sails::SimplexOptimiser::operator()(const TargetFunctionBase& target_function, const std::vector<std::vector<double>>& args) const {
     if (m_debug_mode) std::cout << "() operator called" << std::endl;
 
     enum STEP { UNKN, EXTN, NRML, CTRN, CTRX };
@@ -134,20 +134,23 @@ std::vector<double> Sails::SimplexOptimiser::operator()(const TargetFunctionBase
     return params[best_index];
 }
 
-double Sails::TargetFunctionSugar::operator()(const std::vector<double>& args) const { 
-    clipper::Euler_ccp4 euler = {args[0], args[1], args[2]};
-    clipper::Rotation rotation(euler);
-    
-    clipper::RTop_orth rtop = {rotation.matrix(), m_translation};
-    clipper::MMonomer test_fragment = m_sugar;
-    test_fragment.transform(rtop);
+double Sails::TargetFunctionSugar::operator()(const std::vector<double>& args) const {
+    auto test_linkage = m_linkage;
 
-    float score = m_scorer(test_fragment, *m_xmap);
+    LinkageParams temp_parameters = test_linkage->get_parameters();
+    temp_parameters.phi_torsion = args[0];
+    temp_parameters.psi_torsion = args[1];
+    temp_parameters.theta_torsion = args[2];
+    test_linkage->set_parameters(temp_parameters);
+
+    float score = m_scorer(test_linkage, *m_xmap);
     return -score; 
 }
 
-clipper::RTop_orth Sails::TargetFunctionSugar::refine(Sails::LinkageSet& linkage) { 
-    std::vector<double> args = {0,0,0};
+Sails::LinkageSet * Sails::TargetFunctionSugar::refine() {
+    std::vector<double> args = {m_linkage->get_parameters().phi_torsion,
+                                m_linkage->get_parameters().psi_torsion,
+                                m_linkage->get_parameters().theta_torsion};
     std::vector<std::vector<double>> args_init = {
         args, 
         {args[0]+m_step, args[1], args[2]},
@@ -156,11 +159,15 @@ clipper::RTop_orth Sails::TargetFunctionSugar::refine(Sails::LinkageSet& linkage
     }; 
 
     double tol = 5e-4 * (*this)(args);
-    SimplexOptimiser optimiser = SimplexOptimiser(tol, 20, SimplexOptimiser::NORMAL, false);
+    SimplexOptimiser optimiser = SimplexOptimiser(tol, 1000, SimplexOptimiser::NORMAL, false);
     std::vector<double> refined_arguments = optimiser(*this, args_init);
 
-    clipper::Euler_ccp4 refined_euler = clipper::Euler_ccp4(refined_arguments[0], refined_arguments[1], refined_arguments[2]);
-    clipper::Rotation refined_rotation = clipper::Rotation(refined_euler);
+    LinkageSet* final_linkage = m_linkage;
+    LinkageParams temp_parameters = final_linkage->get_parameters();
+    temp_parameters.phi_torsion = refined_arguments[0];
+    temp_parameters.psi_torsion = refined_arguments[1];
+    temp_parameters.theta_torsion = refined_arguments[2];
+    final_linkage->set_parameters(temp_parameters);
 
-    return {refined_rotation.matrix(), m_translation};
+    return final_linkage;
 }

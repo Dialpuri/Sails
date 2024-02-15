@@ -1,7 +1,7 @@
 //
 // Created by Jordan Dialpuri on 12/02/2024.
 //
-
+#pragma once
 #ifndef SAILS_MODEL_H
 #define SAILS_MODEL_H
 #include <map>
@@ -26,6 +26,15 @@ namespace Sails {
         float psi_angle;
         float theta_angle;
         float bond_length;
+
+        std::string format() const {
+            return " Phi_t = " + std::to_string(phi_torsion) +
+                    " Psi_t = " + std::to_string(psi_torsion) +
+                    " The_t = " + std::to_string(theta_torsion) +
+                    " Phi_a = " + std::to_string(phi_angle) +
+                    " Psi_a = " + std::to_string(psi_angle) +
+                    " The_a = " + std::to_string(theta_angle);
+        }
     };
 
     struct DonorSet {
@@ -53,12 +62,16 @@ namespace Sails {
     };
 
     struct LinkageSet {
+        LinkageSet() = default;
         static clipper::RTop_orth calculate(const clipper::MMonomer&donor_residue,
                                             const clipper::MMonomer&acceptor_residue,
                                             const DonorSet&donor, const AcceptorSet&acceptor,
                                             const LinkageParams&params);
         LinkageParams params;
-
+        virtual clipper::RTop_orth update_transformation(LinkageParams& parameters) {return {};};
+        virtual clipper::MMonomer get_donor_monomer() { return {};};
+        virtual LinkageParams get_parameters() const { std::cout << "base" << std::endl; return {};}
+        virtual void set_parameters(LinkageParams& parameters) { params = parameters;}
     };
 
 
@@ -95,13 +108,18 @@ namespace Sails {
             m_acceptor_residue = acceptor_residue;
         }
 
-        clipper::RTop_orth update_transformation(LinkageParams& params) {
-            return calculate(m_donor_residue, m_acceptor_residue, donor, acceptor, params)
+        clipper::RTop_orth update_transformation(LinkageParams& parameters) override {
+            return calculate(m_donor_residue, m_acceptor_residue, donor, acceptor, parameters);
         }
 
         clipper::RTop_orth get_transformation() const {return m_transformation;}
 
-        clipper::MMonomer get_donor_monomer() const {return m_donor_residue;}
+        clipper::MMonomer get_donor_monomer() override {return m_donor_residue;}
+
+        LinkageParams get_parameters() const override  {return params;}
+
+        void set_parameters(LinkageParams& parameters) override  { params = parameters;}
+
 
     private:
         clipper::RTop_orth m_transformation;

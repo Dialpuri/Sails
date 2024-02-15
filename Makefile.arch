@@ -3,10 +3,9 @@
 
 
 SHARED = sails-lib \
-         sails-find \
          sails-model \
-         sails-score \
-		 sails-refine
+		 sails-refine \
+         sails-find \
 
 LIBS = \
 -lccp4c \

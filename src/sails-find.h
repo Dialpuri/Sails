@@ -1,6 +1,7 @@
 //
 // Created by Jordan Dialpuri on 12/02/2024.
 //
+#pragma once
 
 #ifndef SAILS_FIND_H
 #define SAILS_FIND_H

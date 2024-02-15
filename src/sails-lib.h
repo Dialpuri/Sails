@@ -1,6 +1,7 @@
 //
 // Created by Jordan Dialpuri on 12/02/2024.
 //
+#pragma once
 
 #ifndef SAILS_LIB_H
 #define SAILS_LIB_H
