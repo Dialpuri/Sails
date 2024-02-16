@@ -1,0 +1,12 @@
+#Build files
+bin/*
+sails
+
+#IDE
+.idea/*
+.vscode/*
+
+checkout
+build
+pyenv
+*.a
