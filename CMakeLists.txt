@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.15...3.26)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-project(nanobind_example LANGUAGES CXX)
+project(sails LANGUAGES CXX)
 
 if (NOT SKBUILD)
     message(WARNING "\
@@ -41,6 +41,7 @@ add_subdirectory(clipper/mmdb)
 add_subdirectory(clipper/cif)
 add_subdirectory(clipper/phs)
 add_subdirectory(clipper/ccp4)
+add_subdirectory(clipper/gemmi)
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}

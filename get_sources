@@ -7,18 +7,18 @@ if [ -d "clipper" ]; then
     echo "Found clipper"
 else
     echo "Checking out clipper"
-#  curl -L http://www.ysbl.york.ac.uk/jsd523/clipper-gemmi-wrapper-20240123.tar.gz -o clipper-gemmi-wrapper.tar.gz
-#    echo "Unpacking fftw-2.1.5"
-#    tar xf clipper-gemmi-wrapper.tar.gz
-#    mv clipper-gemmi-wrapper clipper
-#
+  curl -L http://www.ysbl.york.ac.uk/jsd523/clipper-gemmi-wrapper-20240123.tar.gz -o clipper-gemmi-wrapper.tar.gz
+    echo "Unpacking fftw-2.1.5"
+    tar xf clipper-gemmi-wrapper.tar.gz
+    mv clipper-gemmi-wrapper clipper
+
 #    echo
-    bzr checkout --lightweight  http://fg.oisin.rc-harwell.ac.uk/anonscm/bzr/clipper/trunk/ clipper
+#    bzr checkout --lightweight  http://fg.oisin.rc-harwell.ac.uk/anonscm/bzr/clipper/trunk/ clipper
 
     echo
 fi 
 
-if [ -d "gemmi"]; then
+if [ -d "gemmi" ]; then
   echo "Found gemmi"
 else
     echo "Checking out gemmi"
