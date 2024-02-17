@@ -4,19 +4,19 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pysails"
-version = "0.0.1"
-description = "An example minimal project that compiles bindings using nanobind and scikit-build"
+version = "0.1"
+description = "Sails - Software for Automated Identification of Linked Sugars"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    { name = "Wenzel Jakob", email = "wenzel.jakob@epfl.ch" },
+    { name = "Jordan Dialpuri", email = "jordan.dialpuri@york.ac.uk" },
 ]
 classifiers = [
     "License :: OSI Approved :: BSD License",
 ]
 
 [project.urls]
-Homepage = "https://github.com/wjakob/nanobind_example"
+Homepage = "https://github.com/Dialpuri/Sails"
 
 
 [tool.scikit-build]
