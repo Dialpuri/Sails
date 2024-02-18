@@ -1,7 +1,9 @@
 project(clipper-gemmi)
 
 add_library(clipper-gemmi STATIC
-        ../../checkout/clipper/clipper/gemmi/clipper_gemmi.cpp)
+        ../../checkout/clipper/clipper/gemmi/clipper_gemmi.cpp
+        ../../checkout/clipper/clipper/gemmi/clipper_gemmi_model.cpp
+)
 
 target_include_directories(clipper-gemmi PRIVATE
         ../../checkout/clipper/clipper
@@ -10,6 +12,7 @@ target_include_directories(clipper-gemmi PRIVATE
 
 set(clipper-gemmi_HEADERS
         ${CMAKE_SOURCE_DIR}/checkout/clipper/clipper/gemmi/clipper_gemmi.h
+        ${CMAKE_SOURCE_DIR}/checkout/clipper/clipper/gemmi/clipper_gemmi_model.h
 )
 
 target_compile_options(clipper-gemmi PUBLIC "-DFFTW_ENABLE_FLOAT")

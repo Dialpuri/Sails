@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15...3.26)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
-
+set(CMAKE_VERBOSE_MAKEFILE ON)
 project(sails LANGUAGES CXX)
 
 if (NOT SKBUILD)
@@ -33,6 +33,7 @@ add_subdirectory(rfftw)
 add_subdirectory(ccp4)
 add_subdirectory(mmdb2)
 add_subdirectory(gemmi)
+add_subdirectory(clipper/gemmi)
 add_subdirectory(clipper/minimol)
 add_subdirectory(clipper/core)
 add_subdirectory(clipper/contrib)
@@ -41,7 +42,6 @@ add_subdirectory(clipper/mmdb)
 add_subdirectory(clipper/cif)
 add_subdirectory(clipper/phs)
 add_subdirectory(clipper/ccp4)
-add_subdirectory(clipper/gemmi)
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -57,6 +57,66 @@ link_directories(
         ccp4
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
+
+
+add_library(
+        sails_lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-find.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-lib.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.cpp
+)
+
+
+add_executable(csails ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/csails.cpp)
+set_target_properties(csails PROPERTIES OUTPUT_NAME sails)
+target_include_directories(csails PUBLIC checkout/gemmi)
+target_link_directories(csails
+        PUBLIC
+        mmdb2
+        clipper/mmdb
+        clipper/cif
+        clipper/core
+        clipper/contrib
+        clipper/ccp4
+        clipper/gemmi
+        clipper/minimol
+        fftw
+        rfftw
+        ccp4
+)
+
+
+target_link_libraries(
+        csails
+        PRIVATE
+        gemmi_cpp
+        sails_lib
+        ccp4
+        fftw
+        rfftw
+        mmdb2
+        clipper-mmdb
+        clipper-cif
+        clipper-core
+        clipper-contrib
+        clipper-minimol
+        clipper-ccp4
+        clipper-gemmi
+)
+set(SAILS_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-find.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-lib.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.h
+)
+set_target_properties(csails PROPERTIES PUBLIC_HEADER "${SAILS_HEADERS}")
+install(TARGETS csails
+        LIBRARY DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/sails)
+
 
 # Try to import all Python components potentially needed by nanobind
 find_package(Python 3.8
@@ -108,14 +168,6 @@ target_link_directories(sails_module
         ccp4
 )
 
-add_library(
-        sails_lib
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-find.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-lib.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.cpp
-)
 
 target_link_libraries(
         sails_module
@@ -132,51 +184,7 @@ target_link_libraries(
         clipper-contrib
         clipper-minimol
         clipper-ccp4
+        clipper-gemmi
 )
 # Install directive for scikit-build-core
 install(TARGETS sails_module LIBRARY DESTINATION pysails)
-
-#add_executable(csails ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/csails.cpp)
-#set_target_properties(csails PROPERTIES OUTPUT_NAME sails)
-#target_include_directories(csails PUBLIC checkout/gemmi)
-#target_link_directories(csails
-#        PUBLIC
-#        mmdb2
-#        clipper/mmdb
-#        clipper/cif
-#        clipper/core
-#        clipper/contrib
-#        clipper/ccp4
-#        clipper/gemmi
-#        clipper/minimol
-#        fftw
-#        rfftw
-#        ccp4
-#)
-#target_link_libraries(
-#        csails
-#        PRIVATE
-#        gemmi_cpp
-#        sails_lib
-#        ccp4
-#        fftw
-#        rfftw
-#        mmdb2
-#        clipper-mmdb
-#        clipper-cif
-#        clipper-core
-#        clipper-contrib
-#        clipper-minimol
-#        clipper-ccp4
-#)
-#set(SAILS_HEADERS
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-find.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-lib.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.h
-#)
-#set_target_properties(csails PROPERTIES PUBLIC_HEADER "${SAILS_HEADERS}")
-#install(TARGETS csails
-#        LIBRARY DESTINATION lib
-#        PUBLIC_HEADER DESTINATION include/sails)
