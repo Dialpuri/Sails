@@ -55,7 +55,8 @@ struct Node {
 struct NeighbourSearchResult {
     int p;
     int m;
-    NeighbourSearchResult(int p_, int m_): p(p_), m(m_) {}
+    int a;
+    NeighbourSearchResult(int p_, int m_, int a_): p(p_), m(m_), a(a_) {}
 
     bool is_same(const Node* node) const {
         return node->data.get_p() == p && node->data.get_m() == m;
@@ -65,10 +66,10 @@ struct NeighbourSearchResult {
         return mol[p][m];
     }
 
-    bool operator<(const NeighbourSearchResult& rhs) const
-    {
-        return p < rhs.p && m < rhs.m;
+    clipper::MAtom extract_atom(clipper::MiniMol& mol) const {
+        return mol[p][m][a];
     }
+
 };
 
 class GlycoSite {
@@ -90,12 +91,16 @@ private:
 
 class SailsAnalyse {
 public:
-    bool get_value(clipper::MiniMol&mol, SailsData& database,  std::unique_ptr<Node>&node);
-
     explicit SailsAnalyse(clipper::MiniMol& mol);
+
+    void analyse_children(clipper::MiniMol&mol, SailsData&database, std::unique_ptr<Node>&node);
+    [[nodiscard]] std::vector<std::unique_ptr<Node>> get_tree() const {return trees;}
+
 
 private:
     clipper::MAtomNonBond ns;
+
+    std::vector<std::unique_ptr<Node>> trees;
 
 };
 
