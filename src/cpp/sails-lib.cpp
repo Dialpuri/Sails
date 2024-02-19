@@ -119,7 +119,7 @@ void SailsInput::load_pdb(const std::string& input_pdb) {
         return;
     }
 
-    clipper::MMDBfile mfile;
+    clipper::GEMMIfile mfile;
     mfile.read_file(input_pdb);
     mfile.import_minimol(mol);
 }
