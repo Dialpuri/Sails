@@ -11,8 +11,6 @@
 #include <clipper/clipper-minimol.h>
 #include <fstream>
 
-float test(int a) { return pow(a,2); }
-
 
 class SailsInput {
 public:
