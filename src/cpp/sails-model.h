@@ -144,11 +144,11 @@ namespace Sails {
             return calculate(m_donor_residue, m_acceptor_residue, donor, acceptor, parameters);
         }
 
-        clipper::RTop_orth get_transformation() const {return m_transformation;}
+        [[nodiscard]] clipper::RTop_orth get_transformation() const {return m_transformation;}
 
-        clipper::MMonomer get_donor_monomer() override {return m_donor_residue;}
+        [[nodiscard]] clipper::MMonomer get_donor_monomer() override {return m_donor_residue;}
 
-        LinkageParams get_parameters() const override  {return params;}
+        [[nodiscard]] LinkageParams get_parameters() const override  {return params;}
 
         void set_parameters(LinkageParams& parameters) override  { params = parameters;}
 
@@ -159,14 +159,15 @@ namespace Sails {
 
     };
 
-
     enum ResidueType {
-        ASN, NAG
+        ASN, NAG, BMA, MAN
     };
 
     static std::map<std::string, ResidueType> ResidueMap = {
             {"ASN", ResidueType::ASN},
-            {"NAG", ResidueType::NAG}
+            {"NAG", ResidueType::NAG},
+            {"BMA", ResidueType::BMA},
+            {"MAN", ResidueType::MAN}
     };
 
 }
