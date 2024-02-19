@@ -66,6 +66,9 @@ add_library(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-analyse.cpp
+
 )
 
 
@@ -111,6 +114,8 @@ set(SAILS_HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-model.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-refine.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-score.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/cpp/sails-analyse.cpp
+
 )
 set_target_properties(csails PROPERTIES PUBLIC_HEADER "${SAILS_HEADERS}")
 install(TARGETS csails
