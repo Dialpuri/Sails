@@ -8,12 +8,12 @@
 #include <iostream>
 #include <filesystem>
 
-namespace Sails {
-    namespace Utils {
-        inline bool check_file_exists(const std::string& path) {
-            return std::filesystem::exists(path);
-        }
-    } // namespace Utils
-} // namespace Sails
+
+namespace Sails::Utils {
+    inline bool check_file_exists(const std::string& path) {
+        return std::filesystem::exists(path);
+    }
+} // namespace Sails::Utils
+
 
 #endif //SAILS_SAILS_UTILS_H
