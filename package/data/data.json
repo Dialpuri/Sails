@@ -1,0 +1,31 @@
+{
+  "residues": [
+    {
+      "name":  "NAG",
+      "donor_sets": [
+        {
+          "atom_1": "O4",
+          "atom_2": "C4",
+          "atom_3": "C3",
+          "identifier": 4
+        }
+      ],
+      "acceptor_sets": [
+        {
+          "atom_1": "O1",
+          "atom_2": "C1",
+          "atom_3": "C2",
+          "identifier": 1
+        }
+      ]
+    }
+  ],
+  "linkages": [
+    {
+      "donor_residue": "NAG",
+      "acceptor_residue": "ASN",
+      "donor_number": 1,
+      "acceptor_number": 2
+    }
+  ]
+}
