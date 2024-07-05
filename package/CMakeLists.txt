@@ -70,8 +70,10 @@ add_library(
         sails_lib
         STATIC
         ${WRK_DIR}/src/cpp/sails-json.cpp
+        ${WRK_DIR}/src/cpp/sails-vector.cpp
 
         ${WRK_DIR}/src/third-party/simdjson.cpp
+        src/include/sails-vector.h
 )
 
 # add_executable(csails ${WRK_DIR}/src/cpp/csails.cpp)
@@ -191,15 +193,28 @@ target_link_libraries(
 
 
 # Install directive for scikit-build-core
-install(TARGETS sails_module LIBRARY DESTINATION sails)
+if(UNIX AND NOT APPLE)
+    install(TARGETS sails_module LIBRARY DESTINATION sails)
+    nanobind_add_stub(
+            sails_module_stubs
+            INSTALL_TIME
+            MODULE sails
+            OUTPUT __init__.pyi
+            PYTHON_PATH "."
+    )
+    install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
+endif()
 
-nanobind_add_stub(
-        sails_module_stubs
-        INSTALL_TIME
-        MODULE sails
-        OUTPUT __init__.pyi
-        PYTHON_PATH "."
-)
+if(APPLE)
+    nanobind_add_stub(
+            sails_module_stubs
 
-install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
+            MODULE sails
+            OUTPUT __init__.pyi
+            PYTHON_PATH "."
+    )
+
+    install(TARGETS sails_module LIBRARY DESTINATION sails)
+    install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
+endif()
 
