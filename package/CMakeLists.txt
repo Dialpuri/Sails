@@ -188,15 +188,17 @@ target_link_libraries(
         gemmi_cpp
 )
 
-nanobind_add_stub(
-        sails_module_stubs
-        MODULE sails_module
-        OUTPUT __init__.pyi
-        PYTHON_PATH $<TARGET_FILE_DIR:sails_module>
-)
-
 
 # Install directive for scikit-build-core
 install(TARGETS sails_module LIBRARY DESTINATION sails)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi" DESTINATION sails)
+
+nanobind_add_stub(
+        sails_module_stubs
+        INSTALL_TIME
+        MODULE sails
+        OUTPUT __init__.pyi
+        PYTHON_PATH "."
+)
+
+install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
 
