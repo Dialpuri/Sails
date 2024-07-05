@@ -1,2 +1,2 @@
-# from .sails_module import add
+from .sails_module import run
 from .__version__ import __version__
