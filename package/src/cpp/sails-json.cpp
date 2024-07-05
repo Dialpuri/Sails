@@ -17,17 +17,19 @@ void Sails::JSONLoader::init(const std::string &path, Sails::ResidueDatabase& da
     simdjson::ondemand::document doc = parser.iterate(json);
 
     // load residues
-    auto residues = doc["residues"];
-    for (auto value: residues) {
-        std::string name = std::string(value["name"].get_string().value());
+    const char* residue_key = "residues";
+    const char* name_key = "name";
 
-        auto donor_sets = extract_atom_set(value, "donor_sets");
-        auto acceptors_sets = extract_atom_set(value, "acceptor_sets");
+    auto residues = doc[residue_key];
+    for (auto value: residues) {
+        std::string name = std::string(value[name_key].get_string().value());
+
+        std::vector<Sails::AtomSet> donor_sets = extract_atom_set(value, "donor_sets");
+        std::vector<Sails::AtomSet> acceptors_sets = extract_atom_set(value, "acceptor_sets");
 
         ResidueData data = {acceptors_sets, donor_sets};
         database.insert({name,  data});
     }
-
 }
 
 
