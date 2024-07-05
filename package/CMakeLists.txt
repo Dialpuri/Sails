@@ -69,7 +69,9 @@ link_directories(
 add_library(
         sails_lib
         STATIC
-        ${WRK_DIR}/src/cpp/sails-lib.cpp
+        ${WRK_DIR}/src/cpp/sails-json.cpp
+
+        ${WRK_DIR}/src/third-party/simdjson.cpp
 )
 
 # add_executable(csails ${WRK_DIR}/src/cpp/csails.cpp)
@@ -110,9 +112,8 @@ target_link_libraries(
         gemmi_cpp
 )
 
+file(GLOB sails_HEADERS ${WRK_DIR}/src/headers/*.h)
 
-set(sails_HEADERS
-)
 # set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
 # install(TARGETS csails
 #         LIBRARY DESTINATION lib
