@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__
+*.egg*
+*.gz
+*.whl
+build
+data
+docs/.idea
+.idea
+cmake-build-debug
+checkout
