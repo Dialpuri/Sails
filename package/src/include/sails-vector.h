@@ -6,13 +6,12 @@
 #define SAILS_SAILS_VECTOR_H
 
 #include "gemmi/math.hpp"
+#include "sails-utils.h"
 
 namespace Sails {
 
     gemmi::Vec3 calculate_projected_point(gemmi::Vec3 &x1, gemmi::Vec3 &x2, gemmi::Vec3 &x3, const double &length,
                                                  const double &angle, const double &torsion);
-
-
 }
 
 #endif //SAILS_SAILS_VECTOR_H
