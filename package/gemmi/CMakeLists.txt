@@ -18,10 +18,15 @@ include_directories("${gemmi_src}/include"
         "${gemmi_src}/third_party")
 
 add_library(gemmi_cpp STATIC
+        ${gemmi_src}/src/align.cpp
         ${gemmi_src}/src/assembly.cpp
         ${gemmi_src}/src/calculate.cpp
         ${gemmi_src}/src/crd.cpp
+        ${gemmi_src}/src/ddl.cpp
         ${gemmi_src}/src/eig3.cpp
+        ${gemmi_src}/src/gz.cpp
+        ${gemmi_src}/src/intensit.cpp
+        ${gemmi_src}/src/json.cpp
         ${gemmi_src}/src/mmcif.cpp
         ${gemmi_src}/src/mmread_gz.cpp
         ${gemmi_src}/src/mtz.cpp
@@ -35,7 +40,8 @@ add_library(gemmi_cpp STATIC
         ${gemmi_src}/src/to_pdb.cpp
         ${gemmi_src}/src/monlib.cpp
         ${gemmi_src}/src/topo.cpp
-        ${gemmi_src}/src/xds_ascii.cpp)
+        ${gemmi_src}/src/xds_ascii.cpp
+)
 
 #set_target_properties(gemmi_cpp PROPERTIES COMPILE_FLAGS "-fexceptions -pthread -s USE_ZLIB=1 -s USE_PTHREADS=1" )
 

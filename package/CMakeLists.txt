@@ -69,16 +69,20 @@ link_directories(
 add_library(
         sails_lib
         STATIC
+        # Source
         ${WRK_DIR}/src/cpp/sails-json.cpp
         ${WRK_DIR}/src/cpp/sails-vector.cpp
+        ${WRK_DIR}/src/cpp/sails-sequence.cpp
+        ${WRK_DIR}/src/cpp/sails-topology.cpp
 
+
+        # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
-        src/include/sails-vector.h
 )
 
-# add_executable(csails ${WRK_DIR}/src/cpp/csails.cpp)
-# set_target_properties(csails PROPERTIES OUTPUT_NAME sails)
-# target_compile_features(csails INTERFACE cxx_std_17)
+add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
+set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
+target_compile_features(csails INTERFACE cxx_std_17)
 
 # target_include_directories(csails PUBLIC checkout/gemmi)
 set(LINK_LIBS "gemmi_cpp sails_lib ccp4 fftw rfftw mmdb2 clipper-mmdb clipper-cif clipper-core clipper-contrib clipper-minimol clipper-ccp4 clipper-gemmi")
