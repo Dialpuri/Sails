@@ -69,6 +69,17 @@ namespace Sails {
     typedef std::map<std::string, ResidueData> ResidueDatabase;
 
 
+    struct Glycosite {
+        Glycosite(int model_idx, int chain_idx, int residue_idx) : model_idx(model_idx), chain_idx(chain_idx),
+                                                                   residue_idx(residue_idx) {}
+
+        int model_idx;
+        int chain_idx;
+        int residue_idx;
+    };
+
+    typedef std::vector<Glycosite> Glycosites;
+
 //    struct LinkageSet {
 //        LinkageSet() = default;
 //
