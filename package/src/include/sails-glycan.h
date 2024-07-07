@@ -19,6 +19,17 @@
 
 namespace Sails {
 
+    /**
+     * @struct Sugar
+     * @brief Represents a sugar molecule.
+     *
+     * The Sugar struct stores information about a sugar molecule. It includes the type of atom, the sequence ID,
+     * and the glycosite of the sugar molecule.
+     *
+     * @param atom The type of atom in the sugar molecule.
+     * @param seqId The sequence ID of the sugar molecule.
+     * @param site The glycosite of the sugar molecule.
+     */
     struct Sugar {
 
         Sugar(const std::string &atom, int seqId, Sails::Glycosite& site ) : atom(atom), seqId(seqId), site(site) {}
@@ -33,12 +44,41 @@ namespace Sails {
         }
     };
 
+    /**
+     * @brief Glycan represents a glycan structure.
+     *
+     * The Glycan class is responsible for constructing and managing a glycan structure composed of sugars.
+     * It provides methods for adding linkages between sugars, adding sugars to the glycan, printing the glycan
+     * structure, generating a DOT string representation of the glycan, writing the glycan to a DOT file,
+     * performing breadth-first search (BFS) traversal on the glycan structure, retrieving terminal sugars,
+     * and performing depth-first search (DFS) traversal on the glycan structure.
+     */
     struct Glycan {
-        void add_linkage(int sugar_1, int sugar_2) {
-            adjacency_list[sugars[sugar_1].get()].insert(sugars[sugar_2].get());
+
+        Glycan(gemmi::Structure& structure, Sails::ResidueDatabase& database): m_structure(structure), m_database(database) {}
+
+        /**
+         * @brief Adds linkage between two sugars.
+         *
+         * This function creates a linkage between two sugars by the seqId. Sugars must have been added with add_sugar
+         * before this function is called, if not, an error is raised.
+         *
+         * @param sugar_1_key The ID of the first sugar object.
+         * @param sugar_2_key The ID of the second sugar object.
+         *
+         * @note The specified sugar keys must be valid IDs of existing sugar objects.
+         *
+         * @return void
+         */
+        inline void add_linkage(int sugar_1_key, int sugar_2_key) {
+
+            if (sugars.find(sugar_1_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan")}
+            if (sugars.find(sugar_2_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan")}
+
+            adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
         }
 
-        void add_sugar(const std::string &atom, int seqId, Sails::Glycosite& residue) {
+        inline void add_sugar(const std::string &atom, int seqId, Sails::Glycosite& residue) {
 
             if (sugars.find(seqId) != sugars.end()) { // this sugar was already added, don't overwrite
                 return;
@@ -47,99 +87,78 @@ namespace Sails {
             sugars[seqId] = std::make_unique<Sugar>(atom, seqId, residue);
         }
 
-        void print_list(gemmi::Structure& structure) {
-            for (const auto& pair: adjacency_list) {
-                const Sugar* node = pair.first;
-                const std::set<Sugar*>& siblings = pair.second;
+        /**
+        * @brief This function prints the adjacency list of the glycan structure.
+        *
+        * The print_list() function iterates over the adjacency list of the glycan structure and prints each sugar and its linked siblings.
+        * It retrieves the residue information from the gemmi::Structure and gemmi::Residue objects and prints them as part of the output.
+        * The output is printed to the console.
+        *
+        * @return void
+        */
+        void print_list();
 
-                gemmi::Residue r = structure.models[node->site.model_idx].chains[node->site.chain_idx].residues[node->site.residue_idx];
-                std::cout << r.name << "-" << r.seqid.str() << "-" << node->atom << ": ";
+        /**
+         * @brief Retrieves a DOT representation of the glycan structure.
+         *
+         * The get_dot_string() function generates a DOT string representation of the glycan structure.
+         * The function uses the adjacency list to traverse the sugars and their linked siblings to construct the DOT string.
+         * The DOT string represents the relationships between sugars as edges and the sugars themselves as nodes.
+         *
+         * @return A string containing the DOT representation of the glycan structure.
+         */
+        std::string get_dot_string();
 
-                for (const Sugar* sibling: siblings) {
-                    gemmi::Residue r2 = structure.models[sibling->site.model_idx].chains[sibling->site.chain_idx].residues[sibling->site.residue_idx];
-                    std::cout << r2.name << "-" << r2.seqid.str()  << "-" << sibling->atom << ", " ;
-                }
-                std::cout << std::endl;
-            }
-        }
+        /**
+         * Writes a dot file at the specified path.
+         *
+         * This function takes a path to a dot file as input and writes a dot file at the specified location.
+         * The dot file is used for creating graphs using Graphviz graph visualization software.
+         *
+         * @param path The path to the dot file to be written.
+         */
+        void write_dot_file(const std::string& path);
 
-        std::string get_dot_string(gemmi::Structure& structure, Sails::ResidueDatabase& database) {
-            std::string dot = "graph Glycan {\n";
-            dot += "rankdir=RL;\n";
-            dot += "{\n";
+        /**
+         * @brief Performs a breadth-first search (BFS) traversal on the glycan structure starting from the specified root sugar.
+         *
+         * The bfs() function implements the breadth-first search algorithm to traverse the glycan structure in a level-wise manner.
+         * It starts from the root sugar and visits all its linked sugars before moving on to the next level of sugars.
+         * The function uses a queue to keep track of the sugars to be visited and a set to keep track of visited sugars.
+         * It also uses a map to store the level of each sugar in the traversal.
+         *
+         * @param root A pointer to the root sugar from which the traversal starts.
+         *
+         * @return void
+         */
+        void bfs(Sugar* root);
 
-            for (const auto& [root, sugar]: sugars) {
-                gemmi::Residue r2 = structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site.residue_idx];
-                dot += std::to_string(root);
-                dot += " [fillcolor=\"" ;
-                dot += database[r2.name].snfg_colour;
-                dot += "\" shape=";
-                dot += database[r2.name].snfg_shape;
-                dot += " style=filled label=\"\"]\n";
-            }
-            dot += "}\n";
+        /**
+         * @brief This function retrieves all the terminal sugars in a tree structure starting from the given root sugar.
+         *
+         * The function takes a pointer to the root sugar of a tree structure as input and returns a collection of all the terminal sugars
+         * in that tree structure.
+         *
+         * @param root The pointer to the root sugar of the tree structure.
+         * @return A collection of terminal sugars in the tree structure.
+         */
+        std::vector<Sugar*> get_terminal_sugars(Sugar* root);
 
-            for (const auto& [root, children]: adjacency_list) {
-                for (const auto& child: children) {
-                    dot += std::to_string(root->seqId);
-                    dot += " -- ";
-                    dot += std::to_string(child->seqId);
-                    dot += ";\n";
-                }
-            }
-
-            dot += "}";
-            return dot;
-        }
-
-        void write_dot_file(const std::string& path, gemmi::Structure& structure, Sails::ResidueDatabase& database) {
-            std::ofstream of(path);
-            of << get_dot_string(structure, database) << std::endl;
-            of.close();
-        }
-
-        void bfs(Sugar* root) {
-            std::queue<Sugar*> to_visit({root});
-            std::set<Sugar*> visited = {root};
-            std::map<Sugar*, int> level;
-            level[root] = 0;
-
-            while(!to_visit.empty()) {
-                Sugar* current_sugar = to_visit.front();
-                to_visit.pop();
-                int current_level = level[current_sugar];
-
-                for (Sugar* sibling: adjacency_list[current_sugar]) {
-                    if (visited.find(sibling) == visited.end()) {  // if we haven't visited this sibling yet
-                        to_visit.push(sibling);
-                        visited.insert(sibling);
-                        level[sibling] = current_level + 1;
-                    }
-                }
-            }
-        }
-
-        std::vector<Sugar*> get_terminal_sugars(Sugar* root) {
-            std::vector<Sugar*> terminal_sugars;
-            dfs(root, terminal_sugars);
-            return terminal_sugars;
-        }
-
-        void dfs(Sugar* current_sugar, std::vector<Sugar*>& terminal_sugars) {
-            std::set<Sugar*>& sugars = adjacency_list[current_sugar];
-
-            if (sugars.empty()) {
-                terminal_sugars.push_back( current_sugar );
-            }
-
-            for (Sugar* sugar: sugars) {
-                dfs(sugar, terminal_sugars);
-            }
-        }
+        /**
+         * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
+         * a given sugar and collecting terminal sugars.
+         *
+         * @param current_sugar - The current sugar molecule being visited.
+         * @param terminal_sugars - A vector to store the terminal sugar molecules found.
+         */
+        void dfs(Sugar* current_sugar, std::vector<Sugar*>& terminal_sugars);
 
     private:
         std::map<Sugar*, std::set<Sugar*>> adjacency_list;
         std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope
+
+        gemmi::Structure m_structure;
+        Sails::ResidueDatabase m_database
     };
 
 

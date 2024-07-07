@@ -74,6 +74,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-vector.cpp
         ${WRK_DIR}/src/cpp/sails-sequence.cpp
         ${WRK_DIR}/src/cpp/sails-topology.cpp
+        ${WRK_DIR}/src/cpp/sails-glycan.cpp
 
 
         # Third Party
