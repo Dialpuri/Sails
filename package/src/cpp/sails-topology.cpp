@@ -28,6 +28,9 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
         // get donor atoms with that name, could return > 1 with altconfs
         gemmi::AtomGroup donor_atoms = residue.get(donor.atom1);
         for (const auto &donor_atom: donor_atoms) {
+
+            glycan.add_sugar(donor_atom.name, residue.seqid.num.value, glycosite);
+
             auto near_atoms = m_neighbor_search.find_atoms(donor_atom.pos, '\0', 0.0, search_radius);
 
             // no atoms are near here, continue to the next donor atom
@@ -72,9 +75,8 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
             auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
             if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { continue;};
 
-            // Add the two sugars, and then linkage
+            // Add the sugar, and then linkage
             // This is required to ensure the sugar objects live until the Glycan goes out of scope.
-            glycan.add_sugar(donor_atom.name, residue.seqid.num.value, glycosite);
             glycan.add_sugar(closest_atom.name, closest_bound_residue.seqid.num.value, closest_site);
 
             // sugars are stored with keys which are the seqIds
@@ -87,7 +89,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
 std::optional<Sails::Glycan> Sails::Topology::find_glycan_topology(Sails::Glycosite &glycosite) {
 
-    Sails::Glycan glycan;
+    Sails::Glycan glycan = {m_structure, m_database};
 
     std::queue<Glycosite> to_check({glycosite});
 
