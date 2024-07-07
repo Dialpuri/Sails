@@ -6,8 +6,9 @@
 #define SAILS_SAILS_JSON_H
 
 #include "../third-party/simdjson.h"
-#include "sails-utils.h"
 #include "sails-model.h"
+
+#include <filesystem>
 
 namespace Sails {
 
