@@ -80,10 +80,6 @@ add_library(
         ${WRK_DIR}/src/third-party/simdjson.cpp
 )
 
-add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
-set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
-target_compile_features(csails INTERFACE cxx_std_17)
-
 # target_include_directories(csails PUBLIC checkout/gemmi)
 set(LINK_LIBS "gemmi_cpp sails_lib ccp4 fftw rfftw mmdb2 clipper-mmdb clipper-cif clipper-core clipper-contrib clipper-minimol clipper-ccp4 clipper-gemmi")
 
@@ -119,6 +115,42 @@ target_link_libraries(
 )
 
 file(GLOB sails_HEADERS ${WRK_DIR}/src/headers/*.h)
+
+add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
+set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
+target_compile_features(csails INTERFACE cxx_std_17)
+
+target_link_directories(csails
+        PUBLIC
+        ${CMAKE_BINARY_DIR}/clipper/mmdb
+        ${CMAKE_BINARY_DIR}/clipper/cif
+        ${CMAKE_BINARY_DIR}/clipper/ccp4
+        ${CMAKE_BINARY_DIR}/clipper/minimol
+        ${CMAKE_BINARY_DIR}/clipper/core
+        ${CMAKE_BINARY_DIR}/clipper/contrib
+        ${CMAKE_BINARY_DIR}/fftw
+        ${CMAKE_BINARY_DIR}/rfftw
+        ${CMAKE_BINARY_DIR}/ccp4
+        ${CMAKE_BINARY_DIR}/mmdb2
+        ${CMAKE_BINARY_DIR}/gemmi
+)
+
+target_link_libraries(
+        csails
+        PUBLIC
+        sails_lib
+        clipper-mmdb
+        clipper-cif
+        clipper-ccp4
+        clipper-minimol
+        clipper-core
+        clipper-contrib
+        rfftw
+        fftw
+        ccp4
+        mmdb2
+        gemmi_cpp
+)
 
 # set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
 # install(TARGETS csails
