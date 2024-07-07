@@ -20,6 +20,12 @@ void Sails::Glycan::print_list() {
     }
 }
 
+void Sails::Glycan::print_sugars() {
+    for (const auto& [index, sugar]: sugars) {
+        std::cout << "Seqid " << index << std::endl;
+    }
+}
+
 std::string Sails::Glycan::get_dot_string() {
     std::string dot = "graph Glycan {\n";
     dot += "rankdir=RL;\n";
@@ -89,10 +95,13 @@ void Sails::Glycan::dfs(Sails::Sugar *current_sugar, std::vector<Sugar *> &termi
     }
 }
 
-std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Sails::Sugar *root) {
+std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(int root_seq_id) {
     {
+        if (sugars.find(root_seq_id) == sugars.end()) {
+            throw std::runtime_error("Root SeqId is not valid : " + std::to_string(root_seq_id));
+        }
         std::vector<Sugar *> terminal_sugars;
-        dfs(root, terminal_sugars);
+        dfs(sugars[root_seq_id].get(), terminal_sugars);
         return terminal_sugars;
     }
 }

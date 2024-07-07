@@ -72,8 +72,8 @@ namespace Sails {
          */
         inline void add_linkage(int sugar_1_key, int sugar_2_key) {
 
-            if (sugars.find(sugar_1_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan")}
-            if (sugars.find(sugar_2_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan")}
+            if (sugars.find(sugar_1_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
+            if (sugars.find(sugar_2_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
 
             adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
         }
@@ -88,7 +88,7 @@ namespace Sails {
         }
 
         /**
-        * @brief This function prints the adjacency list of the glycan structure.
+        * @brief Prints the adjacency list of the glycan structure.
         *
         * The print_list() function iterates over the adjacency list of the glycan structure and prints each sugar and its linked siblings.
         * It retrieves the residue information from the gemmi::Structure and gemmi::Residue objects and prints them as part of the output.
@@ -97,6 +97,13 @@ namespace Sails {
         * @return void
         */
         void print_list();
+
+        /**
+        * @brief Prints the sugars contained within glycan structure.
+        *
+        * @return void
+        */
+        void print_sugars();
 
         /**
          * @brief Retrieves a DOT representation of the glycan structure.
@@ -139,10 +146,12 @@ namespace Sails {
          * The function takes a pointer to the root sugar of a tree structure as input and returns a collection of all the terminal sugars
          * in that tree structure.
          *
-         * @param root The pointer to the root sugar of the tree structure.
+         * @param root The seqId to the root residue of the tree structure.
+         * @throws std::runtime_error If supplied root_seq_id is invalid.
+         *
          * @return A collection of terminal sugars in the tree structure.
          */
-        std::vector<Sugar*> get_terminal_sugars(Sugar* root);
+        std::vector<Sugar*> get_terminal_sugars(int root_seq_id);
 
         /**
          * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
@@ -158,7 +167,7 @@ namespace Sails {
         std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope
 
         gemmi::Structure m_structure;
-        Sails::ResidueDatabase m_database
+        Sails::ResidueDatabase m_database;
     };
 
 
