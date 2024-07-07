@@ -10,7 +10,7 @@ Sails::JSONLoader::JSONLoader(const std::string& path, Sails::ResidueDatabase& d
 }
 
 void Sails::JSONLoader::init(const std::string &path, Sails::ResidueDatabase& database) {
-    if (!Sails::Utils::check_file_exists(path)) {throw std::runtime_error("Data file could not be found");}
+    if (!std::filesystem::exists(path)) {throw std::runtime_error("Data file could not be found");}
 
     simdjson::ondemand::parser parser;
     auto json = simdjson::padded_string::load(path);
@@ -24,10 +24,13 @@ void Sails::JSONLoader::init(const std::string &path, Sails::ResidueDatabase& da
     for (auto value: residues) {
         std::string name = std::string(value[name_key].get_string().value());
 
-        std::vector<Sails::AtomSet> donor_sets = extract_atom_set(value, "donor_sets");
-        std::vector<Sails::AtomSet> acceptors_sets = extract_atom_set(value, "acceptor_sets");
+        std::vector<Sails::AtomSet> donor_sets = extract_atom_set(value, "donorSets");
+        std::vector<Sails::AtomSet> acceptors_sets = extract_atom_set(value, "acceptorSets");
 
-        ResidueData data = {acceptors_sets, donor_sets};
+        std::string snfg_shape = std::string(value["snfgShape"].get_string().value());
+        std::string snfg_colour = std::string(value["snfgColour"].get_string().value());
+
+        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour};
         database.insert({name,  data});
     }
 }
