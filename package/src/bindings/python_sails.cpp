@@ -24,26 +24,18 @@ void run() {
     gemmi::Structure structure = gemmi::read_structure_file(path);
 
     Sails::Glycosites glycosites = Sails::find_n_glycosylation_sites(structure);
+    std::string dot_file;
 
-    for (const auto& glycosite: glycosites) {
-        auto glycan = Sails::find_glycan_topology(structure, glycosite);
+    for (auto& glycosite: glycosites) {
+        auto glycan = Sails::find_glycan_topology(structure, glycosite, database);
+
+        if (glycan.has_value()) {
+            dot_file += glycan->get_dot_string(structure, database);
+        }
     }
-
-    std::cout << glycosites.size() << " glycosites found." << std::endl;
-
-    Sails::Sugar sugar1 = {"C1", 101};
-    Sails::Sugar sugar2 = {"C2", 102};
-    Sails::Sugar sugar3 = {"C3", 103};
-    Sails::Sugar sugar4 = {"C4", 104};
-
-    Sails::Glycan glycan;
-    glycan.addLinkage(sugar1, sugar2);
-    glycan.addLinkage(sugar2, sugar3);
-    glycan.addLinkage(sugar1, sugar4);
-
-
-
-//    glycan.print_list();
+    std::ofstream of("package/graphs/all-glycans.dot");
+    of << dot_file << std::endl;
+    of.close();
 
     // generate tree structure of glycans
     // check glycosite residues
