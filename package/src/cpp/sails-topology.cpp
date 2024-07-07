@@ -4,21 +4,31 @@
 
 #include "../include/sails-topology.h"
 
-void Sails::find_residue_near_donor(Sails::Glycosite &glycosite, gemmi::Structure &structure,
-                                    gemmi::NeighborSearch &neighbor_search, Sails::Glycan &glycan,
-                                    Sails::ResidueDatabase &database, std::queue<Glycosite> &queue) {
+
+Sails::Topology::Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database) {
+    m_structure = structure;
+    m_database = database;
+
+    constexpr double search_radius = 2;
+    gemmi::NeighborSearch neighbor_search = {structure.models[0], structure.cell, search_radius};
+    neighbor_search.populate(false);
+    m_neighbor_search = neighbor_search;
+}
+
+
+void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails::Glycan &glycan, std::queue<Glycosite> &queue) {
 
     double search_radius = 2;
-    gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
+    gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(glycosite, m_structure);
 
-    if (database.find(residue.name) == database.end()) { throw std::runtime_error("Glycosite is not in database"); }
-    auto database_entry = database[residue.name];
+    if (m_database.find(residue.name) == m_database.end()) { throw std::runtime_error("Glycosite is not in database"); }
+    auto database_entry = m_database[residue.name];
 
     for (const auto &donor: database_entry.donors) {
         // get donor atoms with that name, could return > 1 with altconfs
         gemmi::AtomGroup donor_atoms = residue.get(donor.atom1);
         for (const auto &donor_atom: donor_atoms) {
-            auto near_atoms = neighbor_search.find_atoms(donor_atom.pos, '\0', 0.0, search_radius);
+            auto near_atoms = m_neighbor_search.find_atoms(donor_atom.pos, '\0', 0.0, search_radius);
 
             // no atoms are near here, continue to the next donor atom
             if (near_atoms.empty()) { continue; }
@@ -30,13 +40,13 @@ void Sails::find_residue_near_donor(Sails::Glycosite &glycosite, gemmi::Structur
                 // skip if the near atom is on the same residue
                 if (atom->chain_idx == glycosite.chain_idx && atom->residue_idx == glycosite.residue_idx) { continue; }
 
-                gemmi::Residue bound_residue = structure.models[glycosite.model_idx].chains[atom->chain_idx].residues[atom->residue_idx];
+                gemmi::Residue bound_residue = m_structure.models[glycosite.model_idx].chains[atom->chain_idx].residues[atom->residue_idx];
 
                 // skip if the near atom is on the same seqid (unlikely)
                 if (bound_residue.seqid == residue.seqid) { continue; }
 
                 // skip if the near atom is part of a unknown residue
-                if (database.find(bound_residue.name) == database.end()) { continue; }
+                if (m_database.find(bound_residue.name) == m_database.end()) { continue; }
 
                 gemmi::Atom near_atom = bound_residue.atoms[atom->atom_idx];
                 double distance = (donor_atom.pos - near_atom.pos).length();
@@ -52,17 +62,15 @@ void Sails::find_residue_near_donor(Sails::Glycosite &glycosite, gemmi::Structur
 
             auto closest_site = Glycosite(*min_atom);
 
-            gemmi::Residue closest_bound_residue = Sails::Utils::get_residue_from_glycosite(closest_site, structure);
-            gemmi::Atom closest_atom = Sails::Utils::get_atom_from_glycosite(closest_site, structure);
+            gemmi::Residue closest_bound_residue = Sails::Utils::get_residue_from_glycosite(closest_site, m_structure);
+            gemmi::Atom closest_atom = Sails::Utils::get_atom_from_glycosite(closest_site, m_structure);
 
-            auto closest_residue_data = database[closest_bound_residue.name];
+            auto closest_residue_data = m_database[closest_bound_residue.name];
             auto acceptors = closest_residue_data.acceptors;
 
             // check if the closest atom is a known acceptor
-//            auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
-//
-//            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { continue;};
-
+            auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
+            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { continue;};
 
             // Add the two sugars, and then linkage
             // This is required to ensure the sugar objects live until the Glycan goes out of scope.
@@ -77,22 +85,17 @@ void Sails::find_residue_near_donor(Sails::Glycosite &glycosite, gemmi::Structur
 }
 
 
-std::optional<Sails::Glycan> Sails::find_glycan_topology(gemmi::Structure &structure, Sails::Glycosite &glycosite,
-                                                         Sails::ResidueDatabase &database) {
-
-    constexpr double search_radius = 2;
-    gemmi::NeighborSearch neighbor_search = {structure.models[glycosite.model_idx], structure.cell, search_radius};
-    neighbor_search.populate(false);
+std::optional<Sails::Glycan> Sails::Topology::find_glycan_topology(Sails::Glycosite &glycosite) {
 
     Sails::Glycan glycan;
 
     std::queue<Glycosite> to_check({glycosite});
 
     while (!to_check.empty()) {
-        auto residue = to_check.front();
+        auto current_site = to_check.front();
         to_check.pop();
 
-        Sails::find_residue_near_donor(residue, structure, neighbor_search, glycan, database, to_check);
+        Sails::Topology::find_residue_near_donor(current_site, glycan, to_check);
     }
     return glycan;
 }
