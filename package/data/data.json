@@ -6,29 +6,29 @@
       "snfgColour": "green",
       "donorSets": [
         {
-          "atom_1": "O2",
-          "atom_2": "C2",
-          "atom_3": "C1",
+          "atom1": "O2",
+          "atom2": "C2",
+          "atom3": "C1",
           "identifier": 2
         },
         {
-          "atom_1": "O3",
-          "atom_2": "C3",
-          "atom_3": "C2",
+          "atom1": "O3",
+          "atom2": "C3",
+          "atom3": "C2",
           "identifier": 3
         },
         {
-          "atom_1": "O6",
-          "atom_2": "C6",
-          "atom_3": "C5",
+          "atom1": "O6",
+          "atom2": "C6",
+          "atom3": "C5",
           "identifier": 6
         }
       ],
       "acceptorSets": [
         {
-          "atom_1": "C1",
-          "atom_2": "O5",
-          "atom_3": "C1",
+          "atom1": "C1",
+          "atom2": "O5",
+          "atom3": "C1",
           "identifier": 1
         }
       ]
@@ -39,23 +39,23 @@
       "snfgColour": "green",
       "donorSets": [
         {
-          "atom_1": "O6",
-          "atom_2": "C6",
-          "atom_3": "C5",
+          "atom1": "O6",
+          "atom2": "C6",
+          "atom3": "C5",
           "identifier": 6
         },
         {
-          "atom_1": "O3",
-          "atom_2": "C3",
-          "atom_3": "C2",
+          "atom1": "O3",
+          "atom2": "C3",
+          "atom3": "C2",
           "identifier": 3
         }
       ],
       "acceptorSets": [
         {
-          "atom_1": "C1",
-          "atom_2": "O5",
-          "atom_3": "C1",
+          "atom1": "C1",
+          "atom2": "O5",
+          "atom3": "C1",
           "identifier": 1
         }
       ]
@@ -66,17 +66,17 @@
       "snfgColour": "blue",
       "donorSets": [
         {
-          "atom_1": "O4",
-          "atom_2": "C4",
-          "atom_3": "C3",
+          "atom3": "O4",
+          "atom2": "C4",
+          "atom1": "C3",
           "identifier": 4
         }
       ],
       "acceptorSets": [
         {
-          "atom_1": "C1",
-          "atom_2": "O5",
-          "atom_3": "C5",
+          "atom1": "C1",
+          "atom2": "O5",
+          "atom3": "C5",
           "identifier": 1
         }
       ]
@@ -87,9 +87,9 @@
       "snfgColour": "white",
       "donorSets": [
         {
-          "atom_1": "ND2",
-          "atom_2": "CG",
-          "atom_3": "CB",
+          "atom3": "ND2",
+          "atom2": "CG",
+          "atom1": "CB",
           "identifier": 2
         }
       ],
@@ -98,10 +98,42 @@
   ],
   "linkages": [
     {
-      "donor_residue": "NAG",
-      "acceptor_residue": "ASN",
-      "donor_number": 1,
-      "acceptor_number": 2
+      "donorResidue": "ASN",
+      "acceptorResidue": "NAG",
+      "donorNumber": 2,
+      "acceptorNumber": 1,
+      "angles": {
+        "alpha": 180.0,
+        "beta": 10.0,
+        "gamma": 10.0
+      },
+      "torsions": {
+        "phiMean": 10.0,
+        "phiStdDev": 2.0,
+        "psiMean": 10.0,
+        "psiStdDev": 2.0,
+        "omegaMean": 10.0,
+        "omegaStdDev": 2.0
+      }
+    },
+    {
+      "donorResidue": "NAG",
+      "acceptorResidue": "BMA",
+      "donorNumber": 4,
+      "acceptorNumber": 1,
+      "angles": {
+        "alpha": 120.0,
+        "beta": 105.0,
+        "gamma": 110.0
+      },
+      "torsions": {
+        "phiMean": 180.0,
+        "phiStdDev": 0.0,
+        "psiMean": -90.0,
+        "psiStdDev": 2.0,
+        "omegaMean": 180.0,
+        "omegaStdDev": 2.0
+      }
     }
   ]
 }
