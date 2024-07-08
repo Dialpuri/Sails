@@ -1,11 +1,12 @@
 //
 // Created by jordan on 05/07/24.
 //
-
+#pragma once
 #ifndef SAILS_SAILS_UTILS_H
 #define SAILS_SAILS_UTILS_H
 
 #include <iostream>
+#include <fstream>
 
 #include "gemmi/math.hpp"
 #include "gemmi/model.hpp"
@@ -13,26 +14,23 @@
 #include "sails-model.h"
 
 namespace Sails::Utils {
-    inline void print_vector(const gemmi::Vec3& vec) {
-        std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
-    }
+    std::string get_environment_variable(std::string const &key);
 
-    inline std::string format_residue_key(const gemmi::Residue* residue) {
-        return residue->name + "-" + residue->seqid.str();
-    }
+    void print_vector(const gemmi::Vec3 &vec);
 
-    gemmi::Chain get_chain_from_glycosite(const Glycosite& site, const gemmi::Structure& structure) {
-        return structure.models[site.model_idx].chains[site.chain_idx];
-    }
+    void print_position(const gemmi::Position &position);
 
-    gemmi::Residue get_residue_from_glycosite(const Glycosite& site,const gemmi::Structure& structure) {
-        return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
-    }
+    std::string format_residue_key(const gemmi::Residue *residue);
 
-    gemmi::Atom get_atom_from_glycosite(const Glycosite& site, const gemmi::Structure& structure) {
-        if (site.atom_idx == -1) {throw std::runtime_error("Site has not been initialised from a Mark");}
-        return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
-    }
+    gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+
+    gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+
+    gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+
+    std::string linkage_to_id(const Sails::LinkageData &data);
+
+    void save_residues_to_file(std::vector<gemmi::Residue>& residues, const std::string& path);
 
 } // namespace Sails::Utils
 
