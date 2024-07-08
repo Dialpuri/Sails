@@ -89,7 +89,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
 std::optional<Sails::Glycan> Sails::Topology::find_glycan_topology(Sails::Glycosite &glycosite) {
 
-    Sails::Glycan glycan = {m_structure, m_database};
+    Sails::Glycan glycan = {m_structure, m_database, glycosite};
 
     std::queue<Glycosite> to_check({glycosite});
 
