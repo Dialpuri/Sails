@@ -55,7 +55,8 @@ namespace Sails {
      */
     struct Glycan {
 
-        Glycan(gemmi::Structure& structure, Sails::ResidueDatabase& database): m_structure(structure), m_database(database) {}
+        Glycan() = default;
+        Glycan(gemmi::Structure& structure, Sails::ResidueDatabase& database, Glycosite& glycosite): m_structure(structure), m_database(database), glycosite(glycosite) {}
 
         /**
          * @brief Adds linkage between two sugars.
@@ -162,6 +163,7 @@ namespace Sails {
          */
         void dfs(Sugar* current_sugar, std::vector<Sugar*>& terminal_sugars);
 
+        Glycosite glycosite;
     private:
         std::map<Sugar*, std::set<Sugar*>> adjacency_list;
         std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope
