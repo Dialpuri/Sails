@@ -23,8 +23,14 @@ namespace Sails {
 
     public:
         JSONLoader() = default;
-        JSONLoader(const std::string& path, Sails::ResidueDatabase& database);
-        void init(const std::string& path, Sails::ResidueDatabase& database);
+
+        JSONLoader(const std::string &path);
+
+        void init(const std::string &path);
+
+        Sails::ResidueDatabase load_residue_database();
+
+        Sails::LinkageDatabase load_linkage_database();
 
     private:
         /**
@@ -38,8 +44,18 @@ namespace Sails {
          * @param key The key to extract the array of AtomSet objects.
          * @return std::vector<Sails::AtomSet> The vector of extracted AtomSet objects.
          */
-        std::vector<Sails::AtomSet> extract_atom_set(simdjson::simdjson_result<simdjson::ondemand::value> &value, const char *key) const;
+        static std::vector<Sails::AtomSet>
+        extract_atom_set(simdjson::simdjson_result<simdjson::ondemand::value> &value, const char *key);
 
+
+        static Sails::AngleSet extract_angles(simdjson::simdjson_result<simdjson::ondemand::value> &value);
+
+        static Sails::TorsionSet extract_torsions(simdjson::simdjson_result<simdjson::ondemand::value> &value);
+
+
+    private:
+        std::string m_path;
+        simdjson::ondemand::document m_doc;
 
     }; // class JSONLoader
 
