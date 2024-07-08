@@ -44,6 +44,10 @@ namespace Sails {
                 : atom1(atom_1), atom2(atom_2), atom3(atom_3), identifier(identifier) {
         }
 
+        std::vector<std::string> get_atom_list() const {
+            return {atom1, atom2, atom3};
+        }
+
         std::string atom1;
         std::string atom2;
         std::string atom3;
@@ -56,8 +60,18 @@ namespace Sails {
 
         ResidueData(std::vector<AtomSet> &acceptors, std::vector<AtomSet> &donors, const std::string &snfg_shape,
                     const std::string &snfg_colour) : acceptors(acceptors), donors(donors), snfg_shape(snfg_shape),
-                                                      snfg_colour(snfg_colour) {}
+                                                      snfg_colour(snfg_colour) {
+            for (const auto &acceptor: acceptors) {
+                acceptor_map[acceptor.identifier] = acceptor.get_atom_list();
+            }
 
+            for (const auto &donor: donors) {
+                donor_map[donor.identifier] = donor.get_atom_list();
+            }
+        }
+
+        std::map<int, std::vector<std::string>> acceptor_map;
+        std::map<int, std::vector<std::string>> donor_map;
         std::vector<AtomSet> acceptors;
         std::vector<AtomSet> donors;
         std::string snfg_shape;
@@ -66,6 +80,54 @@ namespace Sails {
 
     typedef std::map<std::string, ResidueData> ResidueDatabase;
 
+    struct AngleSet {
+        AngleSet(double alpha, double beta, double gamma) : alpha(alpha), beta(beta), gamma(gamma) {}
+
+        std::vector<double> get_in_order() {
+            return {alpha, beta, gamma};
+        }
+
+        double alpha;
+        double beta;
+        double gamma;
+    };
+
+    struct TorsionAngle {
+        TorsionAngle(double mean, double stddev) : mean(mean), stddev(stddev) {}
+
+        double mean;
+        double stddev;
+    };
+
+    struct TorsionSet {
+        TorsionSet(TorsionAngle &psi, TorsionAngle &phi, TorsionAngle &omega) : psi(psi), phi(phi), omega(omega) {}
+
+        std::vector<double> get_means_in_order() {
+            return {psi.mean, phi.mean, omega.mean};
+        }
+
+        TorsionAngle psi;
+        TorsionAngle phi;
+        TorsionAngle omega;
+    };
+
+    struct LinkageData {
+        LinkageData(const std::string &donor, const std::string &acceptor, int donor_number, int acceptor_number,
+                    AngleSet &angle_set, TorsionSet &torsion_set) : donor(donor), acceptor(acceptor),
+                                                                    donor_number(donor_number),
+                                                                    acceptor_number(acceptor_number), angles(angle_set),
+                                                                    torsions(torsion_set) {};
+
+        std::string donor;
+        std::string acceptor;
+        int donor_number;
+        int acceptor_number;
+        AngleSet angles;
+        TorsionSet torsions;
+
+    };
+
+    typedef std::map<std::string, std::vector<LinkageData>> LinkageDatabase;
 
     struct Glycosite {
         Glycosite() = default;
