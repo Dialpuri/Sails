@@ -75,7 +75,8 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-sequence.cpp
         ${WRK_DIR}/src/cpp/sails-topology.cpp
         ${WRK_DIR}/src/cpp/sails-glycan.cpp
-
+        ${WRK_DIR}/src/cpp/sails-linkage.cpp
+        ${WRK_DIR}/src/cpp/sails-utils.cpp
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
