@@ -6,7 +6,6 @@
 #define SAILS_SAILS_VECTOR_H
 
 #include "gemmi/math.hpp"
-#include "sails-utils.h"
 
 namespace Sails {
 
