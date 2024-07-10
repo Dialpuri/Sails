@@ -7,30 +7,30 @@
 #include <gemmi/mmread.hpp>
 #include <gemmi/modify.hpp>
 #include <gemmi/qcp.hpp>
+#include <gemmi/to_pdb.hpp>
 #include <src/include/sails-topology.h>
 
-Sails::Glycan Sails::Model::extend(Sails::Glycan &glycan, int base_seqid) {
+Sails::Glycan Sails::Model::extend(Glycan &glycan, int base_seqid) {
     std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_seqid);
 
-    for (const auto &x: terminal_sugars) {
-        auto residue = Sails::Utils::get_residue_from_glycosite(x->site, structure);
-
+    for (auto &terminal_sugar: terminal_sugars) {
+        auto residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
         if (linkage_database.find(residue.name) == linkage_database.end()) {
-            //            std::cout << "Residue type: " << residue.name << " is not in Sails' Linkage Database" << std::endl;
+            // std::cout << "Residue type: " << residue.name << " is not in Sails' Linkage Database" << std::endl;
             continue;
         }
 
-        std::cout << residue.name << std::endl;
         for (auto &data: linkage_database[residue.name]) {
-            // std::cout << "Attempting " << Sails::Utils::linkage_to_id(data) << std::endl;
             gemmi::Residue new_sugar = calculate_residue_translation(residue, data);
-            structure.models[x->site.model_idx].chains[x->site.chain_idx].append_residues({new_sugar});
+            int new_seqid = terminal_sugar->seqId+100;
+            new_sugar.seqid = gemmi::SeqId(new_seqid, 0);
+            auto all_residues = &structure.models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx].residues;
+            all_residues->insert(all_residues->end(),std::move(new_sugar));
         }
     }
 
-    Sails::Topology topology = {structure, residue_database};
-    if (auto new_glycan = topology.find_glycan_topology(glycan.glycosite); new_glycan.has_value()) return new_glycan.value();
-    return {};
+    Topology topology = {structure, residue_database};
+    return topology.find_glycan_topology(glycan.glycosite);
 }
 
 gemmi::Residue Sails::Model::calculate_residue_translation(const gemmi::Residue &residue, LinkageData &data) {
@@ -87,8 +87,9 @@ gemmi::Residue Sails::Model::calculate_residue_translation(const gemmi::Residue 
         reference_positions.emplace_back(a.pos);
     });
 
-    auto superpose_result = gemmi::superpose_positions(new_positions.data(), reference_positions.data(), 3, nullptr);
-    transform_pos_and_adp(reference_library_monomer, superpose_result.transform); // gemmi function
+    auto superpose_result = calculate_superposition(reference_positions, new_positions);
+    transform_pos_and_adp(reference_library_monomer, superpose_result); // gemmi function
+
     return reference_library_monomer;
 }
 
