@@ -27,15 +27,14 @@ void run() {
     Sails::Model model = {structure, linkage_database,residue_database};
     for (auto& glycosite: glycosites) {
         auto glycan = topology.find_glycan_topology(glycosite);
-        if (!glycan.has_value()) {continue;}
+        auto r = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
+        if (glycan.empty()) {continue;}
 
         // remove sugars with a lot of red difference density nearby -> indicates its wrong and then store those so we dont try rebuilding there...
 
         // find terminal sugars
         auto residue = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
-
-        auto new_glycan = model.extend(glycan.value(), residue.seqid.num.value);
-
+        auto new_glycan = model.extend(glycan, residue.seqid.num.value);
     }
 
 }
