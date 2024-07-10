@@ -31,12 +31,16 @@ namespace Sails {
      * @param site The glycosite of the sugar molecule.
      */
     struct Sugar {
-
-        Sugar(const std::string &atom, int seqId, Sails::Glycosite& site ) : atom(atom), seqId(seqId), site(site) {}
+        Sugar(const Sugar& sugar) {
+            atom = sugar.atom;
+            seqId = sugar.seqId;
+            site = sugar.site;
+        }
+        Sugar(const std::string &atom, int seqId, Glycosite& site ) : atom(atom), seqId(seqId), site(site) {}
 
         std::string atom;
-        int seqId;
-        Sails::Glycosite site;
+        int seqId{};
+        Glycosite site;
 
         bool operator< (const Sugar& rhs) const
         {
@@ -58,6 +62,15 @@ namespace Sails {
         Glycan() = default;
         Glycan(gemmi::Structure& structure, Sails::ResidueDatabase& database, Glycosite& glycosite): m_structure(structure), m_database(database), glycosite(glycosite) {}
 
+
+        [[nodiscard]] bool empty() const {
+            return sugars.empty();
+        }
+
+       [[nodiscard]] size_t size() const {
+            return adjacency_list.size();
+        }
+
         /**
          * @brief Adds linkage between two sugars.
          *
@@ -70,8 +83,9 @@ namespace Sails {
          * @note The specified sugar keys must be valid IDs of existing sugar objects.
          *
          * @return void
-         */
-        inline void add_linkage(int sugar_1_key, int sugar_2_key) {
+
+        */
+        void add_linkage(int sugar_1_key, int sugar_2_key) {
 
             if (sugars.find(sugar_1_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
             if (sugars.find(sugar_2_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
@@ -79,8 +93,7 @@ namespace Sails {
             adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
         }
 
-        inline void add_sugar(const std::string &atom, int seqId, Sails::Glycosite& residue) {
-
+        void add_sugar(const std::string &atom, int seqId, Sails::Glycosite& residue) {
             if (sugars.find(seqId) != sugars.end()) { // this sugar was already added, don't overwrite
                 return;
             }
