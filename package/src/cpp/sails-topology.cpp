@@ -26,7 +26,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
     for (const auto &donor: database_entry.donors) {
         // get donor atoms with that name, could return > 1 with altconfs
-        gemmi::AtomGroup donor_atoms = residue.get(donor.atom1);
+        gemmi::AtomGroup donor_atoms = residue.get(donor.atom3);
         for (const auto &donor_atom: donor_atoms) {
 
             glycan.add_sugar(donor_atom.name, residue.seqid.num.value, glycosite);
@@ -87,17 +87,20 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 }
 
 
-std::optional<Sails::Glycan> Sails::Topology::find_glycan_topology(Sails::Glycosite &glycosite) {
+Sails::Glycan Sails::Topology::find_glycan_topology(Glycosite &glycosite) {
 
-    Sails::Glycan glycan = {m_structure, m_database, glycosite};
+    Glycan glycan = {m_structure, m_database, glycosite};
 
     std::queue<Glycosite> to_check({glycosite});
 
     while (!to_check.empty()) {
         auto current_site = to_check.front();
+        auto x = Utils::get_residue_from_glycosite(current_site, m_structure);
+        std::cout << "Checking current site " << Utils::format_residue_key(&x) << std::endl;
+        ;
         to_check.pop();
 
-        Sails::Topology::find_residue_near_donor(current_site, glycan, to_check);
+        find_residue_near_donor(current_site, glycan, to_check);
     }
     return glycan;
 }

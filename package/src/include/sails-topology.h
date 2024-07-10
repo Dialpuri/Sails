@@ -17,13 +17,12 @@ namespace Sails {
     struct Topology {
         Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database);
 
-        std::optional<Sails::Glycan>
-        find_glycan_topology(Sails::Glycosite &glycosite);
+        Glycan find_glycan_topology(Sails::Glycosite &glycosite);
 
 
     private:
         gemmi::Structure m_structure;
-        Sails::ResidueDatabase m_database;
+        ResidueDatabase m_database;
         gemmi::NeighborSearch m_neighbor_search;
 
         void find_residue_near_donor(Sails::Glycosite &glycosite,  Sails::Glycan &glycan, std::queue<Glycosite> &queue);
