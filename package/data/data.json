@@ -136,25 +136,6 @@
       }
     },
     {
-      "donorResidue": "BMA",
-      "acceptorResidue": "MAN",
-      "donorNumber": 4,
-      "acceptorNumber": 1,
-      "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
-        "gamma": 110.0
-      },
-      "torsions": {
-        "phiMean": 180.0,
-        "phiStdDev": 0.0,
-        "psiMean": -90.0,
-        "psiStdDev": 2.0,
-        "omegaMean": 180.0,
-        "omegaStdDev": 2.0
-      }
-    },
-    {
       "donorResidue": "MAN",
       "acceptorResidue": "MAN",
       "donorNumber": 2,
