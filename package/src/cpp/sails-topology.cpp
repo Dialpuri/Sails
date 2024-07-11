@@ -96,8 +96,6 @@ Sails::Glycan Sails::Topology::find_glycan_topology(Glycosite &glycosite) {
     while (!to_check.empty()) {
         auto current_site = to_check.front();
         auto x = Utils::get_residue_from_glycosite(current_site, m_structure);
-        std::cout << "Checking current site " << Utils::format_residue_key(&x) << std::endl;
-        ;
         to_check.pop();
 
         find_residue_near_donor(current_site, glycan, to_check);

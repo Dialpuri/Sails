@@ -60,14 +60,30 @@ namespace Sails {
     struct Glycan {
 
         Glycan() = default;
-        Glycan(gemmi::Structure& structure, Sails::ResidueDatabase& database, Glycosite& glycosite): m_structure(structure), m_database(database), glycosite(glycosite) {}
+        Glycan(gemmi::Structure& structure, ResidueDatabase& database, Glycosite& glycosite): m_structure(structure), m_database(database), glycosite(glycosite) {}
 
 
+        /**
+         * @brief Checks if the container is empty.
+         *
+         * The `empty` method checks if the container is empty. It returns `true` if the container doesn't contain any elements,
+         * and `false` otherwise.
+         *
+         * @return `true` if the container is empty, `false` otherwise.
+         */
         [[nodiscard]] bool empty() const {
             return sugars.empty();
         }
 
-       [[nodiscard]] size_t size() const {
+
+        /**
+         * @brief Returns the size of the adjacency list.
+         *
+         * The size of the adjacency list represents the number of elements stored in it.
+         *
+         * @return The size of the adjacency list as a `size_t` value.
+         */
+        [[nodiscard]] size_t size() const {
             return adjacency_list.size();
         }
 
@@ -93,7 +109,17 @@ namespace Sails {
             adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
         }
 
-        void add_sugar(const std::string &atom, int seqId, Sails::Glycosite& residue) {
+        /**
+         * @brief Adds a sugar molecule to be stored in this glycan.
+         *
+         * The add_sugar method adds a sugar molecule to the collection of sugars. If the sugar molecule with the given seqId
+         * already exists in the collection, it will not be overwritten.
+         *
+         * @param atom The type of atom in the sugar molecule.
+         * @param seqId The sequence ID of the sugar molecule.
+         * @param residue The glycosite of the sugar molecule.
+         */
+        void add_sugar(const std::string &atom, int seqId, Glycosite& residue) {
             if (sugars.find(seqId) != sugars.end()) { // this sugar was already added, don't overwrite
                 return;
             }
@@ -176,7 +202,9 @@ namespace Sails {
          */
         void dfs(Sugar* current_sugar, std::vector<Sugar*>& terminal_sugars);
 
+
         Glycosite glycosite;
+
     private:
         std::map<Sugar*, std::set<Sugar*>> adjacency_list;
         std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope

@@ -14,22 +14,56 @@
 #include "sails-model.h"
 
 namespace Sails::Utils {
+    /**
+     * @brief Retrieves the value of the specified environment variable.
+     *
+     * This function retrieves the value of the specified environment variable identified by the provided key.
+     *
+     * @param key The name of the environment variable to retrieve.
+     *
+     * @return The value of the specified environment variable. If the environment variable is not found,
+     *         an empty string is returned.
+     */
     std::string get_environment_variable(std::string const &key);
 
+    /**
+     *
+     */
     void print_vector(const gemmi::Vec3 &vec);
 
+    /**
+     *
+     */
     void print_position(const gemmi::Position &position);
 
+    /**
+     *
+     */
     std::string format_residue_key(const gemmi::Residue *residue);
 
+    /**
+     *
+     */
     gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
 
+    /**
+     *
+     */
     gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
 
+    /**
+     *
+     */
     gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
 
+    /**
+     *
+     */
     std::string linkage_to_id(const Sails::LinkageData &data);
 
+    /**
+     *
+     */
     void save_residues_to_file(std::vector<gemmi::Residue>& residues, const std::string& path);
 
 } // namespace Sails::Utils

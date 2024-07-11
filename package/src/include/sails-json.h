@@ -28,9 +28,25 @@ namespace Sails {
 
         void init(const std::string &path);
 
-        Sails::ResidueDatabase load_residue_database();
+        /**
+         * @brief Loads the residue database from a JSON file.
+         *
+         * This method loads a JSON file containing residue data and parses it to create a ResidueDatabase object.
+         * It uses the simdjson library for efficient parsing. The path to the JSON file must be specified in the 'm_path' member variable.
+         *
+         * @return The ResidueDatabase object containing the loaded residue data.
+         */
+        ResidueDatabase load_residue_database();
 
-        Sails::LinkageDatabase load_linkage_database();
+        /**
+        * @brief Loads the linkage database from a JSON file.
+        *
+        * This method loads a JSON file containing linkage data and parses it to create a LinkageDatabase object.
+        * It uses the simdjson library for efficient parsing. The path to the JSON file must be specified in the 'm_path' member variable.
+        *
+        * @return The LinkageDatabase object containing the loaded residue data.
+        */
+        LinkageDatabase load_linkage_database();
 
     private:
         /**
@@ -44,13 +60,31 @@ namespace Sails {
          * @param key The key to extract the array of AtomSet objects.
          * @return std::vector<Sails::AtomSet> The vector of extracted AtomSet objects.
          */
-        static std::vector<Sails::AtomSet>
+        static std::vector<AtomSet>
         extract_atom_set(simdjson::simdjson_result<simdjson::ondemand::value> &value, const char *key);
 
+        /**
+         * @brief Extracts angles from a JSON object.
+         *
+         * This method extracts angles from a JSON object using keys "alpha", "beta", and "gamma".
+         *
+         * @param value A simdjson_result<simdjson::ondemand::value> reference to extract angles from.
+         *
+         * @return An AngleSet object containing the extracted angles.
+         */
+        static AngleSet extract_angles(simdjson::simdjson_result<simdjson::ondemand::value> &value);
 
-        static Sails::AngleSet extract_angles(simdjson::simdjson_result<simdjson::ondemand::value> &value);
 
-        static Sails::TorsionSet extract_torsions(simdjson::simdjson_result<simdjson::ondemand::value> &value);
+        /**
+         * @brief Extracts the torsion angles from a JSON value.
+         *
+         * This method extracts angles from a JSON object using the keys "phiMean", "phiStdDev", "psiMean",
+         * "psiStdDev", "omegaMean", and "omegaStdDev", each associated with a numerical value.
+         *
+         * @param value A simdjson_result<simdjson::ondemand::value> reference to extract torsions from..
+         * @return A TorsionSet object containing the extracted torsion angles.
+         */
+        static TorsionSet extract_torsions(simdjson::simdjson_result<simdjson::ondemand::value> &value);
 
 
     private:
