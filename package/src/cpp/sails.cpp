@@ -34,7 +34,7 @@ void run() {
 
         // find terminal sugars
         auto residue = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
-        auto new_glycan = model.extend(glycan, residue.seqid.num.value);
+        Sails::Glycan new_glycan = model.extend(glycan, residue.seqid.num.value);
     }
 
 }
