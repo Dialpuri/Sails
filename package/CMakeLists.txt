@@ -77,6 +77,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-glycan.cpp
         ${WRK_DIR}/src/cpp/sails-linkage.cpp
         ${WRK_DIR}/src/cpp/sails-utils.cpp
+        ${WRK_DIR}/src/cpp/sails-density.cpp
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
