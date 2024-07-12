@@ -13,6 +13,7 @@
 #include "gemmi/it92.hpp"
 
 namespace Sails {
+	struct SuperpositionResult; // forward declaration from sails-linkage
 
 	enum DensityScoreMethod {
 		atomwise, rscc, rsr
@@ -26,7 +27,7 @@ namespace Sails {
 
 		double score_residue(gemmi::Residue &residue, const DensityScoreMethod &method = atomwise);
 
-	private:
+	// private:
 
 		/**
 		 * @brief Transforms F and Phi values from an MTZ file into a grid map.
@@ -55,9 +56,13 @@ namespace Sails {
 		 */
 		[[nodiscard]] float atomwise_score(const gemmi::Residue& residue) const;
 
-		void calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box);
+		gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue);
 
 		float rscc_score(gemmi::Residue &residue);
+
+		float calculate_rscc(std::vector<float> obs_values, std::vector<float> calc_values);
+
+		float rscc_score(SuperpositionResult& result);
 
 		float rsr_score(gemmi::Residue &residue);
 
@@ -72,6 +77,8 @@ namespace Sails {
 		gemmi::DensityCalculator<gemmi::IT92<float>, float > density_calculator;
 		gemmi::Grid<> m_grid{};
 		gemmi::Mtz m_mtz;
+
+		std::map<std::string, gemmi::Grid<>> calculated_maps;
 	};
 
 }// namespace Sails
