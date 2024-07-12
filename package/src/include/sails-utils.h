@@ -5,8 +5,8 @@
 #ifndef SAILS_SAILS_UTILS_H
 #define SAILS_SAILS_UTILS_H
 
+#include <iostream>
 #include <fstream>
-
 #include "gemmi/math.hpp"
 #include "gemmi/model.hpp"
 
@@ -123,6 +123,18 @@ namespace Sails::Utils {
      * @note The file path must be valid and accessible for writing. If the file already exists, it will be overwritten.
      */
     void save_residues_to_file(std::vector<gemmi::Residue>& residues, const std::string& path);
+
+
+    /**
+     * @brief Saves a grid to a file in CCP4 format.
+     *
+     * This function saves the given grid to a file in CCP4 format. The grid is defined by the provided
+     * gemmi::Grid<> object and the file path is specified using the std::string path parameter.
+     *
+     * @param grid The grid object to save to file.
+     * @param path The path to the file where the grid will be saved.
+     */
+    void save_grid_to_file(const gemmi::Grid<>& grid, const std::string& path);
 
 } // namespace Sails::Utils
 

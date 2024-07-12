@@ -4,6 +4,7 @@
 
 #include "../include/sails-utils.h"
 
+#include <gemmi/ccp4.hpp>
 #include <gemmi/to_pdb.hpp>
 
 std::string Sails::Utils::get_environment_variable( std::string const & key )
@@ -55,4 +56,11 @@ void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> &residues, 
     gemmi::write_pdb(structure, file);
     file.close();
 
+}
+
+void Sails::Utils::save_grid_to_file(const gemmi::Grid<> &grid, const std::string &path) {
+    gemmi::Ccp4<> map;
+    map.grid = grid;
+    map.update_ccp4_header();
+    map.write_ccp4_map(path);
 }
