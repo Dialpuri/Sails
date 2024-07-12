@@ -64,6 +64,29 @@ namespace Sails {
 
 
         /**
+         * @brief Returns an iterator to the beginning of the map.
+         *
+         * Returns a constant iterator that points to the first element of the map. This iterator can be used to traverse the map
+         * in a forward direction.
+         *
+         * @return A constant iterator that points to the first element of the map.
+         * @note The map must not be modified while iterating over it using this iterator.
+         */
+        [[nodiscard]] std::map<int, std::unique_ptr<Sugar>>::const_iterator begin() const {return sugars.begin();}
+
+        /**
+         * @brief Returns a iterator to the end of the map.
+         *
+         * Returns a constant iterator that points to the last element of the map. This iterator can be used to
+         * compare with other iterators to check if it has reached the end of the map.
+         *
+         * @return A constant iterator pointing to the end of the map.
+         * @note The map must not be modified while iterating over it using this iterator.
+         */
+        [[nodiscard]] std::map<int, std::unique_ptr<Sugar>>::const_iterator end() const {return sugars.end();}
+
+
+        /**
          * @brief Checks if the container is empty.
          *
          * The `empty` method checks if the container is empty. It returns `true` if the container doesn't contain any elements,
@@ -210,7 +233,7 @@ namespace Sails {
         std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope
 
         gemmi::Structure m_structure;
-        Sails::ResidueDatabase m_database;
+        ResidueDatabase m_database;
     };
 
 
