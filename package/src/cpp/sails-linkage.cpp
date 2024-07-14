@@ -24,7 +24,7 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, int base_seqid, Density &dens
 
         for (auto &data: linkage_database[residue.name]) {
             std::optional<SuperpositionResult> opt_result = add_residue(residue, data, density, true);
-            if (!opt_result.has_value()) { continue; };
+            if (!opt_result.has_value()) { std::cout << "Could not position another sugar" << std::endl; continue; };
 
             SuperpositionResult result = opt_result.value();
             result.new_residue.seqid = gemmi::SeqId(terminal_sugar->seqId + 100, 0);
@@ -132,16 +132,20 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
     SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
 
-    float rscc = density.rscc_score(result);
-    if (rscc < 0.3) {
-        return std::nullopt;
-    }
-
     if (refine) {
         TorsionAngleRefiner refiner = {atoms, reference_atoms, density, result, length};
         SuperpositionResult final_result = refiner.refine(angles, torsions);
         return final_result;
     }
+
+    float rscc = density.rscc_score(result);
+    std::cout << "RSCC = " << rscc << std::endl;
+    if (rscc < 0.3) {
+        std::cout << "RSCC is less than 0.3" << std::endl;
+        return std::nullopt;
+    }
+
+
     return result;
 }
 

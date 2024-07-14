@@ -66,6 +66,8 @@ namespace Sails {
         void remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue& reference_library_monomer,
                                  gemmi::Residue& new_monomer);
 
+        [[nodiscard]] gemmi::Structure get_structure() const {return structure;}
+
     private:
         /**
          * Retrieves the monomer with the given name from the monomer library.
