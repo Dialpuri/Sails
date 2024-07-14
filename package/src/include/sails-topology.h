@@ -25,6 +25,7 @@ namespace Sails {
      * @param database The residue database which contains information about expected atom donors and acceptors.
      */
     struct Topology {
+
         Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database);
 
         /**
@@ -38,7 +39,15 @@ namespace Sails {
          */
         Glycan find_glycan_topology(Sails::Glycosite &glycosite);
 
+        void set_structure(gemmi::Structure& structure) {
+            m_structure = structure;
+            initialise_neighbour_search(structure);
+        }
+
     private:
+
+        void initialise_neighbour_search(gemmi::Structure &structure);
+
 
         /**
          * @brief Find nearby residue near a donor atom.

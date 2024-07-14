@@ -5,16 +5,19 @@
 #include "../include/sails-topology.h"
 
 
-Sails::Topology::Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database) {
-    m_structure = structure;
-    m_database = database;
-
+void Sails::Topology::initialise_neighbour_search(gemmi::Structure &structure) {
     constexpr double search_radius = 2;
     gemmi::NeighborSearch neighbor_search = {structure.models[0], structure.cell, search_radius};
     neighbor_search.populate(false);
     m_neighbor_search = neighbor_search;
 }
 
+Sails::Topology::Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database) {
+    m_structure = structure;
+    m_database = database;
+
+    initialise_neighbour_search(structure);
+}
 
 void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails::Glycan &glycan, std::queue<Glycosite> &queue) {
 
@@ -34,7 +37,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
             auto near_atoms = m_neighbor_search.find_atoms(donor_atom.pos, '\0', 0.0, search_radius);
 
             // no atoms are near here, continue to the next donor atom
-            if (near_atoms.empty()) { continue; }
+            if (near_atoms.empty()) { std::cout << "No atoms nearby\n"; continue; }
 
             double min_distance = UINT16_MAX;
             gemmi::NeighborSearch::Mark *min_atom;
@@ -72,7 +75,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
             // check if the closest atom is a known acceptor
             auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
-            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { continue;};
+            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { std::cout << "Closest atom is not acceptor\n";  continue;};
 
             // Add the sugar, and then linkage
             // This is required to ensure the sugar objects live until the Glycan goes out of scope.
@@ -80,6 +83,7 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
             // sugars are stored with keys which are the seqIds
             glycan.add_linkage(residue.seqid.num.value, closest_bound_residue.seqid.num.value);
+
             queue.push(closest_site);
         }
     }
@@ -95,6 +99,9 @@ Sails::Glycan Sails::Topology::find_glycan_topology(Glycosite &glycosite) {
     while (!to_check.empty()) {
         auto current_site = to_check.front();
         to_check.pop();
+
+        // auto a = Utils::get_residue_from_glycosite(current_site, m_structure);
+        // std::cout << "\tCurrent Sugar " << Utils::format_residue_key(&a) << std::endl;
 
         find_residue_near_donor(current_site, glycan, to_check);
     }
