@@ -155,17 +155,20 @@ namespace Sails {
      */
     struct LinkageData {
         LinkageData(std::string donor, std::string acceptor, const int donor_number, const int acceptor_number,
+                    const double length,
                     const AngleSet &angle_set, const TorsionSet &torsion_set) : donor(std::move(donor)),
-                                                                    acceptor(std::move(acceptor)),
-                                                                    donor_number(donor_number),
-                                                                    acceptor_number(acceptor_number), angles(angle_set),
-                                                                    torsions(torsion_set) {
+            acceptor(std::move(acceptor)),
+            donor_number(donor_number),
+            acceptor_number(acceptor_number), length(length),
+            angles(angle_set),
+            torsions(torsion_set) {
         };
 
         std::string donor;
         std::string acceptor;
         int donor_number;
         int acceptor_number;
+        double length;
         AngleSet angles;
         TorsionSet torsions;
     };
