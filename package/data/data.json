@@ -55,7 +55,7 @@
         {
           "atom1": "C1",
           "atom2": "O5",
-          "atom3": "C1",
+          "atom3": "C5",
           "identifier": 1
         }
       ]
@@ -66,9 +66,9 @@
       "snfgColour": "blue",
       "donorSets": [
         {
-          "atom3": "O4",
+          "atom1": "C5",
           "atom2": "C4",
-          "atom1": "C3",
+          "atom3": "O4",
           "identifier": 4
         }
       ],
@@ -87,9 +87,9 @@
       "snfgColour": "white",
       "donorSets": [
         {
-          "atom3": "ND2",
-          "atom2": "CG",
           "atom1": "CB",
+          "atom2": "CG",
+          "atom3": "ND2",
           "identifier": 2
         }
       ],
@@ -102,18 +102,39 @@
       "acceptorResidue": "NAG",
       "donorNumber": 2,
       "acceptorNumber": 1,
+      "length": 1.4,
       "angles": {
-        "alpha": 180.0,
-        "beta": 10.0,
-        "gamma": 10.0
+        "alpha": 120.0,
+        "beta": 105.0,
+        "gamma": 113.0
       },
       "torsions": {
-        "phiMean": 10.0,
-        "phiStdDev": 2.0,
-        "psiMean": 10.0,
-        "psiStdDev": 2.0,
-        "omegaMean": 10.0,
-        "omegaStdDev": 2.0
+        "phiMean": -97.0,
+        "phiStdDev": 14.0,
+        "psiMean": 179.0,
+        "psiStdDev": 22.0,
+        "omegaMean": 178.0,
+        "omegaStdDev": 10.0
+      }
+    },
+    {
+      "donorResidue": "NAG",
+      "acceptorResidue": "NAG",
+      "donorNumber": 4,
+      "acceptorNumber": 1,
+      "length": 1.4,
+      "angles": {
+        "alpha": 113.0,
+        "beta": 110.0,
+        "gamma": 113.0
+      },
+      "torsions": {
+        "phiMean": -80.0,
+        "phiStdDev": 25.0,
+        "psiMean": -127.0,
+        "psiStdDev": 22.0,
+        "omegaMean": 175.0,
+        "omegaStdDev": 0.0
       }
     },
     {
@@ -121,17 +142,58 @@
       "acceptorResidue": "BMA",
       "donorNumber": 4,
       "acceptorNumber": 1,
+      "length": 1.4,
       "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
+        "alpha": 110.0,
+        "beta": 110.0,
         "gamma": 110.0
       },
       "torsions": {
-        "phiMean": 180.0,
-        "phiStdDev": 0.0,
-        "psiMean": -90.0,
-        "psiStdDev": 2.0,
-        "omegaMean": 180.0,
+        "phiMean": -87.0,
+        "phiStdDev": 14.0,
+        "psiMean": -133.0,
+        "psiStdDev": 18.0,
+        "omegaMean": -180.0,
+        "omegaStdDev": 2.0
+      }
+    },
+    {
+      "donorResidue": "BMA",
+      "acceptorResidue": "MAN",
+      "donorNumber": 3,
+      "acceptorNumber": 1,
+      "length": 1.4,
+      "angles": {
+        "alpha": 110.0,
+        "beta": 110.0,
+        "gamma": 110.0
+      },
+      "torsions": {
+        "phiMean": 76.0,
+        "phiStdDev": 18.0,
+        "psiMean": 121.0,
+        "psiStdDev": 23.0,
+        "omegaMean": 60.0,
+        "omegaStdDev": 2.0
+      }
+    },
+    {
+      "donorResidue": "BMA",
+      "acceptorResidue": "MAN",
+      "donorNumber": 6,
+      "acceptorNumber": 1,
+      "length": 1.4,
+      "angles": {
+        "alpha": 110.0,
+        "beta": 110.0,
+        "gamma": 110.0
+      },
+      "torsions": {
+        "phiMean": 72.0,
+        "phiStdDev": 27.0,
+        "psiMean": 168.0,
+        "psiStdDev": 33.0,
+        "omegaMean": 60.0,
         "omegaStdDev": 2.0
       }
     },
@@ -140,6 +202,7 @@
       "acceptorResidue": "MAN",
       "donorNumber": 2,
       "acceptorNumber": 1,
+      "length": 1.4,
       "angles": {
         "alpha": 120.0,
         "beta": 105.0,
@@ -159,6 +222,7 @@
       "acceptorResidue": "MAN",
       "donorNumber": 3,
       "acceptorNumber": 1,
+      "length": 1.4,
       "angles": {
         "alpha": 120.0,
         "beta": 105.0,
@@ -178,6 +242,7 @@
       "acceptorResidue": "MAN",
       "donorNumber": 6,
       "acceptorNumber": 1,
+      "length": 1.4,
       "angles": {
         "alpha": 120.0,
         "beta": 105.0,
