@@ -100,14 +100,14 @@ namespace Sails {
 
 
         /**
-         * @brief Returns the size of the adjacency list.
+         * @brief Returns the size of the sugar list.
          *
-         * The size of the adjacency list represents the number of elements stored in it.
+         * The size of the sugar list represents the number of elements stored in it.
          *
-         * @return The size of the adjacency list as a `size_t` value.
+         * @return The size of the sugar list as a `size_t` value.
          */
         [[nodiscard]] size_t size() const {
-            return adjacency_list.size();
+            return sugars.size();
         }
 
         /**

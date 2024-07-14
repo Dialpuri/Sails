@@ -4,24 +4,30 @@
 
 #include "../include/sails-glycan.h"
 
+#include <src/include/sails-utils.h>
+
 void Sails::Glycan::print_list() {
+    std::cout << "Adjacency List" << std::endl;
     for (const auto &pair: adjacency_list) {
         const Sugar *node = pair.first;
         const std::set<Sugar *> &siblings = pair.second;
 
-        gemmi::Residue r = m_structure.models[node->site.model_idx].chains[node->site.chain_idx].residues[node->site.residue_idx];
+        gemmi::Residue r = m_structure.models[node->site.model_idx].chains[node->site.chain_idx].residues[node->site.
+            residue_idx];
         std::cout << r.name << "-" << r.seqid.str() << "-" << node->atom << ": ";
 
         for (const Sugar *sibling: siblings) {
-            gemmi::Residue r2 = m_structure.models[sibling->site.model_idx].chains[sibling->site.chain_idx].residues[sibling->site.residue_idx];
+            gemmi::Residue r2 = m_structure.models[sibling->site.model_idx].chains[sibling->site.chain_idx].residues[
+                sibling->site.residue_idx];
             std::cout << r2.name << "-" << r2.seqid.str() << "-" << sibling->atom << ", ";
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
 
 void Sails::Glycan::print_sugars() {
-    for (const auto& [index, sugar]: sugars) {
+    for (const auto &[index, sugar]: sugars) {
         std::cout << "Seqid " << index << std::endl;
     }
 }
@@ -32,7 +38,8 @@ std::string Sails::Glycan::get_dot_string() {
     dot += "{\n";
 
     for (const auto &[root, sugar]: sugars) {
-        gemmi::Residue r2 = m_structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site.residue_idx];
+        gemmi::Residue r2 = m_structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site
+            .residue_idx];
         dot += std::to_string(root);
         dot += " [fillcolor=\"";
         dot += m_database[r2.name].snfg_colour;
@@ -74,7 +81,8 @@ void Sails::Glycan::bfs(Sails::Sugar *root) {
         int current_level = level[current_sugar];
 
         for (Sugar *sibling: adjacency_list[current_sugar]) {
-            if (visited.find(sibling) == visited.end()) {  // if we haven't visited this sibling yet
+            if (visited.find(sibling) == visited.end()) {
+                // if we haven't visited this sibling yet
                 to_visit.push(sibling);
                 visited.insert(sibling);
                 level[sibling] = current_level + 1;
@@ -85,8 +93,9 @@ void Sails::Glycan::bfs(Sails::Sugar *root) {
 
 void Sails::Glycan::dfs(Sails::Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars) {
     std::set<Sugar *> &sugar_set = adjacency_list[current_sugar];
-
     if (sugar_set.empty()) {
+        // auto a = Sails::Utils::get_residue_from_glycosite(current_sugar->site, m_structure);
+        // std::cout << "\tCurrent Sugar " << Utils::format_residue_key(&a) << std::endl;
         terminal_sugars.push_back(current_sugar);
     }
 
@@ -96,12 +105,10 @@ void Sails::Glycan::dfs(Sails::Sugar *current_sugar, std::vector<Sugar *> &termi
 }
 
 std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(int root_seq_id) {
-    {
-        if (sugars.find(root_seq_id) == sugars.end()) {
-            throw std::runtime_error("Root SeqId is not valid : " + std::to_string(root_seq_id));
-        }
-        std::vector<Sugar *> terminal_sugars;
-        dfs(sugars[root_seq_id].get(), terminal_sugars);
-        return terminal_sugars;
+    if (sugars.find(root_seq_id) == sugars.end()) {
+        throw std::runtime_error("Root SeqId is not valid : " + std::to_string(root_seq_id));
     }
+    std::vector<Sugar *> terminal_sugars;
+    dfs(sugars[root_seq_id].get(), terminal_sugars);
+    return terminal_sugars;
 }
