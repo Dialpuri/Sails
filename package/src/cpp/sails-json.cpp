@@ -58,6 +58,7 @@ Sails::LinkageDatabase Sails::JSONLoader::load_linkage_database() {
     const char *acceptor_residue_key = "acceptorResidue";
     const char *donor_number_key = "donorNumber";
     const char *acceptor_number_key = "acceptorNumber";
+    const char *length_key = "length";
     const char *angles_key = "angles";
     const char *torsions_key = "torsions";
 
@@ -71,13 +72,15 @@ Sails::LinkageDatabase Sails::JSONLoader::load_linkage_database() {
         auto donor_number = int(value[donor_number_key].get_number().value().get_int64());
         auto acceptor_number = int(value[acceptor_number_key].get_number().value().get_int64());
 
+        auto length = value[length_key].get_number().value().as_double();
+
         auto angles = value[angles_key];
         AngleSet angle_set = extract_angles(angles);
 
         auto torsions = value[torsions_key];
         TorsionSet torsion_set = extract_torsions(torsions);
 
-        LinkageData data = {donor_residue, acceptor_residue, donor_number, acceptor_number, angle_set, torsion_set};
+        LinkageData data = {donor_residue, acceptor_residue, donor_number, acceptor_number, length, angle_set, torsion_set};
         database[donor_residue].emplace_back(data);
     }
 
