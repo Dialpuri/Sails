@@ -4,8 +4,6 @@
 
 #include "../include/sails-utils.h"
 
-#include <gemmi/ccp4.hpp>
-#include <gemmi/to_pdb.hpp>
 
 std::string Sails::Utils::get_environment_variable( std::string const & key )
 {
@@ -13,11 +11,15 @@ std::string Sails::Utils::get_environment_variable( std::string const & key )
     return val == nullptr ? std::string("") : std::string(val);
 }
 
-inline void Sails::Utils::print_vector(const gemmi::Vec3 &vec) {
+void Sails::Utils::print_vector(const gemmi::Vec3 &vec) {
     std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
 }
 
- void Sails::Utils::print_position(const gemmi::Position &position) {
+void Sails::Utils::print_vector(const gemmi::Vec3 &vec, const std::string& name) {
+    std::cout << name << ": (" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
+}
+
+void Sails::Utils::print_position(const gemmi::Position &position) {
     std::cout << "(" << position.x << ", " << position.y << ", " << position.z << ")" << std::endl;
 }
 
@@ -43,7 +45,7 @@ std::string Sails::Utils::linkage_to_id(const Sails::LinkageData &data) {
            data.acceptor;
 }
 
-void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> &residues, const std::string &path) {
+void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, const std::string &path) {
     gemmi::Structure structure;
     gemmi::Model model = gemmi::Model("A");
     gemmi::Chain chain = gemmi::Chain("A");
