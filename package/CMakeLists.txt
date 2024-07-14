@@ -78,6 +78,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-linkage.cpp
         ${WRK_DIR}/src/cpp/sails-utils.cpp
         ${WRK_DIR}/src/cpp/sails-density.cpp
+        ${WRK_DIR}/src/cpp/sails-refine.cpp
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
@@ -117,7 +118,7 @@ target_link_libraries(
         gemmi_cpp
 )
 
-file(GLOB sails_HEADERS ${WRK_DIR}/src/headers/*.h)
+file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
 
 add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
 set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
@@ -155,7 +156,7 @@ target_link_libraries(
         gemmi_cpp
 )
 
-# set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
+ set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
 # install(TARGETS csails
 #         LIBRARY DESTINATION lib
 #         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
