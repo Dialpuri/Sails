@@ -5,26 +5,32 @@
 #ifndef SAILS_SAILS_DENSITY_H
 #define SAILS_SAILS_DENSITY_H
 
-#include "sails-glycan.h"
 #include <gemmi/mtz.hpp>
 #include <gemmi/grid.hpp>
-#include <gemmi/fourier.hpp>
 #include <gemmi/dencalc.hpp>
-#include "gemmi/it92.hpp"
+#include <gemmi/fourier.hpp>
+#include <gemmi/it92.hpp>
+#include <gemmi/calculate.hpp>
+#include <gemmi/ccp4.hpp>
+#include <gemmi/modify.hpp>
+
 
 namespace Sails {
-	struct SuperpositionResult; // forward declaration from sails-linkage
+	struct SuperpositionResult;
 
 	enum DensityScoreMethod {
 		atomwise, rscc, rsr
 	};
 
-
 	class Density {
 	public:
 		explicit Density(const std::string& mtz_path, const std::string& f_col, const std::string& phi_col);
 		explicit Density(gemmi::Mtz& mtz, const std::string& f_col, const std::string& phi_col);
-
+		Density(Density& d) {
+			this->m_mtz = std::move(d.m_mtz);
+			this->m_grid = d.m_grid;
+			this->calculated_maps = d.calculated_maps;
+		};
 		double score_residue(gemmi::Residue &residue, const DensityScoreMethod &method = atomwise);
 
 	// private:
@@ -56,7 +62,7 @@ namespace Sails {
 		 */
 		[[nodiscard]] float atomwise_score(const gemmi::Residue& residue) const;
 
-		gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue);
+		gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue) const;
 
 		float rscc_score(gemmi::Residue &residue);
 
@@ -66,19 +72,15 @@ namespace Sails {
 
 		float rsr_score(gemmi::Residue &residue);
 
-		void initialise_density_calculator() {
-			density_calculator.grid.copy_metadata_from(m_grid);
-			density_calculator.d_min = m_mtz.resolution_high();
-			density_calculator.initialize_grid();
-		}
+		float rsr_score(SuperpositionResult& result);
 
 
-	private:
-		gemmi::DensityCalculator<gemmi::IT92<float>, float > density_calculator;
+
+	// private:
 		gemmi::Grid<> m_grid{};
 		gemmi::Mtz m_mtz;
 
-		std::map<std::string, gemmi::Grid<>> calculated_maps;
+		std::unordered_map<std::string, gemmi::Grid<>> calculated_maps;
 	};
 
 }// namespace Sails
