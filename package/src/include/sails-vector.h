@@ -6,7 +6,9 @@
 #define SAILS_SAILS_VECTOR_H
 
 #include <gemmi/unitcell.hpp>
-#include "gemmi/math.hpp"
+#include <gemmi/math.hpp>
+
+#include "../include/sails-utils.h"
 
 #include <clipper/core/coords.h>
 #include <clipper/core/rotation.h>
@@ -25,6 +27,14 @@ namespace Sails {
      */
     gemmi::Vec3 calculate_projected_point(gemmi::Vec3 &x1, gemmi::Vec3 &x2, gemmi::Vec3 &x3, const double &length,
                                           const double &angle, const double &torsion);
+
+
+    gemmi::Position position_from_angle_and_torsion(const gemmi::Position& x1,
+                                         const gemmi::Position& x2,
+                                         const gemmi::Position& x3,
+                                         double dist,  // |x3-x4|
+                                         double theta, // angle x2-x3-x4
+                                         double tau);
 
 
     /**

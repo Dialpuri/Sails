@@ -13,9 +13,12 @@ gemmi::Vec3 Sails::calculate_projected_point(gemmi::Vec3 &x1, gemmi::Vec3 &x2, g
     const gemmi::Vec3 xc = {(x2-x1).cross(xa).normalized()};
     const gemmi::Vec3 xb = {xa.cross(xc)};
 
-    const double wa = -length * cos(angle);
-    const double wb = -length * sin(angle) * cos(-torsion);
-    const double wc = -length * sin(angle) * sin(-torsion);
+    const double angle_r = angle * (M_PI/180);
+    const double torsion_r = torsion * (M_PI/180);
+
+    const double wa = -length * cos(angle_r);
+    const double wb = -length * sin(angle_r) * cos(-torsion_r);
+    const double wc = -length * sin(angle_r) * sin(-torsion_r);
 
     return x3 + wa*xa + wb*xb + wc*xc;
 }
