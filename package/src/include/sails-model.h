@@ -55,8 +55,10 @@ namespace Sails {
         ResidueData() = default;
 
         ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string snfg_shape,
-                    std::string snfg_colour) : acceptors(acceptors), donors(donors), snfg_shape(std::move(snfg_shape)),
-                                               snfg_colour(std::move(snfg_colour)) {
+                    std::string snfg_colour, std::vector<int> &preferred_depths) : acceptors(acceptors), donors(donors),
+            snfg_shape(std::move(snfg_shape)),
+            snfg_colour(std::move(snfg_colour)),
+            preferred_depths(preferred_depths) {
             for (const auto &acceptor: acceptors) {
                 acceptor_map[acceptor.identifier] = acceptor.get_atom_list();
             }
@@ -72,6 +74,7 @@ namespace Sails {
         std::vector<AtomSet> donors;
         std::string snfg_shape;
         std::string snfg_colour;
+        std::vector<int> preferred_depths;
     };
 
     typedef std::map<std::string, ResidueData> ResidueDatabase;
