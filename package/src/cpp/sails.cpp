@@ -47,7 +47,6 @@ void run() {
 
     Sails::Model model = {structure, linkage_database, residue_database};
 
-
     size_t total = glycosites.size();
     int cycles = 3;
 
@@ -66,11 +65,39 @@ void run() {
             auto residue = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
             Sails::Glycan new_glycan = model.extend(glycan, residue.seqid.num.value, density);
 
+            // set the topology to have the updated structure
             gemmi::Structure current_structure = model.get_structure();
-            topology.set_structure(current_structure); // set the topology to have the updated structure
+            topology.set_structure(current_structure);
+        }
 
-            std::cout << "Old glycan: " << glycan.size() << " New glycan: " << new_glycan.size() << std::endl;
-            break;
+        structure = topology.get_structure(); // update to the latest structure
+
+        // recalculate the map once all sugars have been added
+        // then go back through all the glycans and remove the sugars which are bad
+
+        // MAP RECALCULATION
+
+        // remove erroneous sugars
+        for (auto &glycosite: glycosites) {
+            Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+            if (glycan.empty()) { continue; }
+
+            float rscc_threshold = 0.3;
+            std::vector<Sails::Sugar*> to_remove;
+            for (auto& sugar: glycan) {
+                auto residue = Sails::Utils::get_residue_from_glycosite(sugar.second->site, structure);
+                if (float rscc = density.rscc_score(residue); rscc < rscc_threshold) {
+                    to_remove.emplace_back(sugar.second.get()); // add pointer to
+                }
+            }
+
+            std::vector<Sails::Sugar*> unbuildable_terminals;
+            for (auto& sugar: to_remove) {
+                glycan.remove_sugar(sugar);
+            }
+
+            gemmi::Structure current_structure = glycan.get_structure();
+            topology.set_structure(current_structure); // set the topology to have the updated structure
         }
     }
 
