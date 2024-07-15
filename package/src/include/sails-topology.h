@@ -44,6 +44,17 @@ namespace Sails {
             initialise_neighbour_search(structure);
         }
 
+        /**
+         * @brief Get the structure object.
+         *
+         * This method returns the internal structure object.
+         *
+         * @return The gemmi::Structure object.
+         */
+        [[nodiscard]] gemmi::Structure get_structure() const {
+            return m_structure;
+        }
+
     private:
 
         void initialise_neighbour_search(gemmi::Structure &structure);

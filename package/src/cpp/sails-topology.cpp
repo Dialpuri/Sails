@@ -19,10 +19,10 @@ Sails::Topology::Topology(gemmi::Structure& structure, Sails::ResidueDatabase& d
     initialise_neighbour_search(structure);
 }
 
-void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails::Glycan &glycan, std::queue<Glycosite> &queue) {
+void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glycan, std::queue<Glycosite> &queue) {
 
     double search_radius = 2.5;
-    gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(glycosite, m_structure);
+    gemmi::Residue residue = Utils::get_residue_from_glycosite(glycosite, m_structure);
 
     if (m_database.find(residue.name) == m_database.end()) { throw std::runtime_error("Glycosite is not in database"); }
     auto database_entry = m_database[residue.name];
@@ -75,7 +75,10 @@ void Sails::Topology::find_residue_near_donor(Sails::Glycosite &glycosite, Sails
 
             // check if the closest atom is a known acceptor
             auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
-            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) { std::cout << "Closest atom is not acceptor\n";  continue;};
+            if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) {
+                std::cout << "Closest atom is not acceptor\n";
+                continue;
+            };
 
             // Add the sugar, and then linkage
             // This is required to ensure the sugar objects live until the Glycan goes out of scope.
