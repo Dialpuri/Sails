@@ -91,16 +91,16 @@ void Sails::Glycan::bfs(Sails::Sugar *root) {
     }
 }
 
-void Sails::Glycan::dfs(Sails::Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars) {
+void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth = 0) {
     std::set<Sugar *> &sugar_set = adjacency_list[current_sugar];
     if (sugar_set.empty()) {
-        // auto a = Sails::Utils::get_residue_from_glycosite(current_sugar->site, m_structure);
-        // std::cout << "\tCurrent Sugar " << Utils::format_residue_key(&a) << std::endl;
+        current_sugar->depth = depth;
         terminal_sugars.push_back(current_sugar);
     }
 
     for (Sugar *sugar: sugar_set) {
-        dfs(sugar, terminal_sugars);
+        sugar->depth = depth + 1;
+        dfs(sugar, terminal_sugars, depth + 1);
     }
 }
 

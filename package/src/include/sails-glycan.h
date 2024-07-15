@@ -18,7 +18,6 @@
 #include "sails-model.h"
 
 namespace Sails {
-
     /**
      * @struct Sugar
      * @brief Represents a sugar molecule.
@@ -31,19 +30,27 @@ namespace Sails {
      * @param site The glycosite of the sugar molecule.
      */
     struct Sugar {
-        Sugar(const Sugar& sugar) {
+        Sugar(const Sugar &sugar) {
             atom = sugar.atom;
             seqId = sugar.seqId;
             site = sugar.site;
+            depth = sugar.depth;
         }
-        Sugar(const std::string &atom, int seqId, Glycosite& site ) : atom(atom), seqId(seqId), site(site) {}
+
+        Sugar(const std::string &atom, int seqId, Glycosite &site) : atom(atom), seqId(seqId), site(site) {
+            depth = 0;
+        }
+
+        Sugar(const std::string &atom, int seqId, Glycosite &site, int depth) : atom(atom), seqId(seqId), site(site),
+            depth(depth) {
+        }
 
         std::string atom;
         int seqId{};
         Glycosite site;
+        int depth{};
 
-        bool operator< (const Sugar& rhs) const
-        {
+        bool operator<(const Sugar &rhs) const {
             return seqId < rhs.seqId;
         }
     };
@@ -58,9 +65,11 @@ namespace Sails {
      * and performing depth-first search (DFS) traversal on the glycan structure.
      */
     struct Glycan {
-
         Glycan() = default;
-        Glycan(gemmi::Structure& structure, ResidueDatabase& database, Glycosite& glycosite): m_structure(structure), m_database(database), glycosite(glycosite) {}
+
+        Glycan(gemmi::Structure &structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
+            m_database(database), glycosite(glycosite) {
+        }
 
 
         /**
@@ -72,7 +81,7 @@ namespace Sails {
          * @return A constant iterator that points to the first element of the map.
          * @note The map must not be modified while iterating over it using this iterator.
          */
-        [[nodiscard]] std::map<int, std::unique_ptr<Sugar>>::const_iterator begin() const {return sugars.begin();}
+        [[nodiscard]] std::map<int, std::unique_ptr<Sugar> >::const_iterator begin() const { return sugars.begin(); }
 
         /**
          * @brief Returns a iterator to the end of the map.
@@ -83,7 +92,7 @@ namespace Sails {
          * @return A constant iterator pointing to the end of the map.
          * @note The map must not be modified while iterating over it using this iterator.
          */
-        [[nodiscard]] std::map<int, std::unique_ptr<Sugar>>::const_iterator end() const {return sugars.end();}
+        [[nodiscard]] std::map<int, std::unique_ptr<Sugar> >::const_iterator end() const { return sugars.end(); }
 
 
         /**
@@ -125,9 +134,12 @@ namespace Sails {
 
         */
         void add_linkage(int sugar_1_key, int sugar_2_key) {
-
-            if (sugars.find(sugar_1_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
-            if (sugars.find(sugar_2_key) == sugars.end()) {throw std::runtime_error("Attempted to link a sugar not in the glycan");}
+            if (sugars.find(sugar_1_key) == sugars.end()) {
+                throw std::runtime_error("Attempted to link a sugar not in the glycan");
+            }
+            if (sugars.find(sugar_2_key) == sugars.end()) {
+                throw std::runtime_error("Attempted to link a sugar not in the glycan");
+            }
 
             adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
         }
@@ -142,12 +154,45 @@ namespace Sails {
          * @param seqId The sequence ID of the sugar molecule.
          * @param residue The glycosite of the sugar molecule.
          */
-        void add_sugar(const std::string &atom, int seqId, Glycosite& residue) {
-            if (sugars.find(seqId) != sugars.end()) { // this sugar was already added, don't overwrite
+        void add_sugar(const std::string &atom, int seqId, Glycosite &residue) {
+            if (sugars.find(seqId) != sugars.end()) {
+                // this sugar was already added, don't overwrite
                 return;
             }
 
             sugars[seqId] = std::make_unique<Sugar>(atom, seqId, residue);
+        }
+
+        /**
+         * @fn Sugar* remove_sugar(int seqId, Sugar* sugar)
+         * @brief Remove a sugar molecule from the structure and update the adjacency list.
+         *
+         * The remove_sugar function removes a sugar molecule with the specified sequence ID from the structure and updates the adjacency list accordingly.
+         * It returns a pointer to the sugar molecule that was linked to the removed sugar molecule.
+         *
+         * @param sugar A pointer to the sugar molecule to be removed.
+         * @return A pointer to the sugar molecule that was linked to the removed sugar molecule, or nullptr if no sugar molecule was linked.
+         */
+        Sugar* remove_sugar(Sugar* sugar) {
+
+            // erase residue from structure member
+            const auto residue_ptr = &m_structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
+            residue_ptr->erase(residue_ptr->begin()+sugar->site.residue_idx);
+
+            Sugar* linked_donor = nullptr;
+            // remove from adjacency list
+            for (auto& [donor, acceptor]: adjacency_list) {
+                if (acceptor.find(sugar) != acceptor.end()) {
+                    linked_donor = donor;
+                    acceptor.erase(sugar);
+                }
+            }
+
+            // erase seqid from map -> Sugar* will be released so must be done last
+            sugars.erase(sugar->seqId);
+
+            // return the sugar that was linked (the new terminal sugar)
+            return linked_donor;
         }
 
         /**
@@ -187,7 +232,7 @@ namespace Sails {
          *
          * @param path The path to the dot file to be written.
          */
-        void write_dot_file(const std::string& path);
+        void write_dot_file(const std::string &path);
 
         /**
          * @brief Performs a breadth-first search (BFS) traversal on the glycan structure starting from the specified root sugar.
@@ -201,7 +246,7 @@ namespace Sails {
          *
          * @return void
          */
-        void bfs(Sugar* root);
+        void bfs(Sugar *root);
 
         /**
          * @brief This function retrieves all the terminal sugars in a tree structure starting from the given root sugar.
@@ -214,7 +259,7 @@ namespace Sails {
          *
          * @return A collection of terminal sugars in the tree structure.
          */
-        std::vector<Sugar*> get_terminal_sugars(int root_seq_id);
+        std::vector<Sugar *> get_terminal_sugars(int root_seq_id);
 
         /**
          * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
@@ -222,22 +267,31 @@ namespace Sails {
          *
          * @param current_sugar - The current sugar molecule being visited.
          * @param terminal_sugars - A vector to store the terminal sugar molecules found.
+         * @param depth - The depth of the current search
          */
-        void dfs(Sugar* current_sugar, std::vector<Sugar*>& terminal_sugars);
+        void dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
 
+
+        /**
+         * @brief Get the structure associated with the glycan.
+         *
+         * This method returns the gemmi::Structure object associated with the glycan.
+         *
+         * @return The gemmi::Structure object associated with the glycan.
+         *
+         * @see gemmi::Structure
+         */
+        [[nodiscard]] gemmi::Structure get_structure() const {return m_structure;};
 
         Glycosite glycosite;
 
     private:
-        std::map<Sugar*, std::set<Sugar*>> adjacency_list;
-        std::map<int, std::unique_ptr<Sugar>> sugars; // used to store sugars until Glycan goes out of scope
+        std::map<Sugar *, std::set<Sugar *> > adjacency_list;
+        std::map<int, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
 
         gemmi::Structure m_structure;
         ResidueDatabase m_database;
     };
-
-
-
 }
 
 #endif //SAILS_SAILS_GLYCAN_H
