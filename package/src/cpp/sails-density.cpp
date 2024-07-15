@@ -53,7 +53,7 @@ float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
 }
 
 gemmi::Grid<> Sails::Density::calculate_density_for_box(gemmi::Residue &residue) const {
-    gemmi::DensityCalculator<gemmi::IT92<float>, float > density_calculator;
+    gemmi::DensityCalculator<gemmi::IT92<float>, float> density_calculator;
     density_calculator.grid.copy_metadata_from(m_grid);
     density_calculator.d_min = m_mtz.resolution_high();
     density_calculator.initialize_grid();
@@ -98,6 +98,8 @@ float Sails::Density::calculate_rscc(std::vector<float> obs_values, std::vector<
 
 
 float Sails::Density::rscc_score(gemmi::Residue &residue) {
+    if (residue.atoms.empty()) throw std::runtime_error("Residue is empty during RSCC check");
+
     gemmi::Box<gemmi::Position> box;
     for (auto &atom: residue.atoms) {
         box.extend(atom.pos);
@@ -139,7 +141,7 @@ float Sails::Density::rscc_score(SuperpositionResult &result) {
         gemmi::Grid<> reference = calculate_density_for_box(result.reference_residue);
         calculated_maps[residue.name] = std::move(reference);
     }
-    gemmi::Grid<>* calculated = &calculated_maps[residue.name];
+    gemmi::Grid<> *calculated = &calculated_maps[residue.name];
 
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
@@ -209,7 +211,7 @@ float Sails::Density::rsr_score(SuperpositionResult &result) {
         gemmi::Grid<> reference = calculate_density_for_box(result.reference_residue);
         calculated_maps[residue.name] = std::move(reference);
     }
-    gemmi::Grid<>* calculated = &calculated_maps[residue.name];
+    gemmi::Grid<> *calculated = &calculated_maps[residue.name];
 
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
