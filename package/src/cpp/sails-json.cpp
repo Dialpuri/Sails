@@ -28,19 +28,26 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
     const char *acceptor_set_key = "acceptorSets";
     const char *snfg_shape_key = "snfgShape";
     const char *snfg_colour_key = "snfgColour";
+    const char *preferred_depth_key = "preferredDepths";
 
-    Sails::ResidueDatabase database;
+
+    ResidueDatabase database;
     auto residues = m_doc["residues"];
     for (auto value: residues) {
         std::string name = std::string(value[name_key].get_string().value());
 
-        std::vector<Sails::AtomSet> donor_sets = extract_atom_set(value, donor_set_key);
-        std::vector<Sails::AtomSet> acceptors_sets = extract_atom_set(value, acceptor_set_key);
+        std::vector<AtomSet> donor_sets = extract_atom_set(value, donor_set_key);
+        std::vector<AtomSet> acceptors_sets = extract_atom_set(value, acceptor_set_key);
 
         std::string snfg_shape = std::string(value[snfg_shape_key].get_string().value());
         std::string snfg_colour = std::string(value[snfg_colour_key].get_string().value());
 
-        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour};
+        std::vector<int> preferred_depths;
+        for (auto a: value[preferred_depth_key]) {
+            preferred_depths.emplace_back(static_cast<int>(a.get_int64()));
+        }
+
+        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths};
         database.insert({name, data});
     }
 
