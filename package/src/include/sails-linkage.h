@@ -93,6 +93,8 @@ namespace Sails {
         std::optional<Sails::SuperpositionResult> add_residue(
             const gemmi::Residue &residue, LinkageData &data, Density &density, bool refine);
 
+        void add_sugar_to_structure(const Sugar* terminal_sugar, SuperpositionResult& result);
+
     private:
         gemmi::Structure structure;
         LinkageDatabase linkage_database;

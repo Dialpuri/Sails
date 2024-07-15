@@ -14,26 +14,41 @@ bool Sails::Model::check_entry_in_database(gemmi::Residue residue) {
     return false;
 }
 
+void Sails::Model::add_sugar_to_structure(const Sugar* terminal_sugar, SuperpositionResult &favoured_addition) {
+    favoured_addition.new_residue.seqid = gemmi::SeqId(terminal_sugar->seqId + 100, 0);
+    auto all_residues = &structure.models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
+            .residues;
+    all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
+}
+
 Sails::Glycan Sails::Model::extend(Glycan &glycan, int base_seqid, Density &density) {
     const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_seqid);
 
     for (auto &terminal_sugar: terminal_sugars) {
+
         auto residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
-        // std::cout << "Terminal sugar is " << Utils::format_residue_key(&residue) << std::endl;
+        // std::cout << "Terminal sugar is " << Utils::format_residue_key(&residue) << " with depth = " << terminal_sugar->depth<< std::endl;
         if (check_entry_in_database(residue)) continue;
 
+        // calculate the sugars that can be linked to this terminal sugar
+        std::vector<SuperpositionResult> possible_additions;
         for (auto &data: linkage_database[residue.name]) {
             std::optional<SuperpositionResult> opt_result = add_residue(residue, data, density, true);
-            if (!opt_result.has_value()) { std::cout << "Could not position another sugar" << std::endl; continue; };
-
-            SuperpositionResult result = opt_result.value();
-            result.new_residue.seqid = gemmi::SeqId(terminal_sugar->seqId + 100, 0);
-
-            auto all_residues = &structure.models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
-                    .residues;
-
-            all_residues->insert(all_residues->end(), std::move(result.new_residue));
+            if (!opt_result.has_value()) { continue; };
+            possible_additions.emplace_back(opt_result.value());
         }
+
+        // find the most likely one based on preferred depth
+        SuperpositionResult favoured_addition;
+        for(const auto& addition: possible_additions) {
+            std::vector<int> preferred_depths = residue_database[addition.new_residue.name].preferred_depths;
+            if (std::find(preferred_depths.begin(), preferred_depths.end(), terminal_sugar->depth+1) != preferred_depths.end()) {
+                favoured_addition = addition;
+            }
+        }
+
+        // add the favoured addition to the structure member
+        add_sugar_to_structure(terminal_sugar, favoured_addition);
     }
 
     Topology topology = {structure, residue_database};
@@ -134,17 +149,13 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
     if (refine) {
         TorsionAngleRefiner refiner = {atoms, reference_atoms, density, result, length};
-        SuperpositionResult final_result = refiner.refine(angles, torsions);
-        return final_result;
+        result = refiner.refine(angles, torsions);
     }
 
     float rscc = density.rscc_score(result);
-    std::cout << "RSCC = " << rscc << std::endl;
     if (rscc < 0.3) {
-        std::cout << "RSCC is less than 0.3" << std::endl;
         return std::nullopt;
     }
-
 
     return result;
 }
