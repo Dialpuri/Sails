@@ -4,6 +4,7 @@
       "name":  "MAN",
       "snfgShape": "circle",
       "snfgColour": "green",
+      "preferredDepths": [4],
       "donorSets": [
         {
           "atom3": "O2",
@@ -37,6 +38,7 @@
       "name":  "BMA",
       "snfgShape": "circle",
       "snfgColour": "green",
+      "preferredDepths": [3],
       "donorSets": [
         {
           "atom3": "O6",
@@ -64,6 +66,7 @@
       "name":  "NAG",
       "snfgShape": "square",
       "snfgColour": "blue",
+      "preferredDepths": [1,2],
       "donorSets": [
         {
           "atom1": "C5",
@@ -85,6 +88,7 @@
       "name":  "ASN",
       "snfgShape": "square",
       "snfgColour": "white",
+      "preferredDepths": [0],
       "donorSets": [
         {
           "atom1": "CB",
