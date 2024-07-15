@@ -68,6 +68,19 @@ namespace Sails::Utils {
   */
  std::string format_residue_key(const gemmi::Residue *residue);
 
+
+ /**
+  * @brief Formats the key for a given glycosite.
+  *
+  * This function formats the key for the provided residue by concatenating its the model, chain, residue and atom ids.
+  *
+  * @param glycosite A glycosite
+  *
+  * @return The formatted key for the site.
+  */
+ std::string format_site_key(const Glycosite& glycosite);
+
+
  /**
   * @brief Retrieves the gemmi::Chain object corresponding to a given Glycosite.
   *
