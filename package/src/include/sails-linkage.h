@@ -73,9 +73,10 @@ namespace Sails {
          * Retrieves the monomer with the given name from the monomer library.
          *
          * @param monomer The name of the monomer to retrieve.
+         * @param remove_h
          * @return An optional value that contains the monomer, or an empty optional if the monomer does not exist.
          */
-        std::optional<gemmi::Residue> get_monomer(const std::string& monomer);
+        std::optional<gemmi::Residue> get_monomer(const std::string& monomer, bool remove_h);
 
         /**
          * Performs the translation of a residue based on the given linkage data.
@@ -91,9 +92,11 @@ namespace Sails {
          * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
          */
         std::optional<Sails::SuperpositionResult> add_residue(
-            const gemmi::Residue &residue, LinkageData &data, Density &density, bool refine);
+            gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
 
         void add_sugar_to_structure(const Sugar* terminal_sugar, SuperpositionResult& result);
+
+        static void rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string>& atoms, Density &density);
 
     private:
         gemmi::Structure structure;
