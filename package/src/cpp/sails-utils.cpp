@@ -71,3 +71,10 @@ void Sails::Utils::save_grid_to_file(const gemmi::Grid<> &grid, const std::strin
     map.update_ccp4_header();
     map.write_ccp4_map(path);
 }
+
+void Sails::Utils::save_structure_to_file(const gemmi::Structure &structure, const std::string &path) {
+    std::ofstream of;
+    of.open(path);
+    write_pdb(structure, of);
+    of.close();
+}

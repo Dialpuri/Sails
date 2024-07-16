@@ -160,6 +160,16 @@ namespace Sails::Utils {
   * @param path The path to the file where the grid will be saved.
   */
  void save_grid_to_file(const gemmi::Grid<> &grid, const std::string &path);
+
+ /**
+  * @brief Saves the provided gemmi::Structure object to a file.
+  *
+  * This method saves the provided gemmi::Structure object to a file specified by the given path.
+  *
+  * @param structure The gemmi::Structure object to be saved.
+  * @param path The path of the file where the structure should be saved.
+  */
+ void save_structure_to_file(const gemmi::Structure& structure, const std::string& path);
 } // namespace Sails::Utils
 
 
