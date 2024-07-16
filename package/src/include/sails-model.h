@@ -200,7 +200,23 @@ namespace Sails {
     };
 
     typedef std::vector<Glycosite> Glycosites;
+
+    inline std::optional<Glycosite> find_site(const gemmi::Structure &structure,
+                                              const std::string &chain_name, const std::string &residue_name,
+                                              int seqId) {
+        for (int model_idx = 0; model_idx < structure.models.size(); ++model_idx) {
+            auto &model = structure.models[model_idx];
+            for (int chain_idx = 0; chain_idx < model.chains.size(); ++chain_idx) {
+                auto &chain = model.chains[chain_idx];
+                if (chain.name != chain_name) continue;
+                for (int residue_idx = 0; residue_idx < chain.residues.size(); ++residue_idx) {
+                    if (auto &residue = chain.residues[residue_idx]; residue.name == residue_name && residue.seqid.num.value == seqId) {
+                        return Glycosite(model_idx, chain_idx, residue_idx);
+                    }
+                }
+            }
+        }
+        return std::nullopt;
+    }
 }
-
-
 #endif //SAILS_SAILS_MODEL_H
