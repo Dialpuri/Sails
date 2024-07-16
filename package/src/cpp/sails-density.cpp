@@ -11,16 +11,14 @@
 #include "../include/sails-refine.h"
 
 
-Sails::Density::Density(const std::string &mtz_path, const std::string &f_col, const std::string &phi_col) {
+Sails::Density::Density(const std::string &mtz_path) {
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     m_mtz = std::move(mtz);
-    m_grid = load_grid(m_mtz, f_col, phi_col, false);
     initialise_hkl();
 }
 
-Sails::Density::Density(gemmi::Mtz &mtz, const std::string &f_col, const std::string &phi_col) {
+Sails::Density::Density(gemmi::Mtz &mtz) {
     m_mtz = std::move(mtz);
-    m_grid = load_grid(m_mtz, f_col, phi_col, false);
     initialise_hkl();
 }
 
@@ -70,12 +68,11 @@ void Sails::Density::load_hkl(const std::string &f, const std::string &sig_f) {
     std::vector<clipper::HKL> hkls;
     hkls.reserve(values.v.size());
     std::map<std::vector<int>, std::pair<float, float> > hkl_map = {};
-    for (auto &i: values.v) {
-        std::vector<int> hkl = {i.hkl[0], i.hkl[1], i.hkl[2]};
-        hkls.emplace_back(i.hkl[0], i.hkl[1], i.hkl[2]);
+    for (auto &[hkl, value]: values.v) {
+        hkls.emplace_back(hkl[0], hkl[1], hkl[2]);
         hkl_map.insert({
-            {i.hkl[0], i.hkl[1], i.hkl[2]},
-            std::make_pair(i.value.value, i.value.sigma)
+            {hkl[0], hkl[1], hkl[2]},
+            std::make_pair(value.value, value.sigma)
         });
     }
 
@@ -92,7 +89,7 @@ void Sails::Density::load_hkl(const std::string &f, const std::string &sig_f) {
     }
 }
 
-void Sails::Density::form_atom_list(gemmi::Structure &structure, std::vector<clipper::Atom>& atoms) {
+void Sails::Density::form_atom_list(const gemmi::Structure &structure, std::vector<clipper::Atom>& atoms) {
     for (const auto &model: structure.models) {
         for (const auto &chain: model.chains) {
             for (const auto &residue: chain.residues) {
@@ -134,7 +131,6 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
 
     clipper::SFweight_spline<float> sfw(m_hkl_info.num_reflections(), 20);
     bool success = sfw(fbest, fdiff, phiw, m_fobs, fphic, modeflag);
-    if (success) std::cout << "Sigma-A calculation successful" << std::endl;
     if (!success) throw std::runtime_error("Sigma-A calculation failed");
 
     std::vector<float> recalculated_data;
@@ -174,6 +170,12 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     new_mtz.ensure_asu();
 
     m_mtz = std::move(new_mtz);
+    m_grid = load_grid(m_mtz, "FWT", "PHWT", false);
+    m_difference_grid = load_grid(m_mtz, "DELFWT", "PHDELWT", true);
+}
+
+void Sails::Density::write_mtz(const std::string &path) const {
+    m_mtz.write_to_file(path);
 }
 
 float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
@@ -367,4 +369,38 @@ float Sails::Density::rsr_score(SuperpositionResult &result) {
     return numerator / denominator;
 }
 
+float Sails::Density::difference_density_score(gemmi::Residue &residue) const {
+    gemmi::Box<gemmi::Position> box;
+    for (auto &atom: residue.atoms) {
+        box.extend(atom.pos);
+    }
+
+    const gemmi::Position max = box.maximum;
+    const gemmi::Position min = box.minimum;
+
+    float sum = 0.0f;
+    int points = 0;
+    constexpr double step_size = 0.5;
+    for (double x = min.x; x <= max.x; x += step_size) {
+        for (double y = min.y; y <= max.y; y += step_size) {
+            for (double z = min.z; z <= max.z; z += step_size) {
+                gemmi::Position position = {x, y, z};
+                float value = m_difference_grid.interpolate_value(position);
+                sum += abs(value);
+                points++;
+            }
+        }
+    }
+
+    return sum/points;
+}
+
+float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
+    return score_position(atom.pos);
+}
+
+
+float Sails::Density::score_position(const gemmi::Position &pos) const {
+    return m_grid.interpolate_value(pos);
+}
 
