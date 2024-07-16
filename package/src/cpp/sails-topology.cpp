@@ -44,12 +44,14 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
 
             for (const auto &atom: near_atoms) {
                 // skip if the near atom is on the same residue
-                if (atom->chain_idx == glycosite.chain_idx && atom->residue_idx == glycosite.residue_idx) { continue; }
+                if (atom->chain_idx == glycosite.chain_idx && atom->residue_idx == glycosite.residue_idx) {
+                    continue;
+                }
 
                 gemmi::Residue bound_residue = m_structure.models[glycosite.model_idx].chains[atom->chain_idx].residues[atom->residue_idx];
 
                 // skip if the near atom is on the same seqid (unlikely)
-                if (bound_residue.seqid == residue.seqid) {  continue; }
+                // if (bound_residue.seqid == residue.seqid) {  continue; }
 
                 // skip if the near atom is part of a unknown residue
                 if (m_database.find(bound_residue.name) == m_database.end()) { continue; }
@@ -76,7 +78,13 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
             // check if the closest atom is a known acceptor
             auto is_acceptor = [closest_atom](AtomSet& atom_set) { return atom_set.atom1 == closest_atom.name;};
             if (std::find_if(acceptors.begin(), acceptors.end(), is_acceptor) == acceptors.end()) {
-                std::cout << "Closest atom is not acceptor\n";
+
+                std::cout << "Closest atom to " << Utils::format_residue_key(&residue) << "-" << donor_atom.name <<
+                    " is " << Utils::format_residue_key(&closest_bound_residue) << "-" << closest_atom.name << " which is not in ";
+                for (const auto& a: acceptors) {
+                    std::cout << a.atom1 << ",";
+                }
+                std::cout << std::endl;
                 continue;
             };
 
@@ -103,7 +111,7 @@ Sails::Glycan Sails::Topology::find_glycan_topology(Glycosite &glycosite) {
         auto current_site = to_check.front();
         to_check.pop();
 
-        // auto a = Utils::get_residue_from_glycosite(current_site, m_structure);
+        auto a = Utils::get_residue_from_glycosite(current_site, m_structure);
         // std::cout << "\tCurrent Sugar " << Utils::format_residue_key(&a) << std::endl;
 
         find_residue_near_donor(current_site, glycan, to_check);
