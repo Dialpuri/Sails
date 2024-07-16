@@ -44,6 +44,7 @@ void run() {
 
     const std::string mtz_path = "package/models/5fji/5fji.mtz";
     Sails::Density density = Sails::Density(mtz_path, "FWT", "PHWT");
+    density.load_hkl("FP", "SIGFP");
 
     Sails::Model model = {structure, linkage_database, residue_database};
 
@@ -74,6 +75,7 @@ void run() {
 
         // recalculate the map once all sugars have been added
         // then go back through all the glycans and remove the sugars which are bad
+        density.recalculate_map(structure);
 
         // MAP RECALCULATION
 
