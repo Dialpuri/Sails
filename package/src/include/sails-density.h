@@ -5,6 +5,7 @@
 #ifndef SAILS_SAILS_DENSITY_H
 #define SAILS_SAILS_DENSITY_H
 
+#include <clipper/clipper.h>
 #include <gemmi/mtz.hpp>
 #include <gemmi/grid.hpp>
 #include <gemmi/dencalc.hpp>
@@ -17,6 +18,7 @@
 
 namespace Sails {
 	struct SuperpositionResult;
+	typedef clipper::HKL_info::HKL_reference_index HRI;
 
 	enum DensityScoreMethod {
 		atomwise, rscc, rsr
@@ -31,6 +33,17 @@ namespace Sails {
 			this->m_grid = d.m_grid;
 			this->calculated_maps = d.calculated_maps;
 		};
+
+		/**
+		 * @brief Scores a residue based on the specified density score method.
+		 *
+		 * This method takes a gemmi::Residue object and scores it based on the specified density score method.
+		 *
+		 * @param residue The gemmi::Residue object to be scored.
+		 * @param method The density score method to be used. Default value is atomwise.
+		 *
+		 * @return The score of the residue based on the specified density score method.
+		 */
 		double score_residue(gemmi::Residue &residue, const DensityScoreMethod &method = atomwise);
 
 	// private:
@@ -48,6 +61,15 @@ namespace Sails {
 		 */
 		gemmi::Grid<> load_grid(const gemmi::Mtz &mtz, const std::string& f_col,
 		                                            const std::string& phi_col, bool normalise);
+
+
+		void initialise_hkl();
+
+		void load_hkl(const std::string& f, const std::string& sig_f);
+
+		static void form_atom_list(gemmi::Structure &structure, std::vector<clipper::Atom>& atoms);
+
+		void recalculate_map(gemmi::Structure &structure);
 
 
 		/**
@@ -81,6 +103,14 @@ namespace Sails {
 		gemmi::Mtz m_mtz;
 
 		std::unordered_map<std::string, gemmi::Grid<>> calculated_maps;
+
+		// clipper HKL - initialised in initialise_hkl
+		clipper::Spacegroup m_spacegroup;
+		clipper::Resolution m_resolution;
+		clipper::Cell m_cell;
+		clipper::HKL_info m_hkl_info;
+		clipper::Grid_sampling m_grid_sampling;
+		clipper::HKL_data<clipper::data32::F_sigF> m_fobs; // initialsised in load_hkl
 	};
 
 }// namespace Sails

@@ -3,6 +3,11 @@
 //
 
 #include "../include/sails-density.h"
+
+#include <clipper/contrib/edcalc.h>
+#include <clipper/contrib/sfweight.h>
+#include <clipper/minimol/minimol.h>
+
 #include "../include/sails-refine.h"
 
 
@@ -10,11 +15,13 @@ Sails::Density::Density(const std::string &mtz_path, const std::string &f_col, c
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     m_mtz = std::move(mtz);
     m_grid = load_grid(m_mtz, f_col, phi_col, false);
+    initialise_hkl();
 }
 
 Sails::Density::Density(gemmi::Mtz &mtz, const std::string &f_col, const std::string &phi_col) {
     m_mtz = std::move(mtz);
     m_grid = load_grid(m_mtz, f_col, phi_col, false);
+    initialise_hkl();
 }
 
 double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScoreMethod &method) {
@@ -43,6 +50,130 @@ gemmi::Grid<> Sails::Density::load_grid(const gemmi::Mtz &mtz, const std::string
     if (normalise) grid.normalize();
 
     return grid;
+}
+
+void Sails::Density::initialise_hkl() {
+    m_resolution = clipper::Resolution(m_mtz.resolution_high());
+    const gemmi::UnitCell *cell = &m_mtz.cell;
+    m_cell = clipper::Cell(clipper::Cell_descr(
+        cell->a, cell->b, cell->c, cell->alpha, cell->beta, cell->gamma
+    ));
+    m_spacegroup = clipper::Spacegroup(clipper::Spgr_descr(m_mtz.spacegroup_name));
+    m_hkl_info = {m_spacegroup, m_cell, m_resolution, true};
+    m_grid_sampling = {m_spacegroup, m_cell, m_resolution};
+}
+
+void Sails::Density::load_hkl(const std::string &f, const std::string &sig_f) {
+    gemmi::AsuData<gemmi::ValueSigma<float> > values = gemmi::make_asu_data<gemmi::ValueSigma<float>, 2>(
+        m_mtz, {f, sig_f}, false);
+
+    std::vector<clipper::HKL> hkls;
+    hkls.reserve(values.v.size());
+    std::map<std::vector<int>, std::pair<float, float> > hkl_map = {};
+    for (auto &i: values.v) {
+        std::vector<int> hkl = {i.hkl[0], i.hkl[1], i.hkl[2]};
+        hkls.emplace_back(i.hkl[0], i.hkl[1], i.hkl[2]);
+        hkl_map.insert({
+            {i.hkl[0], i.hkl[1], i.hkl[2]},
+            std::make_pair(i.value.value, i.value.sigma)
+        });
+    }
+
+    m_hkl_info.add_hkl_list(hkls);
+
+    m_fobs = clipper::HKL_data<clipper::data32::F_sigF>(m_hkl_info);
+
+    for (HRI ih = m_fobs.first(); !ih.last(); ih.next()) {
+        clipper::HKL hkl = ih.hkl();
+        const auto key = {hkl.h(), hkl.k(), hkl.l()};
+        auto [f, sigf] = hkl_map[key];
+        const clipper::data32::F_sigF fphi = {f, sigf};
+        m_fobs[ih] = fphi;
+    }
+}
+
+void Sails::Density::form_atom_list(gemmi::Structure &structure, std::vector<clipper::Atom>& atoms) {
+    for (const auto &model: structure.models) {
+        for (const auto &chain: model.chains) {
+            for (const auto &residue: chain.residues) {
+                for (const auto &atom: residue.atoms) {
+                    gemmi::Position pos = atom.pos;
+                    clipper::Atom clipper_atom;
+                    clipper_atom.set_element(clipper::String(atom.element.name()));
+                    clipper_atom.set_coord_orth(clipper::Coord_orth(pos.x, pos.y, pos.z));
+                    clipper_atom.set_occupancy(atom.occ);
+                    clipper_atom.set_u_iso(clipper::Util::b2u(atom.b_iso));
+                    atoms.emplace_back(clipper::MAtom(clipper_atom));
+                }
+            }
+        }
+    }
+}
+
+void Sails::Density::recalculate_map(gemmi::Structure &structure) {
+    std::vector<clipper::Atom> atoms;
+    form_atom_list(structure, atoms);
+
+    clipper::Xmap<float> calculated_map = {m_spacegroup, m_cell, m_grid_sampling};
+    clipper::EDcalc_iso<float> ed_calc = {m_resolution.limit()};
+    clipper::HKL_data<clipper::data32::F_phi> fphic(m_hkl_info);
+
+    ed_calc(calculated_map, atoms);
+    calculated_map.fft_to(fphic);
+
+    clipper::HKL_data<clipper::data32::Flag> modeflag(m_fobs);
+    for (HRI ih = modeflag.first(); !ih.last(); ih.next())
+        if (!m_fobs[ih].missing())
+            modeflag[ih].flag() = clipper::SFweight_spline<float>::BOTH;
+        else
+            modeflag[ih].flag() = clipper::SFweight_spline<float>::NONE;
+
+    clipper::HKL_data<clipper::data32::F_phi> fdiff(m_fobs);
+    clipper::HKL_data<clipper::data32::F_phi> fbest(m_fobs);
+    clipper::HKL_data<clipper::data32::Phi_fom> phiw(m_fobs);
+
+    clipper::SFweight_spline<float> sfw(m_hkl_info.num_reflections(), 20);
+    bool success = sfw(fbest, fdiff, phiw, m_fobs, fphic, modeflag);
+    if (success) std::cout << "Sigma-A calculation successful" << std::endl;
+    if (!success) throw std::runtime_error("Sigma-A calculation failed");
+
+    std::vector<float> recalculated_data;
+    int num_columns = 6;
+    recalculated_data.reserve(fdiff.data_size() * num_columns);
+    for (HRI ih = m_fobs.first(); !ih.last(); ih.next() ) {
+        clipper::HKL hkl = ih.hkl();
+        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue;} // Don't include the 0,0,0 reflection
+
+        clipper::datatypes::F_phi<float> fbest_reflection = fbest[ih];
+        clipper::datatypes::F_phi<float> fdiff_reflection = fdiff[ih];
+        clipper::datatypes::F_sigF<float> fobs_reflection = m_fobs[ih];
+
+        recalculated_data.emplace_back(hkl.h());
+        recalculated_data.emplace_back(hkl.k());
+        recalculated_data.emplace_back(hkl.l());
+        recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.f()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.sigf()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.f()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.phi()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.f()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.phi()));
+    }
+
+    gemmi::Mtz new_mtz;
+    new_mtz.set_cell_for_all(m_mtz.cell);
+    new_mtz.set_spacegroup(m_mtz.spacegroup);
+    new_mtz.add_dataset("SAILS");
+    new_mtz.add_base();
+    new_mtz.add_column("FP", 'F', -1, -1, true);
+    new_mtz.add_column("SIGFP", 'Q', -1, -1, true);
+    new_mtz.add_column("FWT", 'F', -1, -1, true);
+    new_mtz.add_column("PHWT", 'P', -1, -1, true);
+    new_mtz.add_column("DELFWT", 'F', -1, -1, true);
+    new_mtz.add_column("PHDELWT", 'P', -1, -1, true);;
+    new_mtz.set_data(recalculated_data.data(), recalculated_data.size());
+    new_mtz.ensure_asu();
+
+    m_mtz = std::move(new_mtz);
 }
 
 float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {

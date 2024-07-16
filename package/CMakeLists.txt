@@ -32,6 +32,8 @@ if (NOT SKBUILD)
   after editing C++ files.")
 endif()
 
+find_package(ZLIB REQUIRED)
+
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_subdirectory(${WRK_DIR}/clipper/minimol)
@@ -154,6 +156,7 @@ target_link_libraries(
         ccp4
         mmdb2
         gemmi_cpp
+        ZLIB::ZLIB
 )
 
  set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
@@ -229,6 +232,8 @@ target_link_libraries(
         ccp4
         mmdb2
         gemmi_cpp
+        ZLIB::ZLIB
+
 )
 
 
