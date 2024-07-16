@@ -108,6 +108,20 @@ namespace Sails::Utils {
  gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
 
  /**
+ * @brief Retrieves the gemmi::Residue pointer corresponding to a given Glycosite.
+ *
+ * This function retrieves the gemmi::Residue pointer that represents the residue of the
+ * provided Glycosite within the specified gemmi::Structure.
+ *
+ * @param site The glycosite object containing the model, chain, and residue indices.
+ * @param structure The structure object from which to retrieve the residue.
+ *
+ * @return The gemmi::Residue pointer from the specified glycosite.
+ */
+ gemmi::Residue* get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure &structure);
+
+
+ /**
   * @brief Retrieves the gemmi::Atom from the specified glycosite.
   *
   * This function retrieves the gemmi::Atom object that represents the atom of the

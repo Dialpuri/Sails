@@ -2,6 +2,8 @@
 // Created by Jordan Dialpuri on 08/07/2024.
 //
 
+#include <utility>
+
 #include "../include/sails-utils.h"
 
 
@@ -41,6 +43,11 @@ gemmi::Residue Sails::Utils::get_residue_from_glycosite(const Glycosite &site, c
     return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
 }
 
+gemmi::Residue *Sails::Utils::
+get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure &structure) {
+    return &structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
+}
+
 gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure &structure) {
     if (site.atom_idx == -1) { throw std::runtime_error("Site has not been initialised from a Mark"); }
     return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
@@ -55,7 +62,7 @@ void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, c
     gemmi::Structure structure;
     gemmi::Model model = gemmi::Model("A");
     gemmi::Chain chain = gemmi::Chain("A");
-    chain.append_residues(residues);
+    chain.append_residues(std::move(residues));
     model.chains = {chain};
     structure.models = {model};
 
