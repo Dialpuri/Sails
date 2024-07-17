@@ -28,7 +28,7 @@ namespace Sails {
             double length
             ) : m_all_atoms(atoms),
             m_reference_atoms(reference_atoms),
-            m_density(density),
+            m_density(&density),
             m_reference_residue(superposition_result.reference_residue),
             m_length(length){}
 
@@ -41,7 +41,7 @@ namespace Sails {
         double m_length;
         std::vector<gemmi::Atom *> m_all_atoms;
         std::vector<gemmi::Atom> m_reference_atoms;
-        Density m_density;
+        Density* m_density;
         gemmi::Residue m_reference_residue;
     };
 };

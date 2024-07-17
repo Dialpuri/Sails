@@ -15,7 +15,7 @@ double Sails::TorsionAngleRefiner::score_function(std::vector<double> &all_angle
     gemmi::transform_pos_and_adp(residue, superpose_result);
     SuperpositionResult result = {residue, superpose_result, m_reference_residue};
     // return -m_density.rscc_score(result);
-    return -m_density.atomwise_score(residue);
+    return -m_density->atomwise_score(residue);
 }
 
 Sails::SuperpositionResult Sails::TorsionAngleRefiner::refine(
