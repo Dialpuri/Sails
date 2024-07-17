@@ -38,7 +38,7 @@ namespace Sails {
 
     struct Model {
         Model() = default;
-        Model(gemmi::Structure &structure, LinkageDatabase &linkage_database, ResidueDatabase &residue_database)
+        Model(gemmi::Structure* structure, LinkageDatabase &linkage_database, ResidueDatabase &residue_database)
                 : structure(structure), linkage_database(linkage_database), residue_database(residue_database) {
             monomer_library_path = Utils::get_environment_variable("CLIBD") + "/monomers";
         }
@@ -49,11 +49,11 @@ namespace Sails {
          * Extends the given glycan by adding new sugars based on the linkage database.
          *
          * @param glycan The glycan to be extended.
-         * @param base_seqid The base sequence ID to determine terminal sugars.
+         * @param base_glycosite The base sequence ID to determine terminal sugars.
          * @param density The density class used to score residues into experimental data.
          * @return The extended glycan.
          */
-        Glycan extend(Glycan &glycan, int base_seqid, Density& density);
+        Glycan extend(Glycan &glycan, Glycosite &base_glycosite, Density& density);
 
         static void move_acceptor_atomic_positions(std::vector<gemmi::Atom *>& atoms, double length,
                                                    std::vector<double>& angles, std::vector<double>& torsions);
@@ -66,7 +66,7 @@ namespace Sails {
         void remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue& reference_library_monomer,
                                  gemmi::Residue& new_monomer);
 
-        [[nodiscard]] gemmi::Structure get_structure() const {return structure;}
+        [[nodiscard]] gemmi::Structure* get_structure() const {return structure;}
 
     private:
         /**
@@ -99,7 +99,7 @@ namespace Sails {
         static void rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string>& atoms, Density &density);
 
     private:
-        gemmi::Structure structure;
+        gemmi::Structure* structure{};
         LinkageDatabase linkage_database;
         ResidueDatabase residue_database;
         std::string monomer_library_path;

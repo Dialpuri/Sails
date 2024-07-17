@@ -16,7 +16,7 @@ bool Sails::Model::check_entry_in_database(gemmi::Residue residue) {
 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition) {
     favoured_addition.new_residue.seqid = gemmi::SeqId(terminal_sugar->seqId + 1000, 0);
-    auto all_residues = &structure.models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
+    auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
             .residues;
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }
@@ -28,7 +28,7 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     gemmi::Atom a2 = *std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
         return a.name == atoms[1];
     });
-    gemmi::Atom* a3 = &(*std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
+    gemmi::Atom *a3 = &(*std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
         return a.name == atoms[2];
     }));
 
@@ -66,40 +66,50 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     a3->pos = best_pos;
 }
 
-Sails::Glycan Sails::Model::extend(Glycan &glycan, int base_seqid, Density &density) {
-    const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_seqid);
+Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density) {
+    const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
 
     for (auto &terminal_sugar: terminal_sugars) {
         gemmi::Residue residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
         gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
 
-        // std::cout << "Terminal sugar is " << Utils::format_residue_key(&residue) << " with depth = " << terminal_sugar->depth<< std::endl;
+        std::cout << "Terminal sugar is " << Utils::format_residue_key(&residue) << " with depth = " << terminal_sugar->depth<< std::endl;
         if (check_entry_in_database(residue)) continue;
 
         // calculate the sugars that can be linked to this terminal sugar
-        std::vector<SuperpositionResult> possible_additions;
+        std::map<int, std::vector<SuperpositionResult> > possible_additions;
         for (auto &data: linkage_database[residue.name]) {
-            // std::cout << "Attempting to add " << data.donor_number << "," << data.acceptor_number << std::endl;
+            std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-"
+                    << data.donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
             std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
-            if (!opt_result.has_value()) { continue; };
-            possible_additions.emplace_back(opt_result.value());
+            if (!opt_result.has_value()) { std::cout << " rejected" << std::endl; continue; };
+            possible_additions[data.donor_number].emplace_back(opt_result.value());
+            float rscc = density.rscc_score(opt_result.value());
+            std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC\t" << rscc << std::endl;
         }
 
-        // find the most likely one based on preferred depth
-        SuperpositionResult favoured_addition;
-        for (const auto &addition: possible_additions) {
-            std::vector<int> preferred_depths = residue_database[addition.new_residue.name].preferred_depths;
-            if (std::find(preferred_depths.begin(), preferred_depths.end(), terminal_sugar->depth + 1) !=
-                preferred_depths.end()) {
-                favoured_addition = addition;
+        if (possible_additions.empty()) { continue; }
+
+        // find the most likely one for each donor atom  based on preferred depth
+        std::vector<SuperpositionResult> favoured_additions;
+        for (const auto &[donor, possible_additions]: possible_additions) {
+            for (const auto &addition: possible_additions) {
+                std::vector<int> preferred_depths = residue_database[addition.new_residue.name].preferred_depths;
+                if (std::find(preferred_depths.begin(), preferred_depths.end(), terminal_sugar->depth + 1) !=
+                    preferred_depths.end()) {
+                    favoured_additions.emplace_back(addition);
+                }
             }
         }
 
+        for (auto &addition: favoured_additions) {
+            // std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
+                    // Utils::format_residue_key(&residue) << std::endl;
+            add_sugar_to_structure(terminal_sugar, addition);
+        }
         // add the favoured addition to the structure member
-        std::cout << "Adding " << Utils::format_residue_key(&favoured_addition.new_residue) << " to " <<
-                Utils::format_residue_key(&residue) << std::endl;
-        add_sugar_to_structure(terminal_sugar, favoured_addition);
     }
+
 
     Topology topology = {structure, residue_database};
     return topology.find_glycan_topology(glycan.glycosite);
@@ -134,7 +144,7 @@ gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom *> &atoms
 void Sails::Model::save_pdb(const std::string &path) {
     std::ofstream of;
     of.open(path);
-    write_pdb(structure, of);
+    write_pdb(*structure, of);
     of.close();
 }
 
@@ -168,7 +178,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     // find donor atoms and add them to atoms list
     auto donor_atoms = donor_residue.donor_map[data.donor_number];
 
-    if (const std::string x = donor_atoms[2]; x == "O6") { // if the donor is an exocyclic atom, rotate the bond
+    if (const std::string x = donor_atoms[2]; x == "O6") {
+        // if the donor is an exocyclic atom, rotate the bond
         rotate_exocyclic_atoms(residue, donor_atoms, density);
     }
 
@@ -203,16 +214,18 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
     SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
 
+    // if (atoms[2]->name == "O3" && atoms[3]->name == "C1" && atoms[4]->name == "O5" && atoms[5]->name == "C5") {
+    //     return result;
+    // }
     if (refine) {
         TorsionAngleRefiner refiner = {atoms, reference_atoms, density, result, length};
         result = refiner.refine(angles, torsions);
     }
 
     float rscc = density.rscc_score(result);
-    std::cout << "RSCC\t" << Utils::format_residue_key(&result.new_residue) << "\t" << rscc << std::endl;
-    // if (rscc < 0.2) {
-    //     return std::nullopt;
-    // }
+    if (rscc < 0.2) {
+        return std::nullopt;
+    }
 
     // std::cout << "Extending " << Utils::format_residue_key(&residue) << " added " << Utils::format_residue_key(&result.new_residue) << std::endl;
 
