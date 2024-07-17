@@ -26,7 +26,7 @@ namespace Sails {
      */
     struct Topology {
 
-        Topology(gemmi::Structure& structure, Sails::ResidueDatabase& database);
+        Topology(gemmi::Structure* structure, Sails::ResidueDatabase& database);
 
         /**
          * @brief Find the glycan topology in a given glycosite
@@ -39,7 +39,7 @@ namespace Sails {
          */
         Glycan find_glycan_topology(Sails::Glycosite &glycosite);
 
-        void set_structure(gemmi::Structure& structure) {
+        void set_structure(gemmi::Structure* structure) {
             m_structure = structure;
             initialise_neighbour_search(structure);
         }
@@ -52,12 +52,12 @@ namespace Sails {
          * @return The gemmi::Structure object.
          */
         [[nodiscard]] gemmi::Structure get_structure() const {
-            return m_structure;
+            return *m_structure;
         }
 
     private:
 
-        void initialise_neighbour_search(gemmi::Structure &structure);
+        void initialise_neighbour_search(gemmi::Structure* structure);
 
 
         /**
@@ -74,7 +74,7 @@ namespace Sails {
         void find_residue_near_donor(Sails::Glycosite &glycosite,  Sails::Glycan &glycan, std::queue<Glycosite> &queue);
 
     private:
-        gemmi::Structure m_structure;
+        gemmi::Structure* m_structure;
         ResidueDatabase m_database;
         gemmi::NeighborSearch m_neighbor_search;
 
