@@ -193,6 +193,12 @@ namespace Sails {
             residue_idx(residue_idx) {
         }
 
+        // for set operations
+        bool operator<(const Glycosite &other) const {
+            return std::tie(model_idx, chain_idx, residue_idx, atom_idx) < std::tie(
+                       other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
+        }
+
         int model_idx{};
         int chain_idx{};
         int residue_idx{};
@@ -210,7 +216,8 @@ namespace Sails {
                 auto &chain = model.chains[chain_idx];
                 if (chain.name != chain_name) continue;
                 for (int residue_idx = 0; residue_idx < chain.residues.size(); ++residue_idx) {
-                    if (auto &residue = chain.residues[residue_idx]; residue.name == residue_name && residue.seqid.num.value == seqId) {
+                    if (auto &residue = chain.residues[residue_idx];
+                        residue.name == residue_name && residue.seqid.num.value == seqId) {
                         return Glycosite(model_idx, chain_idx, residue_idx);
                     }
                 }
