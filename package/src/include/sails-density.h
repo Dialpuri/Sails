@@ -106,6 +106,16 @@ namespace Sails {
 		void recalculate_map(gemmi::Structure &structure);
 
 		/**
+		* @brief Recalculates the map based on the given structure.
+		*
+		* This method takes a gemmi::Structure object and recalculates the map with a clipper sigma-a calculation.
+		* This function updates the internal mtz, grid and density grid.
+		*
+		* @param structure The gemmi::Structure object for which the map needs to be recalculated.
+		*/
+		void calculate_alt_map(gemmi::Structure &structure);
+
+		/**
 		 * @brief Writes the density data to an MTZ file.
 		 *
 		 * This method writes the density data to an MTZ file at the specified path.
@@ -235,9 +245,10 @@ namespace Sails {
 		[[nodiscard]] float score_position(const gemmi::Position& pos) const;
 
 
-		private:
+		// private:
 		gemmi::Grid<> m_grid{};
 		gemmi::Grid<> m_difference_grid{};
+		gemmi::Grid<> m_alt_grid{};
 
 		gemmi::Mtz m_mtz;
 
@@ -250,6 +261,7 @@ namespace Sails {
 		clipper::HKL_info m_hkl_info;
 		clipper::Grid_sampling m_grid_sampling;
 		clipper::HKL_data<clipper::data32::F_sigF> m_fobs; // initialsised in load_hkl
+		clipper::Xmap<float> m_best_map;
 	};
 } // namespace Sails
 

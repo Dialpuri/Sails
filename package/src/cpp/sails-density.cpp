@@ -133,6 +133,9 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     bool success = sfw(fbest, fdiff, phiw, m_fobs, fphic, modeflag);
     if (!success) throw std::runtime_error("Sigma-A calculation failed");
 
+    m_best_map = {m_spacegroup, m_cell, m_grid_sampling};
+    m_best_map.fft_from(fbest);
+
     std::vector<float> recalculated_data;
     int num_columns = 6;
     recalculated_data.reserve(fdiff.data_size() * num_columns);
@@ -174,6 +177,52 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     m_difference_grid = load_grid(m_mtz, "DELFWT", "PHDELWT", true);
 }
 
+void Sails::Density::calculate_alt_map(gemmi::Structure &structure) {
+    std::vector<clipper::Atom> atoms;
+    form_atom_list(structure, atoms);
+
+    clipper::Xmap<float> calculated_map = {m_spacegroup, m_cell, m_grid_sampling};
+    clipper::EDcalc_iso<float> ed_calc = {m_resolution.limit()};
+    clipper::HKL_data<clipper::data32::F_phi> fphic(m_hkl_info);
+
+    ed_calc(calculated_map, atoms);
+    calculated_map.fft_to(fphic);
+
+    clipper::Xmap<float> new_map = m_best_map;
+    new_map -= calculated_map;
+    clipper::HKL_data<clipper::data32::F_phi> diff(m_fobs);
+    new_map.fft_to(diff);
+
+    std::vector<float> recalculated_data;
+    int num_columns = 5;
+    recalculated_data.reserve(m_fobs.data_size() * num_columns);
+    for (HRI ih = m_fobs.first(); !ih.last(); ih.next() ) {
+        clipper::HKL hkl = ih.hkl();
+        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue;} // Don't include the 0,0,0 reflection
+
+        clipper::datatypes::F_phi<float> diff_reflection = diff[ih];
+
+        recalculated_data.emplace_back(hkl.h());
+        recalculated_data.emplace_back(hkl.k());
+        recalculated_data.emplace_back(hkl.l());
+        recalculated_data.emplace_back(clipper::Util::rad2d(diff_reflection.f()));
+        recalculated_data.emplace_back(clipper::Util::rad2d(diff_reflection.phi()));
+    }
+
+    gemmi::Mtz new_mtz;
+    new_mtz.set_cell_for_all(m_mtz.cell);
+    new_mtz.set_spacegroup(m_mtz.spacegroup);
+    new_mtz.add_dataset("SAILS");
+    new_mtz.add_base();
+    new_mtz.add_column("FDIFFCALC", 'F', -1, -1, true);
+    new_mtz.add_column("PDIFFCALC", 'P', -1, -1, true);;
+    new_mtz.set_data(recalculated_data.data(), recalculated_data.size());
+    new_mtz.ensure_asu();
+
+    m_alt_grid = load_grid(new_mtz, "FDIFFCALC", "PDIFFCALC", false);
+}
+
+
 void Sails::Density::write_mtz(const std::string &path) const {
     m_mtz.write_to_file(path);
 }
@@ -181,7 +230,7 @@ void Sails::Density::write_mtz(const std::string &path) const {
 float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
     return std::transform_reduce(residue.atoms.begin(), residue.atoms.end(), 0.0f, std::plus<>(),
                                  [&](const gemmi::Atom &current_atom) {
-                                     return m_grid.interpolate_value(current_atom.pos);
+                                     return m_alt_grid.interpolate_value(current_atom.pos);
                                  });
 }
 
