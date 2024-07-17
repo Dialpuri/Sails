@@ -38,46 +38,48 @@ void run() {
     // const std::string path = "package/models/5fji/5fji.cif";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
+    gemmi::Structure original_structure = structure;
 
-    Sails::Glycosites glycosites = Sails::find_n_glycosylation_sites(structure);
-    Sails::Topology topology = {structure, residue_database};
+    // Sails::Glycosites glycosites = Sails::find_n_glycosylation_sites(structure);
+
+    auto site = Sails::find_site(structure, "A", "ASN", 323);
+    if (!site.has_value()) throw std::runtime_error("Site not found");
+    Sails::Glycosites glycosites = {site.value()};
+
+    Sails::Topology topology = {&structure, residue_database};
 
     const std::string mtz_path = "package/models/5fji/5fji.mtz";
-    Sails::Density density = Sails::Density(mtz_path, "FWT", "PHWT");
+    Sails::Density density = Sails::Density(mtz_path);
     density.load_hkl("FP", "SIGFP");
+    density.recalculate_map(structure);
+    density.calculate_alt_map(original_structure);
 
-    Sails::Model model = {structure, linkage_database, residue_database};
+    Sails::Model model = {&structure, linkage_database, residue_database};
 
-    size_t total = glycosites.size();
-    int cycles = 3;
+    int cycles = 8;
+    size_t progress_count = 0;
 
-    for (int i = 0; i < cycles; i++) {
+    for (int i = 1; i <= cycles; i++) {
         std::cout << "Cycle #" << i << std::endl;
-        size_t progress_count = 0;
+        // display_progress_bar(cycles, progress_count);
 
         for (auto &glycosite: glycosites) {
             // display the progress bar
-            // display_progress_bar(total, progress_count);
 
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
             if (glycan.empty()) { continue; }
 
             // find terminal sugars
-            auto residue = Sails::Utils::get_residue_from_glycosite(glycosite, structure);
-            Sails::Glycan new_glycan = model.extend(glycan, residue.seqid.num.value, density);
-
-            // set the topology to have the updated structure
-            gemmi::Structure current_structure = model.get_structure();
-            topology.set_structure(current_structure);
+            // auto residue = Sails::Utils::get_residue_from_glycosite(glycosite, &structure);
+            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density);
+            topology.set_structure(model.get_structure());
         }
-
-        structure = topology.get_structure(); // update to the latest structure
 
         // recalculate the map once all sugars have been added
         // then go back through all the glycans and remove the sugars which are bad
-        density.recalculate_map(structure);
-
         // MAP RECALCULATION
+        density.recalculate_map(structure);
+        density.calculate_alt_map(original_structure);
 
         // remove erroneous sugars
         for (auto &glycosite: glycosites) {
@@ -87,10 +89,21 @@ void run() {
             float rscc_threshold = 0.3;
             std::vector<Sails::Sugar*> to_remove;
             for (auto& sugar: glycan) {
-                auto residue = Sails::Utils::get_residue_from_glycosite(sugar.second->site, structure);
+                auto residue = Sails::Utils::get_residue_from_glycosite(sugar.second->site, &structure);
+                if (residue.name == "ASN") { continue;} // don't remove ASN
+
                 if (float rscc = density.rscc_score(residue); rscc < rscc_threshold) {
                     to_remove.emplace_back(sugar.second.get()); // add pointer to
+                    std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << "because of low RSCC" << std::endl;
+                    continue;
                 }
+
+                // cases where sugar is clashing into protein density
+                // if (float diff_score = density.difference_density_score(residue); diff_score > 0.9) {
+                //     std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << "because of high DDS" << std::endl;
+                //     to_remove.emplace_back(sugar.second.get());
+                //     continue;
+                // }
             }
 
             std::vector<Sails::Sugar*> unbuildable_terminals;
@@ -98,12 +111,12 @@ void run() {
                 glycan.remove_sugar(sugar);
             }
 
-            gemmi::Structure current_structure = glycan.get_structure();
-            topology.set_structure(current_structure); // set the topology to have the updated structure
         }
     }
 
     model.save_pdb("structure.pdb");
+    density.write_mtz("reflections.mtz");
+
 }
 
 int main() {
