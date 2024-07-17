@@ -35,22 +35,22 @@ std::string Sails::Utils::format_site_key(const Glycosite &site) {
            std::to_string(site.atom_idx);
 }
 
-gemmi::Chain Sails::Utils::get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure &structure) {
-    return structure.models[site.model_idx].chains[site.chain_idx];
+gemmi::Chain Sails::Utils::get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure* structure) {
+    return structure->models[site.model_idx].chains[site.chain_idx];
 }
 
-gemmi::Residue Sails::Utils::get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure &structure) {
-    return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
+gemmi::Residue Sails::Utils::get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure *structure) {
+    return structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
 }
 
 gemmi::Residue *Sails::Utils::
-get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure &structure) {
-    return &structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
+get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure *structure) {
+    return &structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
 }
 
-gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure &structure) {
+gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure* structure) {
     if (site.atom_idx == -1) { throw std::runtime_error("Site has not been initialised from a Mark"); }
-    return structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
+    return structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
 }
 
 std::string Sails::Utils::linkage_to_id(const Sails::LinkageData &data) {

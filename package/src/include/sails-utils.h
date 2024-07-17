@@ -88,11 +88,11 @@ namespace Sails::Utils {
   * provided Glycosite within the specified gemmi::Structure.
   *
   * @param site The glycosite object containing the model, chain, and residue indices.
-  * @param structure The gemmi::Structure object from which the chain is to be retrieved.
+  * @param structure A ptr to a gemmi::Structure object from which the chain is to be retrieved.
   *
   * @return The gemmi::Chain object from the specified glycosute.
   */
- gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+ gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
 
  /**
   * @brief Retrieves the gemmi::Residue corresponding to a given Glycosite.
@@ -101,11 +101,11 @@ namespace Sails::Utils {
   * provided Glycosite within the specified gemmi::Structure.
   *
   * @param site The glycosite object containing the model, chain, and residue indices.
-  * @param structure The structure object from which to retrieve the residue.
+  * @param structure A ptr to a structure object from which to retrieve the residue.
   *
   * @return The gemmi::Residue from the specified glycosite.
   */
- gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+ gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
 
  /**
  * @brief Retrieves the gemmi::Residue pointer corresponding to a given Glycosite.
@@ -114,11 +114,11 @@ namespace Sails::Utils {
  * provided Glycosite within the specified gemmi::Structure.
  *
  * @param site The glycosite object containing the model, chain, and residue indices.
- * @param structure The structure object from which to retrieve the residue.
+ * @param structure A ptr to a structure object from which to retrieve the residue.
  *
  * @return The gemmi::Residue pointer from the specified glycosite.
  */
- gemmi::Residue* get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure &structure);
+ gemmi::Residue* get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure* structure);
 
 
  /**
@@ -133,7 +133,7 @@ namespace Sails::Utils {
   * @return The gemmi::Atom from the specified glycosite.
   * @throws std::runtime_error if the site has not been initialised from a Mark.
   */
- gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure &structure);
+ gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
 
  /**
   * @brief Converts the given LinkageData object into an ID string.
