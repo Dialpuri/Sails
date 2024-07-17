@@ -67,7 +67,7 @@ namespace Sails {
     struct Glycan {
         Glycan() = default;
 
-        Glycan(gemmi::Structure &structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
+        Glycan(gemmi::Structure* structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
             m_database(database), glycosite(glycosite) {
         }
 
@@ -81,7 +81,7 @@ namespace Sails {
          * @return A constant iterator that points to the first element of the map.
          * @note The map must not be modified while iterating over it using this iterator.
          */
-        [[nodiscard]] std::map<int, std::unique_ptr<Sugar> >::const_iterator begin() const { return sugars.begin(); }
+        [[nodiscard]] std::map<Glycosite, std::unique_ptr<Sugar> >::const_iterator begin() const { return sugars.begin(); }
 
         /**
          * @brief Returns a iterator to the end of the map.
@@ -92,7 +92,7 @@ namespace Sails {
          * @return A constant iterator pointing to the end of the map.
          * @note The map must not be modified while iterating over it using this iterator.
          */
-        [[nodiscard]] std::map<int, std::unique_ptr<Sugar> >::const_iterator end() const { return sugars.end(); }
+        [[nodiscard]] std::map<Glycosite, std::unique_ptr<Sugar> >::const_iterator end() const { return sugars.end(); }
 
 
         /**
@@ -133,15 +133,15 @@ namespace Sails {
          * @return void
 
         */
-        void add_linkage(int sugar_1_key, int sugar_2_key) {
-            if (sugars.find(sugar_1_key) == sugars.end()) {
+        void add_linkage(Glycosite& sugar_1, Glycosite& sugar_2) {
+            if (sugars.find(sugar_1) == sugars.end()) {
                 throw std::runtime_error("Attempted to link a sugar not in the glycan");
             }
-            if (sugars.find(sugar_2_key) == sugars.end()) {
+            if (sugars.find(sugar_2) == sugars.end()) {
                 throw std::runtime_error("Attempted to link a sugar not in the glycan");
             }
 
-            adjacency_list[sugars[sugar_1_key].get()].insert(sugars[sugar_2_key].get());
+            adjacency_list[sugars[sugar_1].get()].insert(sugars[sugar_2].get());
         }
 
         /**
@@ -155,12 +155,12 @@ namespace Sails {
          * @param residue The glycosite of the sugar molecule.
          */
         void add_sugar(const std::string &atom, int seqId, Glycosite &residue) {
-            if (sugars.find(seqId) != sugars.end()) {
+            if (sugars.find(residue) != sugars.end()) {
                 // this sugar was already added, don't overwrite
                 return;
             }
 
-            sugars[seqId] = std::make_unique<Sugar>(atom, seqId, residue);
+            sugars[residue] = std::make_unique<Sugar>(atom, seqId, residue);
         }
 
         /**
@@ -176,7 +176,7 @@ namespace Sails {
         Sugar* remove_sugar(Sugar* sugar) {
 
             // erase residue from structure member
-            const auto residue_ptr = &m_structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
+            const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
             residue_ptr->erase(residue_ptr->begin()+sugar->site.residue_idx);
 
             Sugar* linked_donor = nullptr;
@@ -189,7 +189,7 @@ namespace Sails {
             }
 
             // erase seqid from map -> Sugar* will be released so must be done last
-            sugars.erase(sugar->seqId);
+            sugars.erase(sugar->site);
 
             // return the sugar that was linked (the new terminal sugar)
             return linked_donor;
@@ -259,7 +259,7 @@ namespace Sails {
          *
          * @return A collection of terminal sugars in the tree structure.
          */
-        std::vector<Sugar *> get_terminal_sugars(int root_seq_id);
+        std::vector<Sugar *> get_terminal_sugars(Glycosite &root_seq_id);
 
         /**
          * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
@@ -281,15 +281,15 @@ namespace Sails {
          *
          * @see gemmi::Structure
          */
-        [[nodiscard]] gemmi::Structure get_structure() const {return m_structure;};
+        [[nodiscard]] gemmi::Structure get_structure() const {return *m_structure;};
 
         Glycosite glycosite;
 
-    private:
+    // private:
         std::map<Sugar *, std::set<Sugar *> > adjacency_list;
-        std::map<int, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
+        std::map<Glycosite, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
 
-        gemmi::Structure m_structure;
+        gemmi::Structure* m_structure;
         ResidueDatabase m_database;
     };
 }

@@ -12,12 +12,12 @@ void Sails::Glycan::print_list() {
         const Sugar *node = pair.first;
         const std::set<Sugar *> &siblings = pair.second;
 
-        gemmi::Residue r = m_structure.models[node->site.model_idx].chains[node->site.chain_idx].residues[node->site.
+        gemmi::Residue r = m_structure->models[node->site.model_idx].chains[node->site.chain_idx].residues[node->site.
             residue_idx];
         std::cout << r.name << "-" << r.seqid.str() << "-" << node->atom << ": ";
 
         for (const Sugar *sibling: siblings) {
-            gemmi::Residue r2 = m_structure.models[sibling->site.model_idx].chains[sibling->site.chain_idx].residues[
+            gemmi::Residue r2 = m_structure->models[sibling->site.model_idx].chains[sibling->site.chain_idx].residues[
                 sibling->site.residue_idx];
             std::cout << r2.name << "-" << r2.seqid.str() << "-" << sibling->atom << ", ";
         }
@@ -28,7 +28,7 @@ void Sails::Glycan::print_list() {
 
 void Sails::Glycan::print_sugars() {
     for (const auto &[index, sugar]: sugars) {
-        std::cout << "Seqid " << index << std::endl;
+        std::cout << "Sites " << Utils::format_site_key(index) << std::endl;
     }
 }
 
@@ -38,9 +38,9 @@ std::string Sails::Glycan::get_dot_string() {
     dot += "{\n";
 
     for (const auto &[root, sugar]: sugars) {
-        gemmi::Residue r2 = m_structure.models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site
+        gemmi::Residue r2 = m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site
             .residue_idx];
-        dot += std::to_string(root);
+        dot += Utils::format_site_key(sugar->site);
         dot += " [fillcolor=\"";
         dot += m_database[r2.name].snfg_colour;
         dot += "\" shape=";
@@ -104,9 +104,9 @@ void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sug
     }
 }
 
-std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(int root_seq_id) {
+std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Glycosite &root_seq_id) {
     if (sugars.find(root_seq_id) == sugars.end()) {
-        throw std::runtime_error("Root SeqId is not valid : " + std::to_string(root_seq_id));
+        throw std::runtime_error("Root SeqId is not valid");
     }
     std::vector<Sugar *> terminal_sugars;
     dfs(sugars[root_seq_id].get(), terminal_sugars);
