@@ -95,13 +95,19 @@ Sails::LinkageDatabase Sails::JSONLoader::load_linkage_database() {
 }
 
 Sails::AngleSet Sails::JSONLoader::extract_angles(simdjson::simdjson_result<simdjson::ondemand::value> &value) {
-    const char *alpha_key = "alpha";
-    const char *beta_key = "beta";
-    const char *gamma_key = "gamma";
+    const char *alpha_mean_key = "alphaMean";
+    const char *alpha_stddevkey = "alphaStdDev";
+    const char *beta_mean_key = "betaMean";
+    const char *beta_stddevkey = "betaStdDev";
+    const char *gamma_mean_key = "gammaMean";
+    const char *gamma_stddev_key = "gammaStdDev";
 
-    auto alpha = value[alpha_key].get_number().value().as_double();
-    auto beta = value[beta_key].get_number().value().as_double();
-    auto gamma = value[gamma_key].get_number().value().as_double();
+    auto alpha = Angle(value[alpha_mean_key].get_number().value().as_double(),
+                            value[alpha_stddevkey].get_number().value().as_double());
+    auto beta = Angle(value[beta_mean_key].get_number().value().as_double(),
+                            value[beta_stddevkey].get_number().value().as_double());
+    auto gamma = Angle(value[gamma_mean_key].get_number().value().as_double(),
+                              value[gamma_stddev_key].get_number().value().as_double());
 
     return {alpha, beta, gamma};
 }
@@ -115,11 +121,11 @@ Sails::TorsionSet Sails::JSONLoader::extract_torsions(simdjson::simdjson_result<
     const char *omega_mean_key = "omegaMean";
     const char *omega_stddev_key = "omegaStdDev";
 
-    auto phi = TorsionAngle(value[phi_mean_key].get_number().value().as_double(),
+    auto phi = Angle(value[phi_mean_key].get_number().value().as_double(),
                             value[phi_stddev_key].get_number().value().as_double());
-    auto psi = TorsionAngle(value[psi_mean_key].get_number().value().as_double(),
+    auto psi = Angle(value[psi_mean_key].get_number().value().as_double(),
                             value[psi_stddev_key].get_number().value().as_double());
-    auto omega = TorsionAngle(value[omega_mean_key].get_number().value().as_double(),
+    auto omega = Angle(value[omega_mean_key].get_number().value().as_double(),
                               value[omega_stddev_key].get_number().value().as_double());
 
     return {psi, phi, omega};
