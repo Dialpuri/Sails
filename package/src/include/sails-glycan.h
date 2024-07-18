@@ -16,6 +16,7 @@
 #include "gemmi/model.hpp"
 
 #include "sails-model.h"
+#include "sails-utils.h"
 
 namespace Sails {
     /**
@@ -193,6 +194,27 @@ namespace Sails {
 
             // return the sugar that was linked (the new terminal sugar)
             return linked_donor;
+        }
+
+        /**
+         * @brief Finds the previous sugar molecule linked to the given sugar molecule.
+         *
+         * The find_previous_sugar method searches for the previous sugar molecule linked to the given sugar molecule within
+         * the adjacency list. It iterates through the adjacency list and checks if the given sugar molecule is found as an
+         * acceptor in any of the pair values. If found, it returns the corresponding donor sugar molecule. If no previous
+         * sugar is found, it returns std::nullopt.
+         *
+         * @param sugar A pointer to the sugar molecule for which to find the previous sugar molecule.
+         * @return An optional pointer to the previous sugar molecule linked to the given sugar, or std::nullopt if not found.
+         */
+        std::optional<Sugar*> find_previous_sugar(Sugar* sugar) const {
+            Sugar* linked_donor = nullptr;
+            for (auto& [donor, acceptor]: adjacency_list) {
+                if (acceptor.find(sugar) != acceptor.end()) {
+                    return donor;
+                }
+            }
+            return std::nullopt;
         }
 
         /**
