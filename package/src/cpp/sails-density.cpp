@@ -89,7 +89,7 @@ void Sails::Density::load_hkl(const std::string &f, const std::string &sig_f) {
     }
 }
 
-void Sails::Density::form_atom_list(const gemmi::Structure &structure, std::vector<clipper::Atom>& atoms) {
+void Sails::Density::form_atom_list(const gemmi::Structure &structure, std::vector<clipper::Atom> &atoms) {
     for (const auto &model: structure.models) {
         for (const auto &chain: model.chains) {
             for (const auto &residue: chain.residues) {
@@ -139,9 +139,9 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     std::vector<float> recalculated_data;
     int num_columns = 6;
     recalculated_data.reserve(fdiff.data_size() * num_columns);
-    for (HRI ih = m_fobs.first(); !ih.last(); ih.next() ) {
+    for (HRI ih = m_fobs.first(); !ih.last(); ih.next()) {
         clipper::HKL hkl = ih.hkl();
-        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue;} // Don't include the 0,0,0 reflection
+        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue; } // Don't include the 0,0,0 reflection
 
         clipper::datatypes::F_phi<float> fbest_reflection = fbest[ih];
         clipper::datatypes::F_phi<float> fdiff_reflection = fdiff[ih];
@@ -196,9 +196,9 @@ void Sails::Density::calculate_alt_map(gemmi::Structure &structure) {
     std::vector<float> recalculated_data;
     int num_columns = 5;
     recalculated_data.reserve(m_fobs.data_size() * num_columns);
-    for (HRI ih = m_fobs.first(); !ih.last(); ih.next() ) {
+    for (HRI ih = m_fobs.first(); !ih.last(); ih.next()) {
         clipper::HKL hkl = ih.hkl();
-        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue;} // Don't include the 0,0,0 reflection
+        if (hkl.h() == 0 && hkl.l() == 0 && hkl.k() == 0) { continue; } // Don't include the 0,0,0 reflection
 
         clipper::datatypes::F_phi<float> diff_reflection = diff[ih];
 
@@ -231,7 +231,7 @@ float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
     return std::transform_reduce(residue.atoms.begin(), residue.atoms.end(), 0.0f, std::plus<>(),
                                  [&](const gemmi::Atom &current_atom) {
                                      return m_alt_grid.interpolate_value(current_atom.pos);
-                                 });
+                                 }) / (residue.atoms.size());
 }
 
 gemmi::Grid<> Sails::Density::calculate_density_for_box(gemmi::Residue &residue) const {
@@ -441,7 +441,7 @@ float Sails::Density::difference_density_score(gemmi::Residue &residue) const {
         }
     }
 
-    return sum/points;
+    return sum / points;
 }
 
 float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
