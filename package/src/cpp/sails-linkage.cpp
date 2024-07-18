@@ -15,7 +15,12 @@ bool Sails::Model::check_entry_in_database(gemmi::Residue residue) {
 }
 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition) {
-    favoured_addition.new_residue.seqid = gemmi::SeqId(terminal_sugar->seqId + 1000, 0);
+    auto last_model_index = structure->models.size();
+    auto last_chain_index = structure->models[terminal_sugar->site.model_idx].chains.size();
+    auto last_residue_index = structure->models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx].residues.size();
+    int seqid = (last_model_index*100)+(last_chain_index*10)+last_residue_index;
+
+    favoured_addition.new_residue.seqid = gemmi::SeqId(seqid, 0);
     auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
             .residues;
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
@@ -73,19 +78,25 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, De
         gemmi::Residue residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
         gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
 
-        std::cout << "Terminal sugar is " << Utils::format_residue_key(&residue) << " with depth = " << terminal_sugar->depth<< std::endl;
+        // std::cout << "Terminal sugar is " << Utils::format_site_key(terminal_sugar->site) << " with depth = " << terminal_sugar->depth<< std::endl;
         if (check_entry_in_database(residue)) continue;
 
         // calculate the sugars that can be linked to this terminal sugar
         std::map<int, std::vector<SuperpositionResult> > possible_additions;
         for (auto &data: linkage_database[residue.name]) {
-            std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-"
-                    << data.donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
+            // std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-"
+                    // << data.donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
+
             std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
-            if (!opt_result.has_value()) { std::cout << " rejected" << std::endl; continue; };
+
+            if (!opt_result.has_value()) {
+                // std::cout << " rejected" << std::endl;
+                continue; };
+
             possible_additions[data.donor_number].emplace_back(opt_result.value());
+
             float rscc = density.rscc_score(opt_result.value());
-            std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC\t" << rscc << std::endl;
+            // std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC = " << rscc << std::endl;
         }
 
         if (possible_additions.empty()) { continue; }
@@ -103,8 +114,7 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, De
         }
 
         for (auto &addition: favoured_additions) {
-            // std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
-                    // Utils::format_residue_key(&residue) << std::endl;
+            // std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " << Utils::format_residue_key(&residue) << std::endl;
             add_sugar_to_structure(terminal_sugar, addition);
         }
         // add the favoured addition to the structure member
@@ -201,7 +211,10 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     if (atoms.size() != 6) { throw std::runtime_error("Unexpected atom count"); }
 
     std::vector<double> torsions = data.torsions.get_means_in_order();
-    std::vector<double> angles = data.angles.get_in_order();
+    std::vector<double> torsion_stddev = data.torsions.get_stddev_in_order();
+    std::vector<double> angles = data.angles.get_means_in_order();
+    std::vector<double> angles_stddev = data.angles.get_stddev_in_order();
+
     double length = data.length;
 
     gemmi::Transform superpose_result = superpose_atoms(atoms, reference_atoms, length, angles, torsions);
@@ -218,8 +231,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     //     return result;
     // }
     if (refine) {
-        TorsionAngleRefiner refiner = {atoms, reference_atoms, density, result, length};
-        result = refiner.refine(angles, torsions);
+        TorsionAngleRefiner refiner = {atoms, reference_atoms, density, result, length, angles, angles_stddev, torsions, torsion_stddev};
+        result = refiner.refine();
     }
 
     float rscc = density.rscc_score(result);
