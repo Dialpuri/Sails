@@ -80,6 +80,22 @@ namespace Sails {
     typedef std::map<std::string, ResidueData> ResidueDatabase;
 
     /**
+        *@struct Angle
+        *@brief Structure representing a single angle with a mean and standard deviation
+       *
+        * @constructor Angle
+        * @param mean The mean angle.
+        * @param stddev The standard deviation of the angle.
+        */
+    struct Angle {
+        Angle(const double mean, const double stddev) : mean(mean), stddev(stddev) {
+        }
+
+        double mean;
+        double stddev;
+    };
+
+    /**
      *@struct AngleSet
      *@brief Structure representing alpha, beta and gamma angles
      *
@@ -89,33 +105,23 @@ namespace Sails {
      * @param omega The gamma angle.
      */
     struct AngleSet {
-        AngleSet(const double alpha, const double beta, const double gamma) : alpha(alpha), beta(beta), gamma(gamma) {
+        AngleSet(const Angle& alpha, const  Angle& beta, const  Angle& gamma) : alpha(alpha), beta(beta), gamma(gamma) {
         }
 
-        std::vector<double> get_in_order() {
-            return {alpha, beta, gamma};
+        std::vector<double> get_means_in_order() {
+            return {alpha.mean, beta.mean, gamma.mean};
         }
 
-        double alpha;
-        double beta;
-        double gamma;
+        std::vector<double> get_stddev_in_order() {
+            return {alpha.stddev, beta.stddev, gamma.stddev};
+        }
+
+         Angle alpha;
+         Angle beta;
+         Angle gamma;
     };
 
-    /**
-     *@struct TorsionAngle
-     *@brief Structure representing a single torsion angle with a mean and standard deviation
-    *
-     * @constructor TorsionAngle
-     * @param mean The mean angle.
-     * @param stddev The standard deviation of the angle.
-     */
-    struct TorsionAngle {
-        TorsionAngle(const double mean, const double stddev) : mean(mean), stddev(stddev) {
-        }
 
-        double mean;
-        double stddev;
-    };
 
     /**
      *@struct TorsionSet
@@ -127,7 +133,7 @@ namespace Sails {
      * @param omega The omega angle.
      */
     struct TorsionSet {
-        TorsionSet(const TorsionAngle &psi, const TorsionAngle &phi, const TorsionAngle &omega) : psi(psi), phi(phi),
+        TorsionSet(const Angle &psi, const Angle &phi, const Angle &omega) : psi(psi), phi(phi),
             omega(omega) {
         }
 
@@ -135,9 +141,13 @@ namespace Sails {
             return {psi.mean, phi.mean, omega.mean};
         }
 
-        TorsionAngle psi;
-        TorsionAngle phi;
-        TorsionAngle omega;
+        std::vector<double> get_stddev_in_order() {
+            return {psi.stddev, phi.stddev, omega.stddev};
+        }
+
+        Angle psi;
+        Angle phi;
+        Angle omega;
     };
 
 
