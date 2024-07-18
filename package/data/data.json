@@ -4,18 +4,18 @@
       "name":  "MAN",
       "snfgShape": "circle",
       "snfgColour": "green",
-      "preferredDepths": [4],
+      "preferredDepths": [4, 5, 6, 7],
       "donorSets": [
         {
           "atom3": "O2",
           "atom2": "C2",
-          "atom1": "C1",
+          "atom1": "C3",
           "identifier": 2
         },
         {
           "atom3": "O3",
           "atom2": "C3",
-          "atom1": "C2",
+          "atom1": "C4",
           "identifier": 3
         },
         {
@@ -108,9 +108,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
-        "gamma": 113.0
+        "alphaMean": 120.0,
+        "alphaStdDev": 10,
+        "betaMean": 105.0,
+        "betaStdDev": 10,
+        "gammaMean": 113.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": -97.0,
@@ -128,9 +131,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 113.0,
-        "beta": 110.0,
-        "gamma": 113.0
+        "alphaMean": 113.0,
+        "alphaStdDev": 10,
+        "betaMean": 110.0,
+        "betaStdDev": 10,
+        "gammaMean": 113.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": -80.0,
@@ -138,7 +144,7 @@
         "psiMean": -127.0,
         "psiStdDev": 22.0,
         "omegaMean": 175.0,
-        "omegaStdDev": 0.0
+        "omegaStdDev": 20.0
       }
     },
     {
@@ -148,9 +154,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 110.0,
-        "beta": 110.0,
-        "gamma": 110.0
+        "alphaMean": 110.0,
+        "alphaStdDev": 10,
+        "betaMean": 110.0,
+        "betaStdDev": 10,
+        "gammaMean": 110.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": -87.0,
@@ -168,9 +177,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 110.0,
-        "beta": 110.0,
-        "gamma": 110.0
+        "alphaMean": 113.0,
+        "alphaStdDev": 10,
+        "betaMean": 110.0,
+        "betaStdDev": 10,
+        "gammaMean": 113.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": 76.0,
@@ -188,9 +200,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 110.0,
-        "beta": 110.0,
-        "gamma": 110.0
+        "alphaMean": 113.0,
+        "alphaStdDev": 10,
+        "betaMean": 110.0,
+        "betaStdDev": 10,
+        "gammaMean": 113.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": 72.0,
@@ -208,9 +223,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
-        "gamma": 110.0
+        "alphaMean": 120.0,
+        "alphaStdDev": 10,
+        "betaMean": 105.0,
+        "betaStdDev": 10,
+        "gammaMean": 110.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": 78.0,
@@ -228,9 +246,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
-        "gamma": 110.0
+        "alphaMean": 120.0,
+        "alphaStdDev": 10,
+        "betaMean": 105.0,
+        "betaStdDev": 10,
+        "gammaMean": 110.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": 78.0,
@@ -248,9 +269,12 @@
       "acceptorNumber": 1,
       "length": 1.4,
       "angles": {
-        "alpha": 120.0,
-        "beta": 105.0,
-        "gamma": 110.0
+        "alphaMean": 120.0,
+        "alphaStdDev": 10,
+        "betaMean": 105.0,
+        "betaStdDev": 10,
+        "gammaMean": 110.0,
+        "gammaStdDev": 10
       },
       "torsions": {
         "phiMean": 78.0,
