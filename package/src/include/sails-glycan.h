@@ -56,6 +56,21 @@ namespace Sails {
         }
     };
 
+    struct Linkage {
+        Linkage(Sugar *donor_sugar, Sugar *acceptor_sugar, const std::string &donor_atom,
+            const std::string &accepetor_atom)
+            : donor_sugar(donor_sugar),
+              acceptor_sugar(acceptor_sugar),
+              donor_atom(donor_atom),
+              accepetor_atom(accepetor_atom) {
+        }
+
+        Sugar* donor_sugar;
+        Sugar* acceptor_sugar;
+        std::string donor_atom;
+        std::string accepetor_atom;
+    };
+
     /**
      * @brief Glycan represents a glycan structure.
      *
@@ -128,13 +143,15 @@ namespace Sails {
          *
          * @param sugar_1_key The ID of the first sugar object.
          * @param sugar_2_key The ID of the second sugar object.
+         * @param donor_atom
+         * @param acceptor_atom
          *
          * @note The specified sugar keys must be valid IDs of existing sugar objects.
          *
          * @return void
 
         */
-        void add_linkage(Glycosite& sugar_1, Glycosite& sugar_2) {
+        void add_linkage(Glycosite& sugar_1, Glycosite& sugar_2, const std::string &donor_atom, const std::string &acceptor_atom) {
             if (sugars.find(sugar_1) == sugars.end()) {
                 throw std::runtime_error("Attempted to link a sugar not in the glycan");
             }
@@ -143,6 +160,8 @@ namespace Sails {
             }
 
             adjacency_list[sugars[sugar_1].get()].insert(sugars[sugar_2].get());
+            Linkage linkage = {sugars[sugar_1].get(), sugars[sugar_2].get(), donor_atom, acceptor_atom};
+            linkage_list.emplace_back(linkage);
         }
 
         /**
@@ -309,6 +328,7 @@ namespace Sails {
 
     // private:
         std::map<Sugar *, std::set<Sugar *> > adjacency_list;
+        std::vector<Linkage> linkage_list;
         std::map<Glycosite, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
 
         gemmi::Structure* m_structure;
