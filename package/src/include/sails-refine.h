@@ -47,6 +47,8 @@ namespace Sails {
         SuperpositionResult refine();
 
     private:
+        static double calculate_penalty(double angle, double angle_mean, double angle_stddev, double penalty_factor);
+
         double m_length;
         std::vector<double> m_angle_range;
         std::vector<double> m_torsion_range;
