@@ -35,6 +35,13 @@ std::string Sails::Utils::format_site_key(const Glycosite &site) {
            std::to_string(site.atom_idx);
 }
 
+std::string Sails::Utils::format_residue_from_site(const Glycosite &glycosite, gemmi::Structure *structure) {
+    gemmi::Residue* residue = get_residue_ptr_from_glycosite(glycosite, structure);
+    gemmi::Chain* chain = get_chain_ptr_from_glycosite(glycosite, structure);
+    return chain->name + "-" + residue->name + "-" + residue->seqid.num.str();
+
+}
+
 gemmi::Chain Sails::Utils::get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure* structure) {
     return structure->models[site.model_idx].chains[site.chain_idx];
 }
@@ -46,6 +53,11 @@ gemmi::Residue Sails::Utils::get_residue_from_glycosite(const Glycosite &site, c
 gemmi::Residue *Sails::Utils::
 get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure *structure) {
     return &structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
+}
+
+gemmi::Chain *Sails::Utils::
+get_chain_ptr_from_glycosite(const Glycosite &site, gemmi::Structure *structure) {
+    return &structure->models[site.model_idx].chains[site.chain_idx];
 }
 
 gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure* structure) {

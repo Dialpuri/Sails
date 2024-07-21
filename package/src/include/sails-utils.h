@@ -80,6 +80,18 @@ namespace Sails::Utils {
   */
  std::string format_site_key(const Glycosite& glycosite);
 
+ /**
+   * @brief Formats the key of the residue for a given glycosite.
+   *
+   * This function formats the key for the provided glycosite by getting chain ID, residue name and residue SeqId.
+   *
+   * @param glycosite A glycosite
+   * @param structure
+   *
+   * @return The formatted key for the site.
+   */
+ std::string format_residue_from_site(const Glycosite& glycosite, gemmi::Structure *structure);
+
 
  /**
   * @brief Retrieves the gemmi::Chain object corresponding to a given Glycosite.
@@ -120,6 +132,18 @@ namespace Sails::Utils {
  */
  gemmi::Residue* get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure* structure);
 
+ /**
+ * @brief Retrieves the gemmi::Chain pointer corresponding to a given Glycosite.
+ *
+ * This function retrieves the gemmi::Chain pointer that represents the chain of the
+ * provided Glycosite within the specified gemmi::Structure.
+ *
+ * @param site The glycosite object containing the model, chain, and residue indices.
+ * @param structure A ptr to a structure object from which to retrieve the chain.
+ *
+ * @return The gemmi::Chain pointer from the specified glycosite.
+ */
+ gemmi::Chain* get_chain_ptr_from_glycosite(const Glycosite &site, gemmi::Structure* structure);
 
  /**
   * @brief Retrieves the gemmi::Atom from the specified glycosite.
