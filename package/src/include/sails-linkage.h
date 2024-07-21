@@ -10,6 +10,7 @@
 #include "sails-topology.h"
 #include "sails-vector.h"
 #include "sails-density.h"
+#include "sails-cif.h"
 
 #include <string>
 
@@ -17,6 +18,9 @@
 #include <gemmi/modify.hpp>
 #include <gemmi/mmread.hpp>
 #include <gemmi/to_pdb.hpp>
+#include <gemmi/to_mmcif.hpp>
+#include <gemmi/to_cif.hpp>
+
 
 namespace Sails {
 
@@ -61,7 +65,10 @@ namespace Sails {
         static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom *>& atoms, std::vector<gemmi::Atom>& reference_atoms, double length, std::vector<double> &angles, std::vector<
                                                     double> &torsions);
 
-        void save_pdb(const std::string& path);
+        void save(const std::string& path, std::vector<LinkRecord> &links);
+
+        void save(const std::string& path);
+
 
         void remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue& reference_library_monomer,
                                  gemmi::Residue& new_monomer);
@@ -103,9 +110,9 @@ namespace Sails {
         LinkageDatabase linkage_database;
         ResidueDatabase residue_database;
         std::string monomer_library_path;
+        std::string special_monomer_path = "package/models/special_monomers";
         std::map<std::string, gemmi::Residue> monomers;
     };
-
 
 }
 
