@@ -6,7 +6,8 @@
 #define SAILS_CIF_H
 
 #include <string>
-#include <utility>
+#include "sails-topology.h"
+
 
 namespace Sails {
     struct LinkRecord {
@@ -106,6 +107,7 @@ namespace Sails {
             };
         }
 
+    private:
         gemmi::Chain chain1;
         gemmi::Chain chain2;
         gemmi::Residue residue1;
@@ -114,11 +116,12 @@ namespace Sails {
         gemmi::Atom atom2;
 
         std::string id;
-        std::string conn_type_id;
-        std::string details;
-        std::string pdbx_dist_value;
         std::string pdbx_role;
     };
+
+    std::vector<Sails::LinkRecord> generate_link_records(gemmi::Structure *structure, Sails::Glycosites *glycosites,
+                                                     Sails::Topology *topology);
+
 }
 
 #endif //SAILS_CIF_H
