@@ -72,9 +72,8 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     a3->pos = best_pos;
 }
 
-Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density) {
+Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
     const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
-    bool debug = false;
     for (auto &terminal_sugar: terminal_sugars) {
         gemmi::Residue residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
         gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);

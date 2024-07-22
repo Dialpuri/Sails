@@ -57,7 +57,7 @@ namespace Sails {
          * @param density The density class used to score residues into experimental data.
          * @return The extended glycan.
          */
-        Glycan extend(Glycan &glycan, Glycosite &base_glycosite, Density& density);
+        Glycan extend(Glycan &glycan, Glycosite &base_glycosite, Density& density, bool debug);
 
         static void move_acceptor_atomic_positions(std::vector<gemmi::Atom *>& atoms, double length,
                                                    std::vector<double>& angles, std::vector<double>& torsions);
