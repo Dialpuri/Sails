@@ -33,6 +33,8 @@ if (NOT SKBUILD)
 endif()
 
 find_package(ZLIB REQUIRED)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -81,6 +83,11 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-utils.cpp
         ${WRK_DIR}/src/cpp/sails-density.cpp
         ${WRK_DIR}/src/cpp/sails-refine.cpp
+        ${WRK_DIR}/src/cpp/sails-cif.cpp
+
+        # Bindings
+        ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
+
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
