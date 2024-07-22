@@ -62,13 +62,13 @@ namespace Sails {
             : donor_sugar(donor_sugar),
               acceptor_sugar(acceptor_sugar),
               donor_atom(donor_atom),
-              accepetor_atom(accepetor_atom) {
+              acceptor_atom(accepetor_atom) {
         }
 
         Sugar* donor_sugar;
         Sugar* acceptor_sugar;
         std::string donor_atom;
-        std::string accepetor_atom;
+        std::string acceptor_atom;
     };
 
     /**
