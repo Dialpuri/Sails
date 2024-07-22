@@ -177,7 +177,7 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     m_difference_grid = load_grid(m_mtz, "DELFWT", "PHDELWT", true);
 }
 
-void Sails::Density::calculate_alt_map(gemmi::Structure &structure) {
+void Sails::Density::calculate_po_pc_map(gemmi::Structure &structure) {
     std::vector<clipper::Atom> atoms;
     form_atom_list(structure, atoms);
 

@@ -108,12 +108,14 @@ namespace Sails {
 		/**
 		* @brief Recalculates the map based on the given structure.
 		*
-		* This method takes a gemmi::Structure object and recalculates the map with a clipper sigma-a calculation.
+		* This method takes a gemmi::Structure object and recalculates the p_o - p_c map, where p_o is the
+		* internal best map and p_c is calculated with the provided structure. This function should be called after
+		* recalculate_map
 		* This function updates the internal mtz, grid and density grid.
 		*
 		* @param structure The gemmi::Structure object for which the map needs to be recalculated.
 		*/
-		void calculate_alt_map(gemmi::Structure &structure);
+		void calculate_po_pc_map(gemmi::Structure &structure);
 
 		/**
 		 * @brief Writes the density data to an MTZ file.
@@ -240,8 +242,26 @@ namespace Sails {
 		 */
 		float difference_density_score(gemmi::Residue &residue) const;
 
+		/**
+		 * @brief Scores an atom
+		 *
+		 * This method takes a gemmi::Atom object and generates a score corresponding to the interpolated density value.
+		 *
+		 * @param atom The gemmi::Atom object whose position needs to be scored.
+		 *
+		 * @return The score of the atom based on the density value at that atom's position.
+		 */
 		[[nodiscard]] float score_atomic_position(const gemmi::Atom& atom) const;
 
+		/**
+		 * @brief Scores a position based on the density value at that position.
+		 *
+		 * This method takes a gemmi::Position object and scores it based on the density value at that position.
+		 *
+		 * @param pos The gemmi::Position object to be scored.
+		 *
+		 * @return The score of the position based on the density value at that position.
+		 */
 		[[nodiscard]] float score_position(const gemmi::Position& pos) const;
 
 
