@@ -70,7 +70,33 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     }
 }
 
+std::vector<Sails::LinkRecord> generate_link_records(gemmi::Structure *structure, Sails::Glycosites *glycosites, Sails::Topology *topology) {
+    std::vector<Sails::LinkRecord> links;
+    int link_id = 0;
+    for (auto &glycosite: *glycosites) {
+        Sails::Glycan glycan = topology->find_glycan_topology(glycosite);
+        std::vector<Sails::Linkage> list = glycan.linkage_list;
+
+        for (auto l : list) {
+            std::string id = "covalent" + std::to_string(link_id++);
+            gemmi::Chain c1 = Sails::Utils::get_chain_from_glycosite(l.donor_sugar->site, structure);
+            gemmi::Chain c2 = Sails::Utils::get_chain_from_glycosite(l.acceptor_sugar->site, structure);
+
+            gemmi::Residue r1 = Sails::Utils::get_residue_from_glycosite(l.donor_sugar->site, structure);
+            gemmi::Residue r2 = Sails::Utils::get_residue_from_glycosite(l.acceptor_sugar->site, structure);
+
+            gemmi::Atom* a1 = &r1.sole_atom(l.donor_atom);
+            gemmi::Atom* a2 = &r2.sole_atom(l.acceptor_atom);
+
+            Sails::LinkRecord x = {id, c1, c2, r1, r2, *a1, *a2};
+            links.push_back(x);
+        }
+    }
+    return links;
+}
+
 void run() {
+
     Sails::JSONLoader loader = {"package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
@@ -107,7 +133,7 @@ void run() {
 
     Sails::Model model = {&structure, linkage_database, residue_database};
 
-    int cycles = 5;
+    int cycles = 1;
     size_t progress_count = 0;
 
     for (int i = 1; i <= cycles; i++) {
@@ -143,7 +169,12 @@ void run() {
         }
     }
 
-    model.save("structure.cif");
+
+    // LINKS - NOT FINISHED
+    gemmi::cif::Loop loop;
+    loop.tags = Sails::LinkRecord::tags();
+    std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
+    model.save("structure.cif", links);
     density.write_mtz("reflections.mtz");
 }
 
@@ -151,29 +182,3 @@ int main() {
     run();
 }
 
-
-// LINKS - NOT FINISHED
-// gemmi::cif::Loop loop;
-// loop.tags = Sails::LinkRecord::tags();
-// std::vector<Sails::LinkRecord> links;
-// int link_id = 0;
-// for (auto &glycosite: glycosites) {
-//     Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-//     std::vector<Sails::Linkage> list = glycan.linkage_list;
-//
-//     for (int i = 0; i < list.size(); i++) {
-//         Sails::Linkage l = list[i];
-//         std::string id = "covalent" + std::to_string(link_id++);
-//         gemmi::Chain c1 = Sails::Utils::get_chain_from_glycosite(l.donor_sugar->site, &structure);
-//         gemmi::Chain c2 = Sails::Utils::get_chain_from_glycosite(l.acceptor_sugar->site, &structure);
-//
-//         gemmi::Residue r1 = Sails::Utils::get_residue_from_glycosite(l.donor_sugar->site, &structure);
-//         gemmi::Residue r2 = Sails::Utils::get_residue_from_glycosite(l.acceptor_sugar->site, &structure);
-//
-//         Sails::LinkRecord x = {id, "covale", c1.name, l.donor_atom,
-//             r1.name, r1.seqid.num.str(), c2.name, l.accepetor_atom,
-//             r2.name, r2.seqid.num.str(), "?", "1.2", "N-Glycosylation"
-//         };
-//         links.emplace_back(x);
-//     }
-// }
