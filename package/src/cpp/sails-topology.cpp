@@ -70,8 +70,8 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
                     // std::cout << "Empty atoms " << std::endl;
                     continue;
                 }
-                gemmi::Atom near_atom = bound_residue.atoms[atom->atom_idx];
-                double distance = (donor_atom.pos - near_atom.pos).length();
+                gemmi::Atom* near_atom = &bound_residue.atoms[atom->atom_idx];
+                double distance = (donor_atom.pos - near_atom->pos).length();
 
                 // std::cout << "nearby atom name = " << near_atom.name << " with distance " << distance << std::endl;
                 
