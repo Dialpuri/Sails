@@ -62,7 +62,8 @@ NB_MODULE(sails_module, m) {
                         .def(nb::init<>())
                         .def_rw("atoms", &gemmi::Residue::atoms)
                         .def_rw("name", &gemmi::Residue::name)
-                        .def_rw("seqid", &gemmi::Residue::seqid);;
+                        .def_rw("seqid", &gemmi::Residue::seqid)
+                        .def_rw("subchain", &gemmi::Residue::subchain);
         nb::bind_vector<std::vector<gemmi::Atom> >(m, "Atoms");
 
         nb::class_<gemmi::Atom>(m, "Atom")
