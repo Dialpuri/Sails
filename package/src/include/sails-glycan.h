@@ -209,7 +209,7 @@ namespace Sails {
             }
 
             // erase seqid from map -> Sugar* will be released so must be done last
-            sugars.erase(sugar->site);
+            if(sugars.find(sugar->site) != sugars.end()) sugars.erase(sugar->site);
 
             // return the sugar that was linked (the new terminal sugar)
             return linked_donor;
