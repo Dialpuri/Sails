@@ -32,7 +32,7 @@ void display_progress_bar(size_t total, size_t &progress_count) {
     ++progress_count;
 }
 
-void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan) {
+void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, bool debug) {
     float rscc_threshold = 0.4;
     std::vector<Sails::Sugar *> to_remove;
     for (auto &sugar: *glycan) {
@@ -47,16 +47,18 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
 
         if (float rscc = round(10 * density->rscc_score(residue)) / 10; rscc < rscc_threshold) {
             to_remove.emplace_back(sugar.second.get()); // add pointer to
-            std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << " because of low RSCC =" << rscc
-                    << std::endl;
+            if (debug)
+                std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << " because of low RSCC =" <<
+                        rscc << std::endl;
             continue;
         }
 
         // cases where sugar is clashing into protein density
         if (float diff_score = density->difference_density_score(residue); diff_score > 1.1) {
-            std::cout << "Removing " << Sails::Utils::format_residue_key(&previous_residue) << "--" <<
-                    Sails::Utils::format_residue_key(&residue) << " because of high DDS = " << diff_score <<
-                    std::endl;
+            if (debug)
+                std::cout << "Removing " << Sails::Utils::format_residue_key(&previous_residue) << "--" <<
+                        Sails::Utils::format_residue_key(&residue) << " because of high DDS = " << diff_score <<
+                        std::endl;
             to_remove.emplace_back(sugar.second.get());
         }
     }
@@ -70,7 +72,6 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         glycan->remove_sugar(sugar);
     }
 }
-
 
 
 void run() {
@@ -111,7 +112,7 @@ void run() {
 
     Sails::Model model = {&structure, linkage_database, residue_database};
 
-    int cycles = 1;
+    int cycles = 6;
     size_t progress_count = 0;
 
     for (int i = 1; i <= cycles; i++) {
@@ -123,7 +124,7 @@ void run() {
             if (glycan.empty()) { continue; }
 
             // find terminal sugars
-            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, true);
+            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, false);
             topology.set_structure(model.get_structure());
         }
 
@@ -136,7 +137,7 @@ void run() {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
             if (glycan.empty()) { continue; }
 
-            remove_erroneous_sugars(&structure, &density, &glycan);
+            remove_erroneous_sugars(&structure, &density, &glycan, false);
         }
     }
 
@@ -152,7 +153,7 @@ int main() {
 }
 
 
-Sails::Output n_glycosylate(gemmi::Structure& structure, Sails::MTZ& sails_mtz, int cycles) {
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
     Sails::JSONLoader loader = {"package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
@@ -175,9 +176,11 @@ Sails::Output n_glycosylate(gemmi::Structure& structure, Sails::MTZ& sails_mtz, 
     Sails::Model model = {&structure, linkage_database, residue_database};
 
     size_t progress_count = 0;
+    bool debug = false;
 
     for (int i = 1; i <= cycles; i++) {
-        std::cout << "Cycle #" << i << std::endl;
+        if (!debug) std::cout << "\rCycle #" << i; std::cout << std::flush;
+        if (debug) std::cout << "\rCycle #" << i << std::endl;
         // display_progress_bar(cycles, progress_count);
 
         for (auto &glycosite: glycosites) {
@@ -185,7 +188,7 @@ Sails::Output n_glycosylate(gemmi::Structure& structure, Sails::MTZ& sails_mtz, 
             if (glycan.empty()) { continue; }
 
             // find terminal sugars
-            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, true);
+            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, debug);
             topology.set_structure(model.get_structure());
         }
 
@@ -198,7 +201,8 @@ Sails::Output n_glycosylate(gemmi::Structure& structure, Sails::MTZ& sails_mtz, 
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
             if (glycan.empty()) { continue; }
 
-            remove_erroneous_sugars(&structure, &density, &glycan);
+            // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
+            remove_erroneous_sugars(&structure, &density, &glycan, debug);
         }
     }
 
@@ -210,6 +214,7 @@ Sails::Output n_glycosylate(gemmi::Structure& structure, Sails::MTZ& sails_mtz, 
 
     Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz);
 
+    std::cout << std::endl;
     return {
         *model.get_structure(),
         output_mtz
