@@ -11,6 +11,8 @@
 #include <gemmi/model.hpp>
 #include <gemmi/ccp4.hpp>
 #include <gemmi/to_pdb.hpp>
+#include <gemmi/to_cif.hpp>
+#include <gemmi/to_mmcif.hpp>
 
 #include "sails-model.h"
 

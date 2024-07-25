@@ -94,7 +94,7 @@ void Sails::Utils::save_grid_to_file(const gemmi::Grid<> &grid, const std::strin
 void Sails::Utils::save_structure_to_file(const gemmi::Structure &structure, const std::string &path) {
     std::ofstream of;
     of.open(path);
-    write_pdb(structure, of);
+    write_cif_to_stream(of, make_mmcif_document(structure));
     of.close();
 }
 
