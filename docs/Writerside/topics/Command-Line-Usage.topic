@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Command Line Usage" id="Command-Line-Usage">
+
+    <link-summary>
+        Master command line projects with Sails: explore options, uses, and file formats like PDB, mmCIF, CIF.
+    </link-summary>
+
+
+    <web-summary>
+        Discover how to utilize the command line in your projects with Sails. Learn about various options, their uses,
+        and standard file formats such as PDB, mmCIF, and CIF.
+    </web-summary>
+    
+
+    <chapter title="Command" id="command">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails [OPTIONS]
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-pdbin">
+                Path to input model file.
+                <p>Formats accepted: PDB, mmCIF, CIF</p>
+                <b>Required</b>
+            </def>
+            <def title="-mtzin">
+                Path to input MTZ file.
+                <p><b>Required</b></p>
+            </def>
+            <def title="-pdbout">
+                Path to output CIF file.
+                <p>Default: structure.cif</p>
+            </def>
+            <def title="-mtzout">
+                Path to output MTZ file.
+                <p>Default: reflections.mtz</p>
+            </def>
+            <def title="-cycles">
+                Number of internal cycles to run.
+                <p>Default: 5</p>
+            </def>
+        </deflist>
+    </chapter>
+
+    <seealso>
+        <!--Provide links to related how-to guides, overviews, and tutorials.-->
+    </seealso>
+</topic>

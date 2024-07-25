@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Installation" id="Installation">
+
+    <note>Python 3.10 or greater is required</note>
+    <procedure title="Python Package" id="pip">
+        <p>To install <code>Sails</code> as a Python package:</p>
+        <step>
+            <p>Create and source virtual environment</p>
+        </step>
+        <step>
+            <p>Run: </p>
+            <code-block>pip install pysails</code-block>
+        </step>
+    </procedure>
+
+    <procedure title="From GitHub" id="gh">
+        <p>To install <code>NucleoFind</code> from source:</p>
+        <step>
+            <p>Clone the repository</p>
+            <code-block>git clone https://github.com/Dialpuri/Sails.git</code-block>
+        </step>
+        <step>
+            <p>Change directory into the new repo</p>
+            <code-block>cd Sails</code-block>
+        </step>
+        <step>
+            <p>Create and source a virtual environment</p>
+            <code-block>python3 -m virtualenv pyenv</code-block>
+        </step>
+        <step>
+            <p>Go to package directory</p>
+            <code-block>cd package</code-block>
+        </step>
+        <step>
+            <p>Gather the dependency source files</p>
+            <code-block>./get_sources</code-block>
+        </step>
+        <step>
+            <p>Install the package locally</p>
+            <code-block>pip install .</code-block>
+        </step>
+    </procedure>
+</topic>
