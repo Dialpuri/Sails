@@ -94,6 +94,17 @@ bool Sails::Model::check_if_sugar_only_chain(std::vector<Sugar *> sugars) {
     });
 }
 
+double Sails::Model::calculate_clash_score(SuperpositionResult &result) {
+    constexpr double radius = 1;
+    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius).populate();
+    double clash_score = 0;
+    for (auto& atom: result.new_residue.atoms) {
+        auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
+        clash_score += static_cast<double>(nearest_atoms.size());
+    }
+    return clash_score;
+}
+
 Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
     const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
     std::cout << Utils::format_residue_from_site(terminal_sugars[0]->site, structure);
@@ -276,6 +287,12 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
             atoms, reference_atoms, density, result, length, angles, angles_stddev, torsions, torsion_stddev
         };
         result = refiner.refine();
+    }
+
+    // calculate clash score
+    double clash_score = calculate_clash_score(result);
+    if (clash_score > 1) {
+        return std::nullopt;
     }
 
     float rscc = density.rscc_score(result);

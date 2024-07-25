@@ -107,6 +107,7 @@ namespace Sails {
 
         bool check_if_sugar_only_chain(std::vector<Sugar*> sugars);
 
+        double calculate_clash_score(SuperpositionResult& result);
 
     private:
         gemmi::Structure* structure{};
