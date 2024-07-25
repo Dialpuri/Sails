@@ -208,6 +208,19 @@ namespace Sails::Utils {
   * @param path The path of the file where the structure should be saved.
   */
  void save_structure_to_file(const gemmi::Structure& structure, const std::string& path);
+
+
+ /**
+  * @brief Computes the next string will be alphabetically.
+  *
+  * This computes what the string will be if we increment the letter by one. For example this function will return "B"
+  * given the input "A".
+  *
+  * @param input The string to increment.
+  * @return The incremented string.
+  */
+ std::string get_next_string(const std::string& input);
+
 } // namespace Sails::Utils
 
 

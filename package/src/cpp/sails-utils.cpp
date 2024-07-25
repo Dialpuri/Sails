@@ -97,3 +97,20 @@ void Sails::Utils::save_structure_to_file(const gemmi::Structure &structure, con
     write_pdb(structure, of);
     of.close();
 }
+
+std::string Sails::Utils::get_next_string(const std::string& input) {
+    std::string result = input;
+    int i = result.length() - 1;
+
+    while (i >= 0) {
+        if (result[i] == 'Z') {
+            result[i] = 'A';
+            i--;
+        } else {
+            result[i] += 1;
+            return result;
+        }
+    }
+    return "A" + result;
+}
+
