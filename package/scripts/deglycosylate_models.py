@@ -5,6 +5,8 @@ def main(args):
     s = gemmi.read_structure(args.pdbin)
 
     os = gemmi.Structure()
+    os.cell = s.cell
+    os.name = s.name
     om = gemmi.Model(s[0].name)
     for c in s[0]:
         oc = gemmi.Chain(c.name)
