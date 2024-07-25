@@ -14,16 +14,28 @@ bool Sails::Model::check_entry_in_database(gemmi::Residue residue) {
     return false;
 }
 
-void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition) {
-    auto last_model_index = structure->models.size();
-    auto last_chain_index = structure->models[terminal_sugar->site.model_idx].chains.size();
-    auto last_residue_index = structure->models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx].
-            residues.size();
-    int seqid = (last_model_index * 100) + (last_chain_index * 10) + last_residue_index;
 
-    favoured_addition.new_residue.seqid = gemmi::SeqId(seqid, '?');
-    auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[terminal_sugar->site.chain_idx]
-            .residues;
+void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
+                                          bool is_sugar_only_chain) {
+    // std::cout << "TERMINAL SUGAR IS " << Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
+    int chain_idx = terminal_sugar->site.chain_idx;
+    int residue_idx = terminal_sugar->site.residue_idx;
+
+    if (!is_sugar_only_chain) {
+        const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
+        chain_idx = static_cast<int>(last_chain_idx);
+        gemmi::Chain chain;
+        chain.name = Utils::get_next_string(
+            structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
+        residue_idx = -1;
+        structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
+    }
+
+    favoured_addition.new_residue.seqid = gemmi::SeqId(residue_idx+2, '?');
+    auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
+    // std::cout << "Adding residue to chain " << structure->models[terminal_sugar->site.model_idx].chains[
+    // last_chain_index - 1].name << " with resid " << favoured_addition.new_residue.seqid.str() << std::endl;
+
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }
 
@@ -72,8 +84,21 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     a3->pos = best_pos;
 }
 
+bool Sails::Model::check_if_sugar_only_chain(std::vector<Sugar *> sugars) {
+    if (sugars.empty()) { return true; }
+    gemmi::Chain *chain = Utils::get_chain_ptr_from_glycosite(sugars[0]->site, structure);
+    return std::all_of(chain->residues.begin(), chain->residues.end(), [&](const gemmi::Residue &residue) {
+        if (residue.name == "ASN" || residue.name == "TRP") return false;
+        if (residue_database.find(residue.name) == residue_database.end()) return false;
+        return true;
+    });
+}
+
 Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
     const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
+    std::cout << Utils::format_residue_from_site(terminal_sugars[0]->site, structure);
+    bool is_sugar_only_chain = check_if_sugar_only_chain(terminal_sugars);
+
     for (auto &terminal_sugar: terminal_sugars) {
         gemmi::Residue residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
         gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
@@ -119,8 +144,9 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, De
         for (auto &addition: favoured_additions) {
             if (debug)
                 std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
-                    Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
-            add_sugar_to_structure(terminal_sugar, addition);
+                        Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
+            add_sugar_to_structure(terminal_sugar, addition, is_sugar_only_chain);
+            is_sugar_only_chain = false;
         }
         // add the favoured addition to the structure member
     }
@@ -245,9 +271,6 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
     SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
 
-    // if (atoms[2]->name == "O3" && atoms[3]->name == "C1" && atoms[4]->name == "O5" && atoms[5]->name == "C5") {
-    //     return result;
-    // }
     if (refine) {
         TorsionAngleRefiner refiner = {
             atoms, reference_atoms, density, result, length, angles, angles_stddev, torsions, torsion_stddev

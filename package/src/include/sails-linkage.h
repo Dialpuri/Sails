@@ -101,9 +101,12 @@ namespace Sails {
         std::optional<Sails::SuperpositionResult> add_residue(
             gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
 
-        void add_sugar_to_structure(const Sugar* terminal_sugar, SuperpositionResult& result);
+        void add_sugar_to_structure(const Sugar* terminal_sugar, SuperpositionResult& result, bool is_sugar_only_chain);
 
         static void rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string>& atoms, Density &density);
+
+        bool check_if_sugar_only_chain(std::vector<Sugar*> sugars);
+
 
     private:
         gemmi::Structure* structure{};
