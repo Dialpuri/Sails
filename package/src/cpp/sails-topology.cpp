@@ -125,10 +125,14 @@ Sails::Glycan Sails::Topology::find_glycan_topology(Glycosite &glycosite) {
     Glycan glycan = {m_structure, m_database, glycosite};
 
     std::queue<Glycosite> to_check({glycosite});
+    std::set<Glycosite> checked;
 
     while (!to_check.empty()) {
         auto current_site = to_check.front();
         to_check.pop();
+
+        if (checked.find(current_site) != checked.end()) { continue;}
+        checked.insert(current_site);
 
         auto a = Utils::get_residue_from_glycosite(current_site, m_structure);
         find_residue_near_donor(current_site, glycan, to_check);
