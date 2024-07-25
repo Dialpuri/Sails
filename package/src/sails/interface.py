@@ -4,7 +4,9 @@ import numpy as np
 
 def extract_gemmi_structure(structure: gemmi.Structure):
     os = sails.Structure()
+    os.set_cell(sails.Cell(structure.cell.a, structure.cell.b, structure.cell.c, structure.cell.alpha, structure.cell.beta, structure.cell.gamma))
     om = sails.Model()
+    om.name = structure[0].name
     for chain in structure[0]:
         oc = sails.Chain()
         oc.name = chain.name
@@ -13,6 +15,10 @@ def extract_gemmi_structure(structure: gemmi.Structure):
             or_.name = residue.name
             or_.seqid = sails.SeqId(residue.seqid.num, residue.seqid.icode)
             or_.subchain = residue.subchain
+            if residue.label_seq:
+                or_.set_label_seq(residue.label_seq)
+
+            or_.entity_id = residue.entity_id
             for atom in residue:
                 oa = sails.Atom()
                 oa.pos = sails.Position(*atom.pos.tolist())
@@ -37,10 +43,9 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
                 or_ = gemmi.Residue()
                 or_.name = residue.name
                 or_.seqid = gemmi.SeqId(residue.seqid.num(), residue.seqid.icode())
-                or_.label_seq = residue.seqid.num()
-                or_.entity_id = "1"
+                or_.label_seq = residue.get_label_seq()
+                or_.entity_id = residue.entity_id
                 or_.subchain = residue.subchain
-
                 for atom in residue.atoms:
                     oa = gemmi.Atom()
                     oa.pos = gemmi.Position(atom.pos.x, atom.pos.y, atom.pos.z)

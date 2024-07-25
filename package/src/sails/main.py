@@ -45,18 +45,21 @@ def run_python():
     t0 = time.time()
     ip = gemmi.read_structure("package/models/5fji/5fji_deglycosylated.pdb")
     im = gemmi.read_mtz_file("package/models/5fji/5fji.mtz")
-    s, m = n_glycosylate(ip, im, 3)
+
+    s, m = n_glycosylate(ip, im, 8)
 
     s.make_mmcif_block().write_file("sails-5fji.cif")
-    m.write_to_file("sails-5fji.mtz")
+    # m.write_to_file("sails-5fji.mtz")
 
-    # d = Dot(get_sails_structure(ip))
-    # g = GlycoSite(0, 0, 40)
-    # string = d.get_dotfile(g)
-    # src = graphviz.Source(string)
-    # snfg = src.pipe(format='svg', encoding='utf-8')
-    # with open("output.svg", "w") as f:
-    #     f.write(snfg)
+    s = get_sails_structure(s)
+    d = Dot(s)
+    a = d.get_all_dotfiles()
+    for k, v in a.items():
+        r = ip[k.model_idx][k.chain_idx][k.residue_idx]
+        src = graphviz.Source(v)
+        snfg = src.pipe(format='svg', encoding='utf-8')
+        with open(f"testing/snfgs/{r.__str__()}.svg", "w") as f:
+            f.write(snfg)
 
     t1 = time.time()
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")

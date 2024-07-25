@@ -5,6 +5,8 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/bind_vector.h>
+#include <nanobind/stl/map.h>
+
 
 #include "../cpp/sails.cpp"
 #include "../include/sails-gemmi-bindings.h"
@@ -41,12 +43,17 @@ NB_MODULE(sails_module, m) {
                         .def_rw("models", &gemmi::Structure::models)
                         .def("cell", [](const gemmi::Structure &structure) {
                                 return Sails::Cell(structure.cell);
+                        })
+                        .def("set_cell", [](gemmi::Structure &structure, const Sails::Cell &cell) {
+                                structure.cell = gemmi::UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta,
+                                                                 cell.gamma);
                         });
 
         nb::bind_vector<std::vector<gemmi::Model> >(m, "Models");
 
         nb::class_<gemmi::Model>(m, "Model")
                         .def(nb::init<>())
+                        .def_rw("name", &gemmi::Model::name)
                         .def_rw("chains", &gemmi::Model::chains);
         nb::bind_vector<std::vector<gemmi::Chain> >(m, "Chains");
 
@@ -61,7 +68,14 @@ NB_MODULE(sails_module, m) {
                         .def_rw("atoms", &gemmi::Residue::atoms)
                         .def_rw("name", &gemmi::Residue::name)
                         .def_rw("seqid", &gemmi::Residue::seqid)
-                        .def_rw("subchain", &gemmi::Residue::subchain);
+                        .def_rw("subchain", &gemmi::Residue::subchain)
+                        .def("get_label_seq", [ ](gemmi::Residue &residue) {
+                                return residue.label_seq.value;
+                        })
+                        .def("set_label_seq", [ ](gemmi::Residue &residue, const int label_seq) {
+                                residue.label_seq = gemmi::SeqId::OptionalNum(label_seq);
+                        })
+                        .def_rw("entity_id", &gemmi::Residue::entity_id);
         nb::bind_vector<std::vector<gemmi::Atom> >(m, "Atoms");
 
         nb::class_<gemmi::Atom>(m, "Atom")
@@ -122,7 +136,8 @@ NB_MODULE(sails_module, m) {
                         .def_rw("residue_idx", &Sails::Glycosite::residue_idx)
                         .def_rw("atom_idx", &Sails::Glycosite::atom_idx);
 
-    nb::class_<Sails::Dot>(m, "Dot")
-                       .def(nb::init<gemmi::Structure&>())
-                       .def("get_dotfile", &Sails::Dot::get_dotfile);
+        nb::class_<Sails::Dot>(m, "Dot")
+                        .def(nb::init<gemmi::Structure &>())
+                        .def("get_all_dotfiles", &Sails::Dot::get_all_dotfiles)
+                        .def("get_dotfile", &Sails::Dot::get_dotfile);
 }
