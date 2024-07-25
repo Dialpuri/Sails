@@ -26,6 +26,7 @@ namespace Sails {
      */
     struct Topology {
 
+        Topology() = default;
         Topology(gemmi::Structure* structure, Sails::ResidueDatabase& database);
 
         /**
