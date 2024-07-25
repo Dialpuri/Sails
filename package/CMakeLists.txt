@@ -84,10 +84,10 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-density.cpp
         ${WRK_DIR}/src/cpp/sails-refine.cpp
         ${WRK_DIR}/src/cpp/sails-cif.cpp
+        ${WRK_DIR}/src/cpp/sails-dot.cpp
 
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
-
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
@@ -132,6 +132,7 @@ file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
 add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
 set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
 target_compile_features(csails INTERFACE cxx_std_17)
+target_compile_options(csails PRIVATE -g )
 
 target_link_directories(csails
         PUBLIC
@@ -257,7 +258,7 @@ if(UNIX AND NOT APPLE)
     install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
 endif()
 
-if(APPLE)
+#if(APPLE)
     nanobind_add_stub(
             sails_module_stubs
 
@@ -268,5 +269,5 @@ if(APPLE)
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
     install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
-endif()
+#endif()
 
