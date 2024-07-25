@@ -5,15 +5,25 @@
 #include "../include/sails-dot.h"
 
 
+
 Sails::Dot::Dot(gemmi::Structure &structure) {
     JSONLoader loader = {"package/data/data.json"};
     m_database = loader.load_residue_database();
-    m_structure = std::move(structure);
+    m_structure = structure;
+    m_topology = {&m_structure, m_database};
+}
+
+std::map<Sails::Glycosite, std::string> Sails::Dot::get_all_dotfiles() {
+    Glycosites glycosites = find_n_glycosylation_sites(m_structure);
+    std::map<Glycosite, std::string> dot_files;
+    for (auto& glycosite: glycosites) {
+        dot_files[glycosite] = get_dotfile(glycosite);
+    }
+    return dot_files;
 }
 
 std::string Sails::Dot::get_dotfile(Glycosite &glycosite) {
-    Topology topology = {&m_structure, m_database};
-    Glycan glycan = topology.find_glycan_topology(glycosite);
+    Glycan glycan = m_topology.find_glycan_topology(glycosite);
 
     std::stringstream s;
     s << header() << std::endl;;
@@ -34,10 +44,6 @@ std::string Sails::Dot::get_dotfile(Glycosite &glycosite) {
     s << footer();
     return s.str();
 }
-
-// graph.set("pad", "0.5")
-// graph.set("nodesep", "1")
-// graph.set("rankset", "2")
 
 std::string Sails::Dot::header() {
     return "graph Glycan {\nrankdir=RL;\npad=0.5\nnodesep=1\nrankset=2\n{";

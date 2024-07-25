@@ -10,11 +10,14 @@
 #include "sails-glycan.h"
 #include "sails-topology.h"
 #include "sails-json.h"
+#include "sails-sequence.h"
 
 namespace Sails {
 
     struct Dot {
-        Dot(gemmi::Structure& structure);
+        explicit Dot(gemmi::Structure& structure);
+
+        std::map<Glycosite, std::string> get_all_dotfiles();
 
         std::string get_dotfile(Sails::Glycosite& glycosite);
 
@@ -26,6 +29,7 @@ namespace Sails {
     private:
         gemmi::Structure m_structure;
         ResidueDatabase m_database;
+        Topology m_topology;
     };
 }
 
