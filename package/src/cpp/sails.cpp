@@ -145,6 +145,7 @@ Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
         }
     }
 
+    std::cout << std::endl;
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
 
