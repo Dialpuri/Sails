@@ -56,11 +56,22 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         // cases where sugar is clashing into protein density
         if (float diff_score = density->difference_density_score(residue); diff_score > 1.1) {
             if (debug)
-                std::cout << "Removing " << Sails::Utils::format_residue_key(&previous_residue) << "--" <<
-                        Sails::Utils::format_residue_key(&residue) << " because of high DDS = " << diff_score <<
+                std::cout << "Removing " << Sails::Utils::format_residue_from_site(
+                            sugar_result.value()->site, structure) << "--" <<
+                        Sails::Utils::format_residue_from_site(sugar.first, structure) << " because of high DDS = " <<
+                        diff_score <<
                         std::endl;
             to_remove.emplace_back(sugar.second.get());
         }
+    }
+
+    // add linked sugars to removal list
+    for (auto &sugar: to_remove) {
+        std::vector<Sails::Sugar *> additional_sugars;
+        for (auto &linked_sugar: glycan->adjacency_list[sugar]) {
+            additional_sugars.emplace_back(linked_sugar);
+        }
+        to_remove.insert(to_remove.end(), additional_sugars.begin(), additional_sugars.end());
     }
 
     // sort removal in decsending order so removed indices don't cause later array overflow
@@ -73,88 +84,15 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     }
 }
 
-
-void run() {
+Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite &glycosite) {
     Sails::JSONLoader loader = {"package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
-    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
-
-    // N-glycosylation
-    const std::string path = "package/models/5fji/5fji_deglycosylated.pdb";
-    // const std::string path = "package/models/5fji/5fji.cif";
-    const std::string mtz_path = "package/models/5fji/5fji.mtz";
-
-    // C-Mannosylation Tests
-    // const std::string path = "package/models/6plh/6plh_deglycosylated.cif";
-    // const std::string mtz_path = "package/models/6plh/6plh.mtz";
-
-    gemmi::Structure structure = gemmi::read_structure_file(path);
-    gemmi::Structure original_structure = structure;
-
-    Sails::Glycosites glycosites = Sails::find_n_glycosylation_sites(structure);
-
-    // Sails::Glycosites glycosites = Sails::find_c_glycosylation_sites(structure);
-    // auto site = Sails::find_site(structure, "A", "ASN", 323);
-
-    // auto site = Sails::find_site(structure, "B", "ASN", 524);
-    // if (!site.has_value()) throw std::runtime_error("Site not found");
-    // Sails::Glycosites glycosites = {site.value()};
-
     Sails::Topology topology = {&structure, residue_database};
-
-    Sails::Density density = Sails::Density(mtz_path);
-    density.load_hkl("FP", "SIGFP");
-    density.recalculate_map(structure);
-    density.calculate_po_pc_map(original_structure);
-
-    structure.cell = density.m_mtz.cell;
-    structure.spacegroup_hm = density.m_mtz.spacegroup_name;
-
-    Sails::Model model = {&structure, linkage_database, residue_database};
-
-    int cycles = 6;
-    size_t progress_count = 0;
-
-    for (int i = 1; i <= cycles; i++) {
-        std::cout << "Cycle #" << i << std::endl;
-        // display_progress_bar(cycles, progress_count);
-
-        for (auto &glycosite: glycosites) {
-            Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            if (glycan.empty()) { continue; }
-
-            // find terminal sugars
-            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, false);
-            topology.set_structure(model.get_structure());
-        }
-
-        // recalculate maps
-        density.recalculate_map(structure);
-        density.calculate_po_pc_map(original_structure);
-
-        // remove erroneous sugars
-        for (auto &glycosite: glycosites) {
-            Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            if (glycan.empty()) { continue; }
-
-            remove_erroneous_sugars(&structure, &density, &glycan, false);
-        }
-    }
-
-
-    // add links and write files
-    std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
-    model.save("structure.cif", links);
-    density.write_mtz("reflections.mtz");
+    return topology.find_glycan_topology(glycosite);
 }
-
-int main() {
-    run();
-}
-
 
 Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
-    Sails::JSONLoader loader = {"package/data/data.json"};
+    Sails::JSONLoader loader = {"/Users/dialpuri/Development/sails/package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
@@ -179,7 +117,8 @@ Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     bool debug = false;
 
     for (int i = 1; i <= cycles; i++) {
-        if (!debug) std::cout << "\rCycle #" << i; std::cout << std::flush;
+        if (!debug) std::cout << "\rCycle #" << i;
+        std::cout << std::flush;
         if (debug) std::cout << "\rCycle #" << i << std::endl;
         // display_progress_bar(cycles, progress_count);
 
@@ -206,18 +145,37 @@ Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
         }
     }
 
-
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
-    model.save("structure.cif", links);
-    density.write_mtz("reflections.mtz");
 
     Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz);
-
-    std::cout << std::endl;
     return {
         *model.get_structure(),
         output_mtz
     };
 }
 
+
+int main() {
+    const std::string path = "package/models/5fji/5fji_deglycosylated.pdb";
+    const std::string mtz_path = "package/models/5fji/5fji.mtz";
+    //
+    // const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU_deglycosylated.cif";
+    // const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU.mtz";
+    int cycles = 3;
+
+    gemmi::Structure structure = gemmi::read_structure_file(path);
+    gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
+    Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz);
+    auto output = n_glycosylate(structure, sails_mtz, cycles);
+
+    std::string output_path = "structure.cif";
+    std::string output_mtz_path = "reflections.mtz";
+
+    std::ofstream os(output_path);
+    gemmi::cif::Document document = make_mmcif_document(output.structure);
+    write_cif_to_stream(os, document);
+    os.close();
+
+    form_gemmi_mtz(output.mtz).write_to_file(output_mtz_path);
+}
