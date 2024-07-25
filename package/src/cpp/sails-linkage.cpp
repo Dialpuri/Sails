@@ -5,14 +5,130 @@
 #include "../include/sails-linkage.h"
 #include "../include/sails-refine.h"
 
+// LOGGING FUNCTIONS
 
-bool Sails::Model::check_entry_in_database(gemmi::Residue residue) {
-    if (linkage_database.find(residue.name) == linkage_database.end()) {
-        std::cout << "Residue type: " << residue.name << " is not in Sails' Linkage Database" << std::endl;
+void Sails::Model::print_addition_log(const Sails::Sugar *terminal_sugar, Sails::SuperpositionResult &addition) {
+    std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
+            Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
+}
+
+void Sails::Model::print_attempted_addition_log(gemmi::Residue *residue_ptr, Sails::LinkageData &data) {
+    std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-" << data.
+            donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
+}
+
+void Sails::Model::print_rejection_log() {
+    std::cout << " rejected" << std::endl;
+}
+
+void Sails::Model::print_successful_log(Sails::Density &density, std::optional<Sails::SuperpositionResult> opt_result) {
+    float rscc = density.rscc_score(opt_result.value());
+    std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC = " <<
+            rscc << std::endl;
+}
+
+
+// UTILITY FUNCTIONS
+std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monomer, bool remove_h) {
+    // lookup mononer in cache
+    if (monomers.find(monomer) != monomers.end()) {
+        return monomers[monomer];
+    }
+
+    std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
+
+    if (!std::filesystem::exists(path)) {
+        path = special_monomer_path + "/" + monomer + ".cif";
+        if (!std::filesystem::exists(path)) {
+            std::cout << path << " monomer does not exist" << std::endl;
+            return std::nullopt;
+        }
+    }
+
+    gemmi::Structure structure = gemmi::read_structure_file(path, gemmi::CoorFormat::Detect);
+    gemmi::Residue residue = structure.models[0].chains[0].residues[0];
+
+    if (remove_h) {
+        auto leaving_atom_iter = std::remove_if(residue.atoms.begin(), residue.atoms.end(),
+                                                [&](const gemmi::Atom &a) { return a.element.atomic_number() == 1; });
+        residue.atoms.erase(leaving_atom_iter, residue.atoms.end());
+    }
+
+    monomers[monomer] = residue;
+    return residue;
+}
+
+
+void Sails::Model::save(const std::string &path, std::vector<LinkRecord> &links) {
+    std::ofstream os(path);
+    gemmi::cif::Document document = make_mmcif_document(*structure);
+    gemmi::cif::Block *block = &document.sole_block();
+    auto struct_conn = block->find_or_add("_struct_conn", LinkRecord::tags());
+
+    for (LinkRecord &link: links) {
+        struct_conn.append_row(link.labels());
+    }
+
+    write_cif_to_stream(os, document);
+    os.close();
+}
+
+void Sails::Model::save(const std::string &path) {
+    std::ofstream os(path);
+    write_cif_to_stream(os, make_mmcif_document(*structure));
+    os.close();
+}
+
+bool Sails::Model::check_entry_in_database(gemmi::Residue *residue) {
+    if (linkage_database.find(residue->name) == linkage_database.end()) {
+        std::cout << "Residue type: " << residue->name << " is not in Sails' Linkage Database" << std::endl;
         return true;
     }
     return false;
 }
+
+
+// RESIDUE MANIPULATION FUNCTIONS
+void Sails::Model::move_acceptor_atomic_positions(std::vector<gemmi::Atom *> &atoms, double length,
+                                                  std::vector<double> &angles, std::vector<double> &torsions) {
+    for (int i = 0; i < 3; i++) {
+        gemmi::Position atom1 = atoms[i]->pos;
+        gemmi::Position atom2 = atoms[i + 1]->pos;
+        gemmi::Position atom3 = atoms[i + 2]->pos;
+        gemmi::Vec3 new_position = calculate_projected_point(atom1, atom2, atom3, length, angles[i], torsions[i]);
+        atoms[i + 3]->pos = gemmi::Position(new_position);
+    }
+}
+
+gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom *> &atoms,
+                                               std::vector<gemmi::Atom> &reference_atoms, double length,
+                                               std::vector<double> &angles, std::vector<double> &torsions) {
+    move_acceptor_atomic_positions(atoms, length, angles, torsions);
+
+    std::vector<gemmi::Position> reference_positions;
+    std::vector<gemmi::Position> new_positions;
+    std::for_each(atoms.begin() + 3, atoms.end(), [&](const gemmi::Atom *a) { new_positions.emplace_back(a->pos); });
+    std::for_each(reference_atoms.begin(), reference_atoms.end(), [&](const gemmi::Atom &a) {
+        reference_positions.emplace_back(a.pos);
+    });
+
+    return calculate_superposition(reference_positions, new_positions);
+}
+
+
+void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue &reference_library_monomer,
+                                       gemmi::Residue &new_monomer) {
+    std::string leaving_atom = "O" + std::to_string(data.acceptor_number); // Ox atom leaves in sugars
+    auto leaving_atom_iter = std::remove_if(new_monomer.atoms.begin(), new_monomer.atoms.end(),
+                                            [&leaving_atom](const gemmi::Atom &a) { return a.name == leaving_atom; });
+    new_monomer.atoms.erase(leaving_atom_iter, new_monomer.atoms.end());
+
+    leaving_atom_iter = std::remove_if(reference_library_monomer.atoms.begin(), reference_library_monomer.atoms.end(),
+                                       [&leaving_atom](const gemmi::Atom &a) { return a.name == leaving_atom; });
+    reference_library_monomer.atoms.erase(leaving_atom_iter, reference_library_monomer.atoms.end());
+}
+
+
 
 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
@@ -33,9 +149,6 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
 
     favoured_addition.new_residue.seqid = gemmi::SeqId(residue_idx+2, '?');
     auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
-    // std::cout << "Adding residue to chain " << structure->models[terminal_sugar->site.model_idx].chains[
-    // last_chain_index - 1].name << " with resid " << favoured_addition.new_residue.seqid.str() << std::endl;
-
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }
 
@@ -94,7 +207,7 @@ bool Sails::Model::check_if_sugar_only_chain(std::vector<Sugar *> sugars) {
     });
 }
 
-double Sails::Model::calculate_clash_score(SuperpositionResult &result) {
+double Sails::Model::calculate_clash_score(const SuperpositionResult &result) const {
     constexpr double radius = 1;
     gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius).populate();
     double clash_score = 0;
@@ -103,126 +216,6 @@ double Sails::Model::calculate_clash_score(SuperpositionResult &result) {
         clash_score += static_cast<double>(nearest_atoms.size());
     }
     return clash_score;
-}
-
-Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
-    const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
-    std::cout << Utils::format_residue_from_site(terminal_sugars[0]->site, structure);
-    bool is_sugar_only_chain = check_if_sugar_only_chain(terminal_sugars);
-
-    for (auto &terminal_sugar: terminal_sugars) {
-        gemmi::Residue residue = Utils::get_residue_from_glycosite(terminal_sugar->site, structure);
-        gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
-
-        // std::cout << "Terminal sugar is " << Utils::format_site_key(terminal_sugar->site) << " with depth = " << terminal_sugar->depth<< std::endl;
-        if (check_entry_in_database(residue)) continue;
-
-        // calculate the sugars that can be linked to this terminal sugar
-        std::map<int, std::vector<SuperpositionResult> > possible_additions;
-        for (auto &data: linkage_database[residue.name]) {
-            if (debug)
-                std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-" << data.
-                        donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
-
-            std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
-
-            if (!opt_result.has_value()) {
-                if (debug) std::cout << " rejected" << std::endl;
-                continue;
-            };
-
-            possible_additions[data.donor_number].emplace_back(opt_result.value());
-
-            float rscc = density.rscc_score(opt_result.value());
-            if (debug) std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC = " <<
-                    rscc << std::endl;
-        }
-
-        if (possible_additions.empty()) { continue; }
-
-        // find the most likely one for each donor atom  based on preferred depth
-        std::vector<SuperpositionResult> favoured_additions;
-        for (const auto &[donor, possible_additions]: possible_additions) {
-            for (const auto &addition: possible_additions) {
-                std::vector<int> preferred_depths = residue_database[addition.new_residue.name].preferred_depths;
-                if (std::find(preferred_depths.begin(), preferred_depths.end(), terminal_sugar->depth + 1) !=
-                    preferred_depths.end()) {
-                    favoured_additions.emplace_back(addition);
-                }
-            }
-        }
-
-        for (auto &addition: favoured_additions) {
-            if (debug)
-                std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
-                        Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
-            add_sugar_to_structure(terminal_sugar, addition, is_sugar_only_chain);
-            is_sugar_only_chain = false;
-        }
-        // add the favoured addition to the structure member
-    }
-
-
-    Topology topology = {structure, residue_database};
-    return topology.find_glycan_topology(glycan.glycosite);
-}
-
-void Sails::Model::move_acceptor_atomic_positions(std::vector<gemmi::Atom *> &atoms, double length,
-                                                  std::vector<double> &angles, std::vector<double> &torsions) {
-    for (int i = 0; i < 3; i++) {
-        gemmi::Position atom1 = atoms[i]->pos;
-        gemmi::Position atom2 = atoms[i + 1]->pos;
-        gemmi::Position atom3 = atoms[i + 2]->pos;
-        gemmi::Vec3 new_position = calculate_projected_point(atom1, atom2, atom3, length, angles[i], torsions[i]);
-        atoms[i + 3]->pos = gemmi::Position(new_position);
-    }
-}
-
-gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom *> &atoms,
-                                               std::vector<gemmi::Atom> &reference_atoms, double length,
-                                               std::vector<double> &angles, std::vector<double> &torsions) {
-    move_acceptor_atomic_positions(atoms, length, angles, torsions);
-
-    std::vector<gemmi::Position> reference_positions;
-    std::vector<gemmi::Position> new_positions;
-    std::for_each(atoms.begin() + 3, atoms.end(), [&](const gemmi::Atom *a) { new_positions.emplace_back(a->pos); });
-    std::for_each(reference_atoms.begin(), reference_atoms.end(), [&](const gemmi::Atom &a) {
-        reference_positions.emplace_back(a.pos);
-    });
-
-    return calculate_superposition(reference_positions, new_positions);
-}
-
-void Sails::Model::save(const std::string &path, std::vector<LinkRecord> &links) {
-    std::ofstream os(path);
-    gemmi::cif::Document document = make_mmcif_document(*structure);
-    gemmi::cif::Block *block = &document.sole_block();
-    auto struct_conn = block->find_or_add("_struct_conn", LinkRecord::tags());
-
-    for (LinkRecord &link: links) {
-        struct_conn.append_row(link.labels());
-    }
-
-    write_cif_to_stream(os, document);
-    os.close();
-}
-
-void Sails::Model::save(const std::string &path) {
-    std::ofstream os(path);
-    write_cif_to_stream(os, make_mmcif_document(*structure));
-    os.close();
-}
-
-void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue &reference_library_monomer,
-                                       gemmi::Residue &new_monomer) {
-    std::string leaving_atom = "O" + std::to_string(data.acceptor_number); // Ox atom leaves in sugars
-    auto leaving_atom_iter = std::remove_if(new_monomer.atoms.begin(), new_monomer.atoms.end(),
-                                            [&leaving_atom](const gemmi::Atom &a) { return a.name == leaving_atom; });
-    new_monomer.atoms.erase(leaving_atom_iter, new_monomer.atoms.end());
-
-    leaving_atom_iter = std::remove_if(reference_library_monomer.atoms.begin(), reference_library_monomer.atoms.end(),
-                                       [&leaving_atom](const gemmi::Atom &a) { return a.name == leaving_atom; });
-    reference_library_monomer.atoms.erase(leaving_atom_iter, reference_library_monomer.atoms.end());
 }
 
 std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
@@ -306,32 +299,68 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 }
 
 
-std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monomer, bool remove_h) {
-    // lookup mononer in cache
-    if (monomers.find(monomer) != monomers.end()) {
-        return monomers[monomer];
-    }
 
-    std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
-
-    if (!std::filesystem::exists(path)) {
-        path = special_monomer_path + "/" + monomer + ".cif";
-        if (!std::filesystem::exists(path)) {
-            std::cout << path << " monomer does not exist" << std::endl;
-            return std::nullopt;
+std::vector<Sails::SuperpositionResult> Sails::Model::find_favoured_additions(const Sugar *&terminal_sugar, PossibleAdditions& possible_additions) {
+    std::vector<SuperpositionResult> favoured_additions;
+    for (const auto &[donor, possible_additions]: possible_additions) {
+        for (const auto &addition: possible_additions) {
+            std::vector<int> preferred_depths = residue_database[addition.new_residue.name].preferred_depths;
+            if (std::find(preferred_depths.begin(), preferred_depths.end(), terminal_sugar->depth + 1) !=
+                preferred_depths.end()) {
+                favoured_additions.emplace_back(addition);
+            }
         }
     }
+    return favoured_additions;
+}
 
-    gemmi::Structure structure = gemmi::read_structure_file(path, gemmi::CoorFormat::Detect);
-    gemmi::Residue residue = structure.models[0].chains[0].residues[0];
 
-    if (remove_h) {
-        auto leaving_atom_iter = std::remove_if(residue.atoms.begin(), residue.atoms.end(),
-                                                [&](const gemmi::Atom &a) { return a.element.atomic_number() == 1; });
-        residue.atoms.erase(leaving_atom_iter, residue.atoms.end());
+void Sails::Model::extend_if_possible(Density &density, bool debug, bool &is_sugar_only_chain, const Sugar *terminal_sugar) {
+    gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
+
+    // std::cout << "Terminal sugar is " << Utils::format_site_key(terminal_sugar->site) << " with depth = " << terminal_sugar->depth<< std::endl;
+    if (check_entry_in_database(residue_ptr)) return;
+
+    // calculate the sugars that can be linked to this terminal sugar
+    PossibleAdditions possible_additions;
+    for (LinkageData &data: linkage_database[residue_ptr->name]) {
+        if (debug) print_attempted_addition_log(residue_ptr, data);
+
+        std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
+
+        if (!opt_result.has_value()) {
+            if (debug) print_rejection_log();
+            continue;
+        };
+
+        possible_additions[data.donor_number].emplace_back(opt_result.value());
+
+        if (debug) print_successful_log(density, opt_result);
     }
 
-    monomers[monomer] = residue;
-    return residue;
+    if (possible_additions.empty()) { return; }
+
+    // find the most likely one for each donor atom  based on preferred depth
+    std::vector<SuperpositionResult> favoured_additions = find_favoured_additions(terminal_sugar, possible_additions);
+
+    // add the favoured addition to the structure member
+    for (SuperpositionResult &addition: favoured_additions) {
+        if (debug) print_addition_log(terminal_sugar, addition);
+        add_sugar_to_structure(terminal_sugar, addition, is_sugar_only_chain);
+        is_sugar_only_chain = false;
+    }
+}
+
+Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
+    const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
+    // std::cout << Utils::format_residue_from_site(terminal_sugars[0]->site, structure);
+    bool is_sugar_only_chain = check_if_sugar_only_chain(terminal_sugars);
+
+    for (const auto &terminal_sugar: terminal_sugars) {
+        extend_if_possible(density, debug, is_sugar_only_chain, terminal_sugar);
+    }
+
+    Topology topology = {structure, residue_database};
+    return topology.find_glycan_topology(glycan.glycosite);
 }
 
