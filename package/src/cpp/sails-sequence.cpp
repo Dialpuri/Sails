@@ -13,8 +13,11 @@ Sails::Glycosites Sails::find_n_glycosylation_sites(const gemmi::Structure &stru
         for (int chain_idx = 0; chain_idx < chains.size(); chain_idx++) {
 
             auto residues = chains[chain_idx].children();
-            for (int residue_idx = 0; residue_idx < residues.size() - 2; residue_idx++) {
 
+            // if there are less than three residues, skip
+            if (residues.size() < 3) continue;
+
+            for (int residue_idx = 0; residue_idx < residues.size() - 2; residue_idx++) {
                 char first = gemmi::find_tabulated_residue(residues[residue_idx].name).one_letter_code;
                 if (first != 'N') {continue;}
 
