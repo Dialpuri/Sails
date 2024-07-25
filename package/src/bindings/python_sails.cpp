@@ -8,6 +8,7 @@
 
 #include "../cpp/sails.cpp"
 #include "../include/sails-gemmi-bindings.h"
+#include "../include/sails-dot.h"
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -116,4 +117,15 @@ NB_MODULE(sails_module, m) {
                         .def_ro("mtz", &Sails::Output::mtz);
 
         m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a);
+
+        nb::class_<Sails::Glycosite>(m, "GlycoSite")
+                        .def(nb::init<int, int, int>())
+                        .def_rw("model_idx", &Sails::Glycosite::model_idx)
+                        .def_rw("chain_idx", &Sails::Glycosite::chain_idx)
+                        .def_rw("residue_idx", &Sails::Glycosite::residue_idx)
+                        .def_rw("atom_idx", &Sails::Glycosite::atom_idx);
+
+    nb::class_<Sails::Dot>(m, "Dot")
+                       .def(nb::init<gemmi::Structure&>())
+                       .def("get_dotfile", &Sails::Dot::get_dotfile);
 }
