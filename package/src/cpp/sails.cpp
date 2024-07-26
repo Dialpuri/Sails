@@ -91,7 +91,7 @@ Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite 
     return topology.find_glycan_topology(glycosite);
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, bool use_supplied_weights) {
     Sails::JSONLoader loader = {"/Users/dialpuri/Development/sails/package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
@@ -168,7 +168,7 @@ int main() {
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz);
-    auto output = n_glycosylate(structure, sails_mtz, cycles);
+    auto output = n_glycosylate(structure, sails_mtz, cycles, false);
 
     std::string output_path = "structure.cif";
     std::string output_mtz_path = "reflections.mtz";
