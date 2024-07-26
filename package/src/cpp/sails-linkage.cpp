@@ -172,7 +172,7 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     float best_score = -1e8;
 
     for (int i = 0; i < 360; i++) {
-        float angle_r = clipper::Util::d2rad(i);
+        double angle_r = clipper::Util::d2rad(i);
         double c = cos(angle_r);
         double s = sin(angle_r);
         double C = 1 - c;
@@ -201,7 +201,7 @@ Sails::Model::ChainType Sails::Model::find_chain_type(std::vector<Sugar *> sugar
     if (sugars.empty()) { return protein; }
     gemmi::Chain *chain = Utils::get_chain_ptr_from_glycosite(sugars[0]->site, structure);
     const bool result = std::all_of(chain->residues.begin(), chain->residues.end(), [&](const gemmi::Residue &residue) {
-        if (residue.name == "ASN" || residue.name == "TRP") return false;
+        if (gemmi::find_tabulated_residue(residue.name).is_amino_acid()) return false;
         if (residue_database.find(residue.name) == residue_database.end()) return false;
         return true;
     });
@@ -289,13 +289,11 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
         return std::nullopt;
     }
 
+    // calculate rscc
     float rscc = density.rscc_score(result);
     if (rscc < 0.2) {
         return std::nullopt;
     }
-
-    // std::cout << "Extending " << Utils::format_residue_key(&residue) << " added " << Utils::format_residue_key(&result.new_residue) << std::endl;
-
     return result;
 }
 
