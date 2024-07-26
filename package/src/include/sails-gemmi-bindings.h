@@ -129,9 +129,11 @@ namespace Sails {
      * and forms a Sails Reflection object for each reflection. Finally, it creates a Sails MTZ object and returns it.
      *
      * @param mtz The gemmi::Mtz object containing the necessary columns
+     * @param f_label The F column name, defaults to "FP"
+     * @param sigf_label The SIGF column name , defaults to "SIGF"
      * @return The Sails MTZ object formed from the gemmi::Mtz object
      */
-    MTZ form_sails_mtz(gemmi::Mtz& mtz);
+    MTZ form_sails_mtz(gemmi::Mtz& mtz, const std::string &f_label="F", const std::string &sigf_label = "SIGF");
 
 
     /**

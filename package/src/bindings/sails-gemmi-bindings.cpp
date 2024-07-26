@@ -55,12 +55,12 @@ gemmi::Mtz Sails::form_gemmi_mtz(MTZ& mtz) {
     return new_mtz;
 }
 
-Sails::MTZ Sails::form_sails_mtz(gemmi::Mtz& mtz) {
+Sails::MTZ Sails::form_sails_mtz(gemmi::Mtz& mtz, const std::string &f_label, const std::string &sigf_label) {
     gemmi::Mtz::Column h = mtz.get_column_with_label("H");
     gemmi::Mtz::Column k = mtz.get_column_with_label("K");
     gemmi::Mtz::Column l = mtz.get_column_with_label("L");
-    gemmi::Mtz::Column f = mtz.get_column_with_label("FP");
-    gemmi::Mtz::Column sigf = mtz.get_column_with_label("SIGFP");
+    gemmi::Mtz::Column f = mtz.get_column_with_label(f_label);
+    gemmi::Mtz::Column sigf = mtz.get_column_with_label(sigf_label);
 
     gemmi::Mtz::Column* fwt = mtz.column_with_label("FWT");
     gemmi::Mtz::Column* phwt = mtz.column_with_label("PHWT");
