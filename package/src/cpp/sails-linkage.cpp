@@ -147,8 +147,8 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
         structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
     }
 
-    favoured_addition.new_residue.seqid = gemmi::SeqId(residue_idx+2, '?');
     auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
+    favoured_addition.new_residue.seqid = gemmi::SeqId(static_cast<int>(all_residues->size())+1, '?');
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }
 
