@@ -62,6 +62,8 @@ namespace Sails {
   */
  struct Model {
   friend struct TorsionAngleRefiner;
+  enum ChainType {protein, non_protein};
+
   Model() = default;
 
   Model(gemmi::Structure *structure, LinkageDatabase &linkage_database, ResidueDatabase &residue_database)
@@ -122,10 +124,10 @@ namespace Sails {
    *
    * @param density The density class used to score residues into experimental data.
    * @param debug A flag indicating whether debug output should be enabled.
-   * @param is_sugar_only_chain A boolean reference that will be updated to indicate whether the extended glycan is a sugar-only chain.
+   * @param chain_type A boolean reference that will be updated to indicate whether the extended glycan is a sugar-only chain.
    * @param terminal_sugar The terminal sugar from which to extend the glycan.
    */
-  void extend_if_possible(Density &density, bool debug, bool &is_sugar_only_chain,
+  void extend_if_possible(Density &density, bool debug, ChainType &chain_type,
                           const Sugar *terminal_sugar);
 
   /**
@@ -164,9 +166,9 @@ namespace Sails {
    *
    * @param terminal_sugar The terminal sugar to add.
    * @param result The superposition result representing the sugar to be added.
-   * @param is_sugar_only_chain A flag indicating whether the sugar chain is only composed of sugars.
+   * @param chain_type A flag indicating whether the sugar chain is only composed of sugars.
    */
-  void add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &result, bool is_sugar_only_chain);
+  void add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &result, ChainType &chain_type);
 
   /**
    * @brief Calculates the clash score for the given SuperpositionResult.
@@ -252,10 +254,10 @@ namespace Sails {
   static void rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string> &atoms, Density &density);
 
   /**
-   * @brief Checks if a chain consists only of sugars
+   * @brief Finds chain type of sugars
    *
    */
-  bool check_if_sugar_only_chain(std::vector<Sugar *> sugars);
+  ChainType find_chain_type(std::vector<Sugar *> sugars);
 
   /**
   * @brief Checks if a residue is in the residue database
