@@ -83,6 +83,9 @@ NB_MODULE(sails_module, m) {
                         .def_rw("pos", &gemmi::Atom::pos)
                         .def_rw("b_iso", &gemmi::Atom::b_iso)
                         .def_rw("altloc", &gemmi::Atom::altloc)
+                        .def("set_altloc", [](gemmi::Atom& atom, std::string& altloc) {
+                            atom.altloc = altloc[0];
+                        })
                         .def_rw("element", &gemmi::Atom::element)
                         .def_rw("occ", &gemmi::Atom::occ)
                         .def_rw("name", &gemmi::Atom::name);
@@ -127,8 +130,6 @@ NB_MODULE(sails_module, m) {
                         .def_ro("structure", &Sails::Output::structure)
                         .def_ro("mtz", &Sails::Output::mtz);
 
-        m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a);
-
         nb::class_<Sails::Glycosite>(m, "GlycoSite")
                         .def(nb::init<int, int, int>())
                         .def_rw("model_idx", &Sails::Glycosite::model_idx)
@@ -140,4 +141,7 @@ NB_MODULE(sails_module, m) {
                         .def(nb::init<gemmi::Structure &>())
                         .def("get_all_dotfiles", &Sails::Dot::get_all_dotfiles)
                         .def("get_dotfile", &Sails::Dot::get_dotfile);
+
+    m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a);
+
 }
