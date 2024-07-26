@@ -26,6 +26,7 @@ def extract_gemmi_structure(structure: gemmi.Structure):
                 oa.b_iso = atom.b_iso
                 oa.element = sails.Element(atom.element.name)
                 oa.name = atom.name
+                oa.set_altloc(atom.altloc)
                 or_.atoms.append(oa)
             oc.residues.append(or_)
         om.chains.append(oc)
@@ -53,6 +54,7 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
                     oa.b_iso = atom.b_iso
                     oa.element = gemmi.Element(atom.element.name)
                     oa.name = atom.name
+                    oa.altloc = atom.altloc
                     or_.add_atom(oa)
                 oc.add_residue(or_)
             om.add_chain(oc)
