@@ -132,12 +132,12 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 
 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
-                                          bool is_sugar_only_chain) {
+                                          ChainType &chain_type) {
     // std::cout << "TERMINAL SUGAR IS " << Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
     int chain_idx = terminal_sugar->site.chain_idx;
     int residue_idx = terminal_sugar->site.residue_idx;
 
-    if (!is_sugar_only_chain) {
+    if (chain_type == protein) {
         const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
         chain_idx = static_cast<int>(last_chain_idx);
         gemmi::Chain chain;
@@ -197,14 +197,15 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
     a3->pos = best_pos;
 }
 
-bool Sails::Model::check_if_sugar_only_chain(std::vector<Sugar *> sugars) {
-    if (sugars.empty()) { return true; }
+Sails::Model::ChainType Sails::Model::find_chain_type(std::vector<Sugar *> sugars) {
+    if (sugars.empty()) { return protein; }
     gemmi::Chain *chain = Utils::get_chain_ptr_from_glycosite(sugars[0]->site, structure);
-    return std::all_of(chain->residues.begin(), chain->residues.end(), [&](const gemmi::Residue &residue) {
+    const bool result = std::all_of(chain->residues.begin(), chain->residues.end(), [&](const gemmi::Residue &residue) {
         if (residue.name == "ASN" || residue.name == "TRP") return false;
         if (residue_database.find(residue.name) == residue_database.end()) return false;
         return true;
     });
+    return result ? non_protein: protein;
 }
 
 double Sails::Model::calculate_clash_score(const SuperpositionResult &result) const {
@@ -315,7 +316,7 @@ std::vector<Sails::SuperpositionResult> Sails::Model::find_favoured_additions(co
 }
 
 
-void Sails::Model::extend_if_possible(Density &density, bool debug, bool &is_sugar_only_chain, const Sugar *terminal_sugar) {
+void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &chain_type, const Sugar *terminal_sugar) {
     gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
 
     // std::cout << "Terminal sugar is " << Utils::format_site_key(terminal_sugar->site) << " with depth = " << terminal_sugar->depth<< std::endl;
@@ -346,18 +347,17 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, bool &is_sug
     // add the favoured addition to the structure member
     for (SuperpositionResult &addition: favoured_additions) {
         if (debug) print_addition_log(terminal_sugar, addition);
-        add_sugar_to_structure(terminal_sugar, addition, is_sugar_only_chain);
-        is_sugar_only_chain = false;
+        add_sugar_to_structure(terminal_sugar, addition, chain_type);
+        chain_type = non_protein;
     }
 }
 
 Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, Density &density, bool debug) {
     const std::vector<Sugar *> terminal_sugars = glycan.get_terminal_sugars(base_glycosite);
-    // std::cout << Utils::format_residue_from_site(terminal_sugars[0]->site, structure);
-    bool is_sugar_only_chain = check_if_sugar_only_chain(terminal_sugars);
+    ChainType chain_type = find_chain_type(terminal_sugars);
 
     for (const auto &terminal_sugar: terminal_sugars) {
-        extend_if_possible(density, debug, is_sugar_only_chain, terminal_sugar);
+        extend_if_possible(density, debug, chain_type, terminal_sugar);
     }
 
     Topology topology = {structure, residue_database};
