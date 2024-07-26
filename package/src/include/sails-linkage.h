@@ -61,6 +61,7 @@ namespace Sails {
   * @brief Represents a model used for extending glycans and performing other operations.
   */
  struct Model {
+  friend struct TorsionAngleRefiner;
   Model() = default;
 
   Model(gemmi::Structure *structure, LinkageDatabase &linkage_database, ResidueDatabase &residue_database)
