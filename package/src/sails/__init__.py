@@ -11,6 +11,7 @@ from .sails_module import (
                            Element,
                            SeqId,
                            n_glycosylate_from_objects,
+                           c_glycosylate_from_objects,
                            Cell,
                            MTZ,
                            GlycoSite,
