@@ -263,7 +263,7 @@ namespace Sails {
   * @brief Checks if a residue is in the residue database
   *
   */
-  bool check_entry_in_database(gemmi::Residue *residue);
+  bool residue_in_database(gemmi::Residue *residue);
 
 
   /**

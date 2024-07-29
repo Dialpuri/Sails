@@ -79,12 +79,12 @@ void Sails::Model::save(const std::string &path) {
     os.close();
 }
 
-bool Sails::Model::check_entry_in_database(gemmi::Residue *residue) {
+bool Sails::Model::residue_in_database(gemmi::Residue *residue) {
     if (linkage_database.find(residue->name) == linkage_database.end()) {
         std::cout << "Residue type: " << residue->name << " is not in Sails' Linkage Database" << std::endl;
-        return true;
+        return false;
     }
-    return false;
+    return true;
 }
 
 
@@ -153,18 +153,13 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
 }
 
 void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string> &atoms, Density &density) {
-    gemmi::Atom a1 = *std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
-        return a.name == atoms[0];
-    });
-    gemmi::Atom a2 = *std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
-        return a.name == atoms[1];
-    });
-    gemmi::Atom *a3 = &(*std::find_if(residue->atoms.begin(), residue->atoms.end(), [&](const gemmi::Atom &a) {
-        return a.name == atoms[2];
-    }));
+    gemmi::Atom* a1 = residue->find_atom(atoms[0], '\0');
+    gemmi::Atom* a2 = residue->find_atom(atoms[1], '\0');
+    gemmi::Atom* a3 = residue->find_atom(atoms[2], '\0');
 
+    if (a1 == nullptr || a2 == nullptr || a3 == nullptr) throw std::runtime_error("Exocylic atom could not be found");
     // create rotation axis vector from position of atom1 to atom2
-    gemmi::Vec3 axis = a2.pos - a1.pos;
+    gemmi::Vec3 axis = a2->pos - a1->pos;
     axis = axis.normalized(); // normalize the axis vector
 
     // calculate components of rotation matrix
@@ -188,7 +183,7 @@ void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<s
         );
 
         // rotate around the axis
-        auto new_position = gemmi::Position(rot_matrix.multiply(a3->pos - a1.pos) + a1.pos);
+        auto new_position = gemmi::Position(rot_matrix.multiply(a3->pos - a1->pos) + a1->pos);
         if (const float score = density.score_position(new_position); score > best_score) {
             best_pos = new_position;
             best_score = score;
@@ -221,14 +216,12 @@ double Sails::Model::calculate_clash_score(const SuperpositionResult &result) co
 
 std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     gemmi::Residue *residue, LinkageData &data, Density &density, bool refine) {
-    std::vector<gemmi::Atom *> atoms;
 
     // find library monomer for acceptor residue
     auto library_monomer = get_monomer(data.acceptor, true);
 
     if (!library_monomer.has_value()) { throw std::runtime_error("Could not get monomer"); }
     auto reference_library_monomer = gemmi::Residue(library_monomer.value());
-    auto new_monomer = gemmi::Residue(library_monomer.value());
 
     std::vector<gemmi::Atom> reference_atoms;
     ResidueData donor_residue = residue_database[data.donor];
@@ -242,8 +235,9 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
         rotate_exocyclic_atoms(residue, donor_atoms, density);
     }
 
+    std::vector<gemmi::Atom *> atoms;
     for (const auto &donor: donor_atoms) {
-        auto atom = const_cast<gemmi::Atom *>(residue->find_atom(donor, '*'));
+        auto atom = residue->find_atom(donor, '*');
         if (atom == nullptr) { throw std::runtime_error("Could not find an atom"); }
         atoms.emplace_back(atom);
     }
@@ -251,7 +245,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     // find acceptor atoms and add them to atoms list
     auto acceptor_atoms = acceptor_residue.acceptor_map[data.acceptor_number];
     for (const auto &acceptor: acceptor_atoms) {
-        auto atom = const_cast<gemmi::Atom *>(library_monomer.value().find_atom(acceptor, '\0'));
+        auto atom = library_monomer.value().find_atom(acceptor, '\0');
         if (atom == nullptr) { throw std::runtime_error("Could not find an atom"); }
         atoms.emplace_back(atom);
         reference_atoms.emplace_back(*atom); // make a copy so that we have a unchanged reference
@@ -259,42 +253,53 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
     if (atoms.size() != 6) { throw std::runtime_error("Unexpected atom count"); }
 
-    std::vector<double> torsions = data.torsions.get_means_in_order();
-    std::vector<double> torsion_stddev = data.torsions.get_stddev_in_order();
-    std::vector<double> angles = data.angles.get_means_in_order();
-    std::vector<double> angles_stddev = data.angles.get_stddev_in_order();
-
     double length = data.length;
 
-    gemmi::Transform superpose_result = superpose_atoms(atoms, reference_atoms, length, angles, torsions);
-    gemmi::transform_pos_and_adp(new_monomer, superpose_result);
+    SuperpositionResult best_result;
+    float best_rscc = INT_MIN;
 
-    // remove leaving atom
-    remove_leaving_atom(data, reference_library_monomer, new_monomer);
-    new_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
-    reference_library_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
+    for (auto& cluster: data.clusters) {
+        std::vector<double> torsions = cluster.torsions.get_means_in_order();
+        std::vector<double> torsion_stddev = cluster.torsions.get_stddev_in_order();
+        std::vector<double> angles = cluster.angles.get_means_in_order();
+        std::vector<double> angles_stddev = cluster.angles.get_stddev_in_order();
 
-    SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
+        auto new_monomer = gemmi::Residue(library_monomer.value());
+        gemmi::Transform superpose_result = superpose_atoms(atoms, reference_atoms, length, angles, torsions);
+        gemmi::transform_pos_and_adp(new_monomer, superpose_result);
 
-    if (refine) {
-        TorsionAngleRefiner refiner = {
-            atoms, reference_atoms, density, result, length, angles, angles_stddev, torsions, torsion_stddev
-        };
-        result = refiner.refine();
+        // remove leaving atom
+        remove_leaving_atom(data, reference_library_monomer, new_monomer);
+        new_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
+        reference_library_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
+
+        SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
+
+        if (refine) {
+            TorsionAngleRefiner refiner = {
+                atoms, reference_atoms, density, result, length, angles, angles_stddev, torsions, torsion_stddev
+            };
+            result = refiner.refine();
+        }
+
+        // calculate clash score
+        double clash_score = calculate_clash_score(result);
+        if (clash_score > 1) {
+            continue;
+        }
+
+        // calculate rscc
+        float rscc = density.rscc_score(result);
+        if (rscc < 0.2) {
+            continue;
+        }
+        if (rscc > best_rscc) {
+            best_rscc = rscc;
+            best_result = result;
+        }
     }
-
-    // calculate clash score
-    double clash_score = calculate_clash_score(result);
-    if (clash_score > 1) {
-        return std::nullopt;
-    }
-
-    // calculate rscc
-    float rscc = density.rscc_score(result);
-    if (rscc < 0.2) {
-        return std::nullopt;
-    }
-    return result;
+    if (best_rscc == INT_MIN) return std::nullopt;
+    return best_result;
 }
 
 
@@ -318,7 +323,7 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &c
     gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(terminal_sugar->site, structure);
 
     // std::cout << "Terminal sugar is " << Utils::format_site_key(terminal_sugar->site) << " with depth = " << terminal_sugar->depth<< std::endl;
-    if (check_entry_in_database(residue_ptr)) return;
+    if (!residue_in_database(residue_ptr)) return;
 
     // calculate the sugars that can be linked to this terminal sugar
     PossibleAdditions possible_additions;
