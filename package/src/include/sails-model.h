@@ -152,6 +152,24 @@ namespace Sails {
 
 
     /**
+     * @class Cluster
+     * @brief A class representing a cluster of angles and torsions.
+     *
+     * @constructor Cluster
+     * @param angles A set of angles.
+     * @param torsions A set of torsions.
+     */
+    struct Cluster {
+        Cluster(const AngleSet &angles, const TorsionSet &torsions)
+            : angles(angles),
+              torsions(torsions) {
+        }
+
+        AngleSet angles;
+        TorsionSet torsions;
+    };
+    typedef std::vector<Cluster> Clusters;
+    /**
      * @struct LinkageData
      * @brief A struct representing the data for a linkage between two atoms.
      *
@@ -169,12 +187,11 @@ namespace Sails {
     struct LinkageData {
         LinkageData(std::string donor, std::string acceptor, const int donor_number, const int acceptor_number,
                     const double length,
-                    const AngleSet &angle_set, const TorsionSet &torsion_set) : donor(std::move(donor)),
+                    const std::vector<Cluster>& clusters) : donor(std::move(donor)),
             acceptor(std::move(acceptor)),
             donor_number(donor_number),
             acceptor_number(acceptor_number), length(length),
-            angles(angle_set),
-            torsions(torsion_set) {
+            clusters(clusters) {
         };
 
         std::string donor;
@@ -182,8 +199,7 @@ namespace Sails {
         int donor_number;
         int acceptor_number;
         double length;
-        AngleSet angles;
-        TorsionSet torsions;
+        std::vector<Cluster> clusters;
     };
 
     typedef std::map<std::string, std::vector<LinkageData> > LinkageDatabase;
