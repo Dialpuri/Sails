@@ -68,8 +68,9 @@ Sails::LinkageDatabase Sails::JSONLoader::load_linkage_database() {
     const char *length_key = "length";
     const char *angles_key = "angles";
     const char *torsions_key = "torsions";
+    const char *cluster_key = "clusters";
 
-    Sails::LinkageDatabase database;
+    LinkageDatabase database;
 
     auto linkages = m_doc[linkage_key];
 
@@ -81,13 +82,18 @@ Sails::LinkageDatabase Sails::JSONLoader::load_linkage_database() {
 
         auto length = value[length_key].get_number().value().as_double();
 
-        auto angles = value[angles_key];
-        AngleSet angle_set = extract_angles(angles);
+        Clusters clusters = {};
+        for (auto cluster: value[cluster_key]) {
+            auto angles = cluster[angles_key];
+            AngleSet angle_set = extract_angles(angles);
 
-        auto torsions = value[torsions_key];
-        TorsionSet torsion_set = extract_torsions(torsions);
+            auto torsions = cluster[torsions_key];
+            TorsionSet torsion_set = extract_torsions(torsions);
 
-        LinkageData data = {donor_residue, acceptor_residue, donor_number, acceptor_number, length, angle_set, torsion_set};
+            clusters.emplace_back(angle_set, torsion_set);
+        }
+
+        LinkageData data = {donor_residue, acceptor_residue, donor_number, acceptor_number, length, clusters};
         database[donor_residue].emplace_back(data);
     }
 
