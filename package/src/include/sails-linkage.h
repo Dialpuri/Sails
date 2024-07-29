@@ -313,7 +313,7 @@ namespace Sails {
   LinkageDatabase linkage_database;
   ResidueDatabase residue_database;
   std::string monomer_library_path;
-  std::string special_monomer_path = "package/models/special_monomers";
+  std::string special_monomer_path = "/Users/dialpuri/Development/sails/package/models/special_monomers";
   std::map<std::string, gemmi::Residue> monomers;
  };
 }

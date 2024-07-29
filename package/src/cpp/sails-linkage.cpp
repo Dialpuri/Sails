@@ -133,7 +133,6 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
                                           ChainType &chain_type) {
-    // std::cout << "TERMINAL SUGAR IS " << Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
     int chain_idx = terminal_sugar->site.chain_idx;
     int residue_idx = terminal_sugar->site.residue_idx;
 
