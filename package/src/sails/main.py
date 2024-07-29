@@ -1,6 +1,6 @@
 import argparse
 from typing import Tuple
-from sails import interface, n_glycosylate_from_objects, Dot, GlycoSite
+from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite
 import time
 import gemmi
 from pathlib import Path
@@ -12,6 +12,15 @@ def n_glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
     result = n_glycosylate_from_objects(sails_structure, sails_mtz, cycles)
+
+    return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
+
+
+def c_glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str) -> Tuple[
+    gemmi.Structure, gemmi.Mtz]:
+    sails_structure = get_sails_structure(structure)
+    sails_mtz = get_sails_mtz(mtz, f, sigf)
+    result = c_glycosylate_from_objects(sails_structure, sails_mtz, cycles)
 
     return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
 
@@ -46,10 +55,10 @@ def run_python():
     ip = gemmi.read_structure("package/models/5fji/5fji_deglycosylated.pdb")
     im = gemmi.read_mtz_file("package/models/5fji/5fji.mtz")
 
-    s, m = n_glycosylate(ip, im, 8)
+    s, m = n_glycosylate(ip, im, 5, "FP", "SIGFP")
 
-    s.make_mmcif_block().write_file("sails-5fji.cif")
-    # m.write_to_file("sails-5fji.mtz")
+    s.make_mmcif_block().write_file("sails-5fji-test.cif")
+    m.write_to_file("sails-5fji-test.mtz")
 
     # s = get_sails_structure(s)
     # d = Dot(s)
@@ -70,7 +79,11 @@ def run_cli():
     t0 = time.time()
 
     f, sigf = args.colin.split(",")
-    s, m = n_glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf)
+    if args.cglycan:
+        s, m = c_glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf)
+    else:
+        s, m = n_glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf)
+
 
     s.make_mmcif_block().write_file(args.pdbout)
     m.write_to_file(args.mtzout)
@@ -88,5 +101,7 @@ def parse_args():
     parser.add_argument("-mtzout", type=str, required=False)
     parser.add_argument("-colin", type=str, required=False, default="FP,SIGFP")
     parser.add_argument("-cycles", type=int, required=False, default=2)
+    parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
+    parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
 
     return parser.parse_args()
