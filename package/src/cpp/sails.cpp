@@ -91,14 +91,12 @@ Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite 
     return topology.find_glycan_topology(glycosite);
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
+Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
     Sails::JSONLoader loader = {"/Users/dialpuri/Development/sails/package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
     gemmi::Structure original_structure = structure;
-    Sails::Glycosites glycosites = Sails::find_n_glycosylation_sites(structure);
-
     gemmi::Mtz mtz = form_gemmi_mtz(sails_mtz);
 
     Sails::Topology topology = {&structure, residue_database};
@@ -149,17 +147,29 @@ Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
 
-    Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz);
+    Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz, "FP", "SIGFP");
     return {
         *model.get_structure(),
         output_mtz
     };
 }
 
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
+    auto glycosites = Sails::find_n_glycosylation_sites(structure);
+    return run_cycle(glycosites, structure, sails_mtz, cycles);
+}
+
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles) {
+    auto glycosites = Sails::find_c_glycosylation_sites(structure);
+    return run_cycle(glycosites, structure, sails_mtz, cycles);
+}
 
 int main() {
-    const std::string path = "package/models/5fji/5fji_deglycosylated.pdb";
-    const std::string mtz_path = "package/models/5fji/5fji.mtz";
+    // const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/8dvl/8DVL_deglycosylated.cif";
+    // const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/8dvl/8DVL.mtz";
+
+    const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI_deglycosylated.cif";
+    const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.mtz";
     //
     // const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU_deglycosylated.cif";
     // const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU.mtz";
@@ -167,7 +177,7 @@ int main() {
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
-    Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz);
+    Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
     auto output = n_glycosylate(structure, sails_mtz, cycles);
 
     std::string output_path = "structure.cif";
