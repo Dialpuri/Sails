@@ -1,0 +1,659 @@
+{
+    "residues": [
+        {
+            "name": "FUC",
+            "snfgShape": "circle",
+            "snfgColour": "green",
+            "preferredDepths": [
+                2
+            ],
+            "donorSets": [],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
+            "name": "MAN",
+            "snfgShape": "circle",
+            "snfgColour": "green",
+            "preferredDepths": [
+                1,
+                4,
+                5,
+                6,
+                7
+            ],
+            "donorSets": [
+                {
+                    "atom3": "O2",
+                    "atom2": "C2",
+                    "atom1": "C3",
+                    "identifier": 2
+                },
+                {
+                    "atom3": "O3",
+                    "atom2": "C3",
+                    "atom1": "C4",
+                    "identifier": 3
+                },
+                {
+                    "atom3": "O6",
+                    "atom2": "C6",
+                    "atom1": "C5",
+                    "identifier": 6
+                }
+            ],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
+            "name": "MAN-1C4",
+            "snfgShape": "circle",
+            "snfgColour": "green",
+            "preferredDepths": [
+                1
+            ],
+            "donorSets": [],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
+            "name": "BMA",
+            "snfgShape": "circle",
+            "snfgColour": "green",
+            "preferredDepths": [
+                3
+            ],
+            "donorSets": [
+                {
+                    "atom3": "O6",
+                    "atom2": "C6",
+                    "atom1": "C5",
+                    "identifier": 6
+                },
+                {
+                    "atom3": "O3",
+                    "atom2": "C3",
+                    "atom1": "C4",
+                    "identifier": 3
+                }
+            ],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
+            "name": "NAG",
+            "snfgShape": "square",
+            "snfgColour": "blue",
+            "preferredDepths": [
+                1,
+                2
+            ],
+            "donorSets": [
+                {
+                    "atom1": "C5",
+                    "atom2": "C4",
+                    "atom3": "O4",
+                    "identifier": 4
+                },
+                {
+                    "atom1": "C4",
+                    "atom2": "C3",
+                    "atom3": "O3",
+                    "identifier": 3
+                },
+                {
+                    "atom1": "C5",
+                    "atom2": "C6",
+                    "atom3": "O6",
+                    "identifier": 6
+                }
+            ],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
+            "name": "ASN",
+            "snfgShape": "square",
+            "snfgColour": "white",
+            "preferredDepths": [
+                0
+            ],
+            "donorSets": [
+                {
+                    "atom1": "CB",
+                    "atom2": "CG",
+                    "atom3": "ND2",
+                    "identifier": 2
+                }
+            ],
+            "acceptorSets": []
+        },
+        {
+            "name": "TRP",
+            "snfgShape": "square",
+            "snfgColour": "white",
+            "preferredDepths": [
+                0
+            ],
+            "donorSets": [
+                {
+                    "atom1": "CD2",
+                    "atom2": "CG",
+                    "atom3": "CD1",
+                    "identifier": 1
+                }
+            ],
+            "acceptorSets": []
+        }
+
+    ],
+    "linkages": [
+        {
+            "donorResidue": "ASN",
+            "acceptorResidue": "NAG",
+            "donorNumber": 2,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 127.765,
+                        "alphaStdDev": 8.153,
+                        "betaMean": 112.241,
+                        "betaStdDev": 8.153,
+                        "gammaMean": 113.442,
+                        "gammaStdDev": 1.689
+                    },
+                    "torsions": {
+                        "phiMean": 54.086,
+                        "phiStdDev": 36.298,
+                        "psiMean": -179.512,
+                        "psiStdDev": 53.054,
+                        "omegaMean": 167.981,
+                        "omegaStdDev": 11.815
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 122.28,
+                        "alphaStdDev": 5.253,
+                        "betaMean": 109.788,
+                        "betaStdDev": 5.253,
+                        "gammaMean": 113.963,
+                        "gammaStdDev": 1.54
+                    },
+                    "torsions": {
+                        "phiMean": -106.706,
+                        "phiStdDev": 30.219,
+                        "psiMean": 179.446,
+                        "psiStdDev": 28.245,
+                        "omegaMean": 176.266,
+                        "omegaStdDev": 7.108
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "TRP",
+            "acceptorResidue": "MAN-1C4",
+            "donorNumber": 1,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 120,
+                        "alphaStdDev": 10,
+                        "betaMean": 115,
+                        "betaStdDev": 10,
+                        "gammaMean": 110,
+                        "gammaStdDev": 10
+                    },
+                    "torsions": {
+                        "phiMean": 130,
+                        "phiStdDev": 15,
+                        "psiMean": 180,
+                        "psiStdDev": 15,
+                        "omegaMean": 180,
+                        "omegaStdDev": 15
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "NAG",
+            "acceptorResidue": "NAG",
+            "donorNumber": 4,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 117.289,
+                        "alphaStdDev": 7.737,
+                        "betaMean": 110.997,
+                        "betaStdDev": 7.737,
+                        "gammaMean": 113.811,
+                        "gammaStdDev": 1.418
+                    },
+                    "torsions": {
+                        "phiMean": 30.089,
+                        "phiStdDev": 51.985,
+                        "psiMean": -124.86,
+                        "psiStdDev": 27.34,
+                        "omegaMean": 175.963,
+                        "omegaStdDev": 7.299
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 112.665,
+                        "alphaStdDev": 4.676,
+                        "betaMean": 111.191,
+                        "betaStdDev": 4.676,
+                        "gammaMean": 113.81,
+                        "gammaStdDev": 1.316
+                    },
+                    "torsions": {
+                        "phiMean": -80.049,
+                        "phiStdDev": 17.934,
+                        "psiMean": -127.513,
+                        "psiStdDev": 24.467,
+                        "omegaMean": 179.044,
+                        "omegaStdDev": 4.33
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "NAG",
+            "acceptorResidue": "FUC",
+            "donorNumber": 6,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.045,
+                        "alphaStdDev": 5.979,
+                        "betaMean": 111.561,
+                        "betaStdDev": 5.979,
+                        "gammaMean": 114.921,
+                        "gammaStdDev": 1.979
+                    },
+                    "torsions": {
+                        "phiMean": -83.971,
+                        "phiStdDev": 30.056,
+                        "psiMean": -159.668,
+                        "psiStdDev": 27.959,
+                        "omegaMean": -63.8,
+                        "omegaStdDev": 8.514
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 111.376,
+                        "alphaStdDev": 3.955,
+                        "betaMean": 112.227,
+                        "betaStdDev": 3.955,
+                        "gammaMean": 115.159,
+                        "gammaStdDev": 2.054
+                    },
+                    "torsions": {
+                        "phiMean": -81.232,
+                        "phiStdDev": 30.292,
+                        "psiMean": 125.964,
+                        "psiStdDev": 23.346,
+                        "omegaMean": -65.062,
+                        "omegaStdDev": 8.861
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "NAG",
+            "acceptorResidue": "FUC",
+            "donorNumber": 3,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 114.468,
+                        "alphaStdDev": 3.421,
+                        "betaMean": 113.049,
+                        "betaStdDev": 3.421,
+                        "gammaMean": 115.227,
+                        "gammaStdDev": 2.164
+                    },
+                    "torsions": {
+                        "phiMean": -67.902,
+                        "phiStdDev": 13.039,
+                        "psiMean": 139.754,
+                        "psiStdDev": 8.787,
+                        "omegaMean": -65.706,
+                        "omegaStdDev": 7.385
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 120.567,
+                        "alphaStdDev": 5.481,
+                        "betaMean": 110.511,
+                        "betaStdDev": 5.481,
+                        "gammaMean": 115.25,
+                        "gammaStdDev": 2.348
+                    },
+                    "torsions": {
+                        "phiMean": -108.059,
+                        "phiStdDev": 44.452,
+                        "psiMean": 10.613,
+                        "psiStdDev": 44.212,
+                        "omegaMean": -75.286,
+                        "omegaStdDev": 13.871
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "NAG",
+            "acceptorResidue": "BMA",
+            "donorNumber": 4,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.963,
+                        "alphaStdDev": 4.496,
+                        "betaMean": 111.259,
+                        "betaStdDev": 4.496,
+                        "gammaMean": 113.771,
+                        "gammaStdDev": 1.62
+                    },
+                    "torsions": {
+                        "phiMean": -83.669,
+                        "phiStdDev": 38.257,
+                        "psiMean": -131.478,
+                        "psiStdDev": 14.602,
+                        "omegaMean": 178.472,
+                        "omegaStdDev": 6.132
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 118.402,
+                        "alphaStdDev": 5.23,
+                        "betaMean": 111.058,
+                        "betaStdDev": 5.23,
+                        "gammaMean": 114.405,
+                        "gammaStdDev": 1.96
+                    },
+                    "torsions": {
+                        "phiMean": -110.737,
+                        "phiStdDev": 41.555,
+                        "psiMean": 78.36,
+                        "psiStdDev": 25.132,
+                        "omegaMean": 179.908,
+                        "omegaStdDev": 8.293
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "BMA",
+            "acceptorResidue": "MAN",
+            "donorNumber": 3,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.696,
+                        "alphaStdDev": 4.802,
+                        "betaMean": 111.185,
+                        "betaStdDev": 4.802,
+                        "gammaMean": 114.511,
+                        "gammaStdDev": 1.534
+                    },
+                    "torsions": {
+                        "phiMean": 124.141,
+                        "phiStdDev": 27.455,
+                        "psiMean": 167.284,
+                        "psiStdDev": 52.376,
+                        "omegaMean": 62.53,
+                        "omegaStdDev": 6.109
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 111.777,
+                        "alphaStdDev": 4.176,
+                        "betaMean": 112.14,
+                        "betaStdDev": 4.176,
+                        "gammaMean": 114.921,
+                        "gammaStdDev": 1.929
+                    },
+                    "torsions": {
+                        "phiMean": 76.691,
+                        "phiStdDev": 17.032,
+                        "psiMean": 120.879,
+                        "psiStdDev": 18.587,
+                        "omegaMean": 63.32,
+                        "omegaStdDev": 6.55
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "BMA",
+            "acceptorResidue": "MAN",
+            "donorNumber": 6,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 111.245,
+                        "alphaStdDev": 5.137,
+                        "betaMean": 111.618,
+                        "betaStdDev": 5.137,
+                        "gammaMean": 114.578,
+                        "gammaStdDev": 2.196
+                    },
+                    "torsions": {
+                        "phiMean": 91.041,
+                        "phiStdDev": 36.251,
+                        "psiMean": -165.287,
+                        "psiStdDev": 29.928,
+                        "omegaMean": 62.662,
+                        "omegaStdDev": 6.365
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 111.215,
+                        "alphaStdDev": 5.15,
+                        "betaMean": 111.891,
+                        "betaStdDev": 5.15,
+                        "gammaMean": 114.514,
+                        "gammaStdDev": 1.803
+                    },
+                    "torsions": {
+                        "phiMean": 99.177,
+                        "phiStdDev": 38.324,
+                        "psiMean": 122.388,
+                        "psiStdDev": 28.196,
+                        "omegaMean": 62.79,
+                        "omegaStdDev": 6.586
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "MAN",
+            "acceptorResidue": "MAN",
+            "donorNumber": 2,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 113.427,
+                        "alphaStdDev": 3.654,
+                        "betaMean": 110.13,
+                        "betaStdDev": 3.654,
+                        "gammaMean": 114.421,
+                        "gammaStdDev": 1.585
+                    },
+                    "torsions": {
+                        "phiMean": 149.427,
+                        "phiStdDev": 29.129,
+                        "psiMean": 166.702,
+                        "psiStdDev": 28.999,
+                        "omegaMean": 62.546,
+                        "omegaStdDev": 7.578
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 111.736,
+                        "alphaStdDev": 3.807,
+                        "betaMean": 111.726,
+                        "betaStdDev": 3.807,
+                        "gammaMean": 114.934,
+                        "gammaStdDev": 1.849
+                    },
+                    "torsions": {
+                        "phiMean": 81.341,
+                        "phiStdDev": 15.082,
+                        "psiMean": 127.531,
+                        "psiStdDev": 21.67,
+                        "omegaMean": 62.113,
+                        "omegaStdDev": 5.308
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "MAN",
+            "acceptorResidue": "MAN",
+            "donorNumber": 3,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 111.267,
+                        "alphaStdDev": 4.451,
+                        "betaMean": 112.338,
+                        "betaStdDev": 4.451,
+                        "gammaMean": 115.005,
+                        "gammaStdDev": 1.642
+                    },
+                    "torsions": {
+                        "phiMean": 87.585,
+                        "phiStdDev": 26.284,
+                        "psiMean": 127.542,
+                        "psiStdDev": 21.99,
+                        "omegaMean": 63.792,
+                        "omegaStdDev": 6.819
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 117.959,
+                        "alphaStdDev": 8.512,
+                        "betaMean": 110.22,
+                        "betaStdDev": 8.512,
+                        "gammaMean": 114.023,
+                        "gammaStdDev": 1.649
+                    },
+                    "torsions": {
+                        "phiMean": 109.582,
+                        "phiStdDev": 28.224,
+                        "psiMean": -37.08,
+                        "psiStdDev": 30.971,
+                        "omegaMean": 60.351,
+                        "omegaStdDev": 8.854
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "MAN",
+            "acceptorResidue": "MAN",
+            "donorNumber": 6,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.164,
+                        "alphaStdDev": 5.285,
+                        "betaMean": 111.948,
+                        "betaStdDev": 5.285,
+                        "gammaMean": 114.89,
+                        "gammaStdDev": 1.67
+                    },
+                    "torsions": {
+                        "phiMean": 69.439,
+                        "phiStdDev": 16.826,
+                        "psiMean": 178.823,
+                        "psiStdDev": 36.578,
+                        "omegaMean": 63.355,
+                        "omegaStdDev": 7.64
+                    }
+                },
+                {
+                    "angles": {
+                        "alphaMean": 110.925,
+                        "alphaStdDev": 3.37,
+                        "betaMean": 110.781,
+                        "betaStdDev": 3.37,
+                        "gammaMean": 114.455,
+                        "gammaStdDev": 1.614
+                    },
+                    "torsions": {
+                        "phiMean": 145.024,
+                        "phiStdDev": 29.365,
+                        "psiMean": -169.354,
+                        "psiStdDev": 54.477,
+                        "omegaMean": 63.742,
+                        "omegaStdDev": 7.224
+                    }
+                }
+            ]
+        }
+    ]
+}
