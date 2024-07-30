@@ -17,11 +17,23 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
 
 
+def read_sf_cif(mtz: Path):
+    doc = gemmi.cif.read(str(mtz))
+    rblocks = gemmi.as_refln_blocks(doc)
+    if not rblocks:
+        raise RuntimeError("SF CIF supplied has no reflections")
+    cif2mtz = gemmi.CifToMtz()
+    return cif2mtz.convert_block_to_mtz(rblocks[0])
+
 def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
     if isinstance(mtz, gemmi.Mtz):
         sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf])
     elif isinstance(mtz, Path) or isinstance(mtz, str):
-        m = gemmi.read_mtz_file(str(mtz))
+        mtz = Path(mtz)
+        if ".cif" in mtz.suffixes:
+            m = read_sf_cif(mtz)
+        else:
+            m = gemmi.read_mtz_file(str(mtz))
         sails_mtz = interface.extract_gemmi_mtz(mtz=m, column_names=[f, sigf])
     else:
         raise RuntimeError("Unknown object passed to second argument of n_glycosylate function, allowed types are"
@@ -94,6 +106,6 @@ def parse_args():
     parser.add_argument("-cycles", type=int, required=False, default=2)
     parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
     parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
-    parser.add_argument("-v", action=argparse.BooleanOptionalAction)
+    parser.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
 
     return parser.parse_args()
