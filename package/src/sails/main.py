@@ -1,5 +1,5 @@
 import argparse
-from typing import Tuple
+from typing import Tuple, Callable
 from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite
 import time
 import gemmi
@@ -7,25 +7,17 @@ from pathlib import Path
 import graphviz
 
 
-def n_glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str) -> Tuple[
+def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
+                func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
     gemmi.Structure, gemmi.Mtz]:
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
-    result = n_glycosylate_from_objects(sails_structure, sails_mtz, cycles)
+    result = func(sails_structure, sails_mtz, cycles, verbose)
 
     return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
 
 
-def c_glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str) -> Tuple[
-    gemmi.Structure, gemmi.Mtz]:
-    sails_structure = get_sails_structure(structure)
-    sails_mtz = get_sails_mtz(mtz, f, sigf)
-    result = c_glycosylate_from_objects(sails_structure, sails_mtz, cycles)
-
-    return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
-
-
-def get_sails_mtz(mtz: gemmi.Mtz | Path| str, f: str, sigf: str):
+def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
     if isinstance(mtz, gemmi.Mtz):
         sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf])
     elif isinstance(mtz, Path) or isinstance(mtz, str):
@@ -55,7 +47,7 @@ def run_python():
     ip = gemmi.read_structure("package/models/5fji/5fji_deglycosylated.pdb")
     im = gemmi.read_mtz_file("package/models/5fji/5fji.mtz")
 
-    s, m = n_glycosylate(ip, im, 5, "FP", "SIGFP")
+    s, m = glycosylate(ip, im, 5, "FP", "SIGFP")
 
     s.make_mmcif_block().write_file("sails-5fji-test.cif")
     m.write_to_file("sails-5fji-test.mtz")
@@ -80,10 +72,9 @@ def run_cli():
 
     f, sigf = args.colin.split(",")
     if args.cglycan:
-        s, m = c_glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf)
+        s, m = glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf, c_glycosylate_from_objects, args.v)
     else:
-        s, m = n_glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf)
-
+        s, m = glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf, n_glycosylate_from_objects, args.v)
 
     s.make_mmcif_block().write_file(args.pdbout)
     m.write_to_file(args.mtzout)
@@ -103,5 +94,6 @@ def parse_args():
     parser.add_argument("-cycles", type=int, required=False, default=2)
     parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
     parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
+    parser.add_argument("-v", action=argparse.BooleanOptionalAction)
 
     return parser.parse_args()
