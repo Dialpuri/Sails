@@ -80,7 +80,7 @@ def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
         data.append(reflection)
 
     cell = sails.Cell(mtz.cell.a, mtz.cell.b, mtz.cell.c, mtz.cell.alpha, mtz.cell.beta, mtz.cell.gamma)
-    return sails.MTZ(data, cell, mtz.spacegroup.short_name())
+    return sails.MTZ(data, cell, mtz.spacegroup.hm)
 
 
 def extract_sails_mtz(mtz: sails.MTZ) -> gemmi.Mtz:
