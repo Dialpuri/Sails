@@ -13,7 +13,7 @@
 #include <queue>
 #include <fstream>
 
-#include "gemmi/model.hpp"
+#include <gemmi/model.hpp>
 
 #include "sails-model.h"
 #include "sails-utils.h"

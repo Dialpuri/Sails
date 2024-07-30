@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "gemmi/neighbor.hpp"
+#include <gemmi/neighbor.hpp>
 
 namespace Sails {
     /**

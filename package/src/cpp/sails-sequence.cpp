@@ -1,7 +1,7 @@
 //
 // Created by Jordan Dialpuri on 06/07/2024.
 //
-#include "src/include/sails-sequence.h"
+#include "../include/sails-sequence.h"
 
 Sails::Glycosites Sails::find_n_glycosylation_sites(const gemmi::Structure &structure) {
 

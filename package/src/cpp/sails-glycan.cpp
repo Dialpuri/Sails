@@ -4,7 +4,6 @@
 
 #include "../include/sails-glycan.h"
 
-#include <src/include/sails-utils.h>
 
 void Sails::Glycan::print_list() {
     std::cout << "Adjacency List" << std::endl;
