@@ -30,7 +30,7 @@ def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
         sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf])
     elif isinstance(mtz, Path) or isinstance(mtz, str):
         mtz = Path(mtz)
-        if ".cif" in mtz.suffixes:
+        if ".cif" in mtz.suffixes or ".ent" in mtz.suffixes:
             m = read_sf_cif(mtz)
         else:
             m = gemmi.read_mtz_file(str(mtz))
