@@ -91,6 +91,12 @@ Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite 
     return topology.find_glycan_topology(glycosite);
 }
 
+void check_spacegroup(gemmi::Mtz* mtz, gemmi::Structure* structure) {
+    if (!mtz->spacegroup_name.empty() && !structure->spacegroup_hm.empty()) return;
+    if (mtz->spacegroup_name.empty() && structure->spacegroup_hm.empty()) throw std::runtime_error("No spacegroup information in MTZ or Structure");
+    if (mtz->spacegroup_name.empty()) mtz->spacegroup_name = structure->spacegroup_hm;
+}
+
 Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, bool verbose) {
     Sails::JSONLoader loader = {"/Users/dialpuri/Development/sails/package/data/data.json"};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
@@ -98,6 +104,7 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
     gemmi::Structure original_structure = structure;
     gemmi::Mtz mtz = form_gemmi_mtz(sails_mtz);
+    check_spacegroup(&mtz, &structure); // check to ensure the MTZ has a spacegroup
 
     Sails::Topology topology = {&structure, residue_database};
 
