@@ -102,6 +102,21 @@ void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sug
     }
 }
 
+std::set<Sails::Glycosite> Sails::Glycan::operator-(const Glycan& glycan) {
+    std::set<Glycosite> this_keys;
+    std::transform(this->sugars.begin(), this->sugars.end(), std::inserter(this_keys, this_keys.end()),
+                   [](auto& kv_pair) { return kv_pair.first; });
+
+    std::set<Glycosite> other_keys;
+    std::transform(glycan.sugars.begin(), glycan.sugars.end(), std::inserter(other_keys, other_keys.end()),
+                   [](auto& kv_pair) { return kv_pair.first; });
+
+    std::set<Glycosite> difference;
+    std::set_difference(this_keys.begin(), this_keys.end(), other_keys.begin(), other_keys.end(),
+                        std::inserter(difference, difference.begin()));
+    return difference;
+}
+
 std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Glycosite &root_seq_id) {
     if (sugars.find(root_seq_id) == sugars.end()) {
         throw std::runtime_error("Root SeqId is not valid");

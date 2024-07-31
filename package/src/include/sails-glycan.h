@@ -58,15 +58,15 @@ namespace Sails {
 
     struct Linkage {
         Linkage(Sugar *donor_sugar, Sugar *acceptor_sugar, const std::string &donor_atom,
-            const std::string &accepetor_atom)
+                const std::string &acceptor_atom)
             : donor_sugar(donor_sugar),
               acceptor_sugar(acceptor_sugar),
               donor_atom(donor_atom),
-              acceptor_atom(accepetor_atom) {
+              acceptor_atom(acceptor_atom) {
         }
 
-        Sugar* donor_sugar;
-        Sugar* acceptor_sugar;
+        Sugar *donor_sugar;
+        Sugar *acceptor_sugar;
         std::string donor_atom;
         std::string acceptor_atom;
     };
@@ -83,7 +83,25 @@ namespace Sails {
     struct Glycan {
         Glycan() = default;
 
-        Glycan(gemmi::Structure* structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
+        Glycan(const Glycan &other) : m_structure(other.m_structure),
+                                      m_database(other.m_database),
+                                      glycosite(other.glycosite) {
+            for (const auto &[key, sugar]: other.sugars) {
+                sugars[key] = std::make_unique<Sugar>(*sugar);
+            }
+
+            for (const auto &[sugar, linkedSugars]: other.adjacency_list) {
+                for (auto &linkedSugar: linkedSugars) {
+                    adjacency_list[sugars[sugar->site].get()].insert(sugars[linkedSugar->site].get());
+                }
+            }
+
+            for (const auto &linkage: other.linkage_list) {
+                linkage_list.emplace_back(linkage);
+            }
+        }
+
+        Glycan(gemmi::Structure *structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
             m_database(database), glycosite(glycosite) {
         }
 
@@ -97,7 +115,9 @@ namespace Sails {
          * @return A constant iterator that points to the first element of the map.
          * @note The map must not be modified while iterating over it using this iterator.
          */
-        [[nodiscard]] std::map<Glycosite, std::unique_ptr<Sugar> >::const_iterator begin() const { return sugars.begin(); }
+        [[nodiscard]] std::map<Glycosite, std::unique_ptr<Sugar> >::const_iterator begin() const {
+            return sugars.begin();
+        }
 
         /**
          * @brief Returns a iterator to the end of the map.
@@ -151,7 +171,8 @@ namespace Sails {
          * @return void
 
         */
-        void add_linkage(Glycosite& sugar_1, Glycosite& sugar_2, const std::string &donor_atom, const std::string &acceptor_atom) {
+        void add_linkage(Glycosite &sugar_1, Glycosite &sugar_2, const std::string &donor_atom,
+                         const std::string &acceptor_atom) {
             if (sugars.find(sugar_1) == sugars.end()) {
                 throw std::runtime_error("Attempted to link a sugar not in the glycan");
             }
@@ -194,17 +215,17 @@ namespace Sails {
          * @param erase_from_structure Whether to erase the corresponding residue from the structure member.
          * @return A pointer to the sugar molecule that was linked to the removed sugar molecule, or nullptr if no sugar molecule was linked.
          */
-        Sugar* remove_sugar(Sugar* sugar, bool erase_from_structure = true) {
-
+        Sugar *remove_sugar(Sugar *sugar, bool erase_from_structure = true) {
             // erase residue from structure member
             if (erase_from_structure) {
-                const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
-                residue_ptr->erase(residue_ptr->begin()+sugar->site.residue_idx);
+                const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].
+                        residues;
+                residue_ptr->erase(residue_ptr->begin() + sugar->site.residue_idx);
             }
 
-            Sugar* linked_donor = nullptr;
+            Sugar *linked_donor = nullptr;
             // remove from adjacency list
-            for (auto& [donor, acceptor]: adjacency_list) {
+            for (auto &[donor, acceptor]: adjacency_list) {
                 if (acceptor.find(sugar) != acceptor.end()) {
                     linked_donor = donor;
                     acceptor.erase(sugar);
@@ -212,7 +233,7 @@ namespace Sails {
             }
 
             // erase seqid from map -> Sugar* will be released so must be done last
-            if(sugars.find(sugar->site) != sugars.end()) sugars.erase(sugar->site);
+            if (sugars.find(sugar->site) != sugars.end()) sugars.erase(sugar->site);
 
             // return the sugar that was linked (the new terminal sugar)
             return linked_donor;
@@ -229,9 +250,9 @@ namespace Sails {
          * @param sugar A pointer to the sugar molecule for which to find the previous sugar molecule.
          * @return An optional pointer to the previous sugar molecule linked to the given sugar, or std::nullopt if not found.
          */
-        std::optional<Sugar*> find_previous_sugar(Sugar* sugar) const {
-            Sugar* linked_donor = nullptr;
-            for (auto& [donor, acceptor]: adjacency_list) {
+        std::optional<Sugar *> find_previous_sugar(Sugar *sugar) const {
+            Sugar *linked_donor = nullptr;
+            for (auto &[donor, acceptor]: adjacency_list) {
                 if (acceptor.find(sugar) != acceptor.end()) {
                     return donor;
                 }
@@ -325,16 +346,29 @@ namespace Sails {
          *
          * @see gemmi::Structure
          */
-        [[nodiscard]] gemmi::Structure get_structure() const {return *m_structure;};
+        [[nodiscard]] gemmi::Structure get_structure() const { return *m_structure; };
+
+
+        /**
+         * @brief Subtract operator for Glycan objects.
+         *
+         * The operator- subtracts the glycosites of two Glycan objects and returns the set of unique glycosites that exist in the
+         * first Glycan object but not in the second Glycan object.
+         *
+         * @param glycan The Glycan object to subtract from the current Glycan object.
+         * @return The set of unique glycosites that exist in the first Glycan object but not in the second Glycan object.
+         * @note The function is marked with [[nodiscard]] to indicate that the return value should not be ignored.
+         */
+        [[nodiscard]] std::set<Glycosite> operator-(const Glycan &glycan);
 
         Glycosite glycosite;
 
-    // private:
+        // private:
         std::map<Sugar *, std::set<Sugar *> > adjacency_list;
         std::vector<Linkage> linkage_list;
         std::map<Glycosite, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
 
-        gemmi::Structure* m_structure;
+        gemmi::Structure *m_structure;
         ResidueDatabase m_database;
     };
 }
