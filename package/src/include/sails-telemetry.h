@@ -9,8 +9,28 @@
 #include <set>
 #include "sails-model.h"
 #include "sails-utils.h"
+#include "sails-density.h"
 
 namespace Sails {
+
+    struct TelemetryFormat {
+        TelemetryFormat() = default;
+
+        TelemetryFormat(const std::string &residue_id, double rscc_score, double rsr_score, double dds_score)
+            : residue_id(residue_id),
+              rscc_score(rscc_score),
+              rsr_score(rsr_score),
+              dds_score(dds_score) {
+        }
+
+        std::string residue_id;
+        double rscc_score;
+        double rsr_score;
+        double dds_score;
+    };
+    typedef std::map<int, std::vector<TelemetryFormat>> TelemetryLog;
+
+
     /**
      * @class Telemetry
      *
@@ -39,6 +59,22 @@ namespace Sails {
         };
 
         /**
+         *
+         * @brief Overloaded operator<< for appending multiple Glycosite objects to the stream.
+         *
+         * This function appends multiple Glycosite objects from the given vector to the stream.
+         * It iterates through the vector and calls the operator<<(const Glycosite& site) for each Glycosite object.
+         *
+         * @param sites A vector of Glycosite objects to be appended to the stream.
+         */
+        void operator<<(const std::set<Glycosite>& sites) {
+            for (const auto& site: sites) {
+                this->operator<<(site);
+            }
+        }
+
+
+        /**
          * @brief Overloaded operator>> to remove a Glycosite from the sites container.
          *
          * This operator removes the provided Glycosite object from the sites container.
@@ -47,6 +83,21 @@ namespace Sails {
          */
         void operator>>(const Glycosite& site) {
             sites.erase(site);
+        }
+
+        /**
+         *
+         * @brief Overloaded operator>> for appending multiple Glycosite objects to the stream.
+         *
+         * This function appends multiple Glycosite objects from the given vector to the stream.
+         * It iterates through the vector and calls the operator>>(const Glycosite& site) for each Glycosite object.
+         *
+         * @param sites A vector of Glycosite objects to be appended to the stream.
+         */
+        void operator>>(const std::set<Glycosite>& sites) {
+            for (const auto& site: sites) {
+                this->operator>>(site);
+            }
         }
 
         /**
@@ -66,9 +117,9 @@ namespace Sails {
          * This method saves the state of the telemetry at the specified cycle
          * by calculating the difference between the current set of Glycosite objects
          * and the set of Glycosite objects at the previous cycle.
-         * If the given cycle is greater than 1, it calculates the difference using
+         * If the given cycle is not 1 it calculates the difference using
          * std::set_difference() and stores the result in the states map at the given cycle.
-         * If the given cycle is 1 or less, it simply stores the current set of Glycosite objects
+         * If the given cycle is 1, it simply stores the current set of Glycosite objects
          * in the states map at the given cycle.
          *
          * @param cycle The cycle at which to save the state of the telemetry.
@@ -86,6 +137,30 @@ namespace Sails {
          *                  This object is used to retrieve information about Glycosite objects.
          */
         void format_log(gemmi::Structure* structure);
+
+
+        TelemetryLog calculate_log(gemmi::Structure *structure, Density *density);
+        /**
+         * @brief Formats the log with the given gemmi::Structure object.
+         *
+         * This method formats the log by printing information about the cycles and
+         * added Glycosite objects stored in the telemetry. It uses the provided
+         * gemmi::Structure object to retrieve residue and score information for each
+         * Glycosite.
+         *
+         * @param structure A pointer to the gemmi::Structure object.
+         * @param density A pointer to the Density object.
+         *
+         * @note The method assumes that the telemetry data has already been stored
+         * using the add_glycosite() method.
+         *
+         * @see Sails::Telemetry::add_glycosite()
+         * @see Utils::format_residue_from_site()
+         * @see Utils::get_residue_from_glycosite()
+         * @see Density::score_residue()
+         */
+        void format_log(gemmi::Structure *structure, Density* density);
+
 
     private:
         std::set<Glycosite> sites{};
