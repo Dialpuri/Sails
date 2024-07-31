@@ -251,7 +251,6 @@ namespace Sails {
          * @return An optional pointer to the previous sugar molecule linked to the given sugar, or std::nullopt if not found.
          */
         std::optional<Sugar *> find_previous_sugar(Sugar *sugar) const {
-            Sugar *linked_donor = nullptr;
             for (auto &[donor, acceptor]: adjacency_list) {
                 if (acceptor.find(sugar) != acceptor.end()) {
                     return donor;
