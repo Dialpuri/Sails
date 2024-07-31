@@ -9,6 +9,7 @@
 #include "../include/sails-topology.h"
 #include "../include/sails-linkage.h"
 #include "../include/sails-cif.h"
+#include "../include/sails-telemetry.h"
 
 
 #include "gemmi/model.hpp" // for Structure
@@ -82,6 +83,7 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     for (auto &sugar: to_remove) {
         glycan->remove_sugar(sugar);
     }
+
 }
 
 Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite &glycosite) {
@@ -118,6 +120,7 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
     Sails::Model model = {&structure, linkage_database, residue_database};
 
+    Sails::Telemetry telemetry = Sails::Telemetry("");
     size_t progress_count = 0;
 
     for (int i = 1; i <= cycles; i++) {
@@ -132,6 +135,11 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
+
+            auto differences = new_glycan - glycan;
+            for (const auto& difference: differences) {
+                telemetry << difference;
+            }
             topology.set_structure(model.get_structure());
         }
 
@@ -145,9 +153,18 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
             if (glycan.empty()) { continue; }
 
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
+            Sails::Glycan old_glycan = glycan;
             remove_erroneous_sugars(&structure, &density, &glycan, verbose);
+            auto differences = old_glycan - glycan;
+            for (const auto& difference: differences) {
+                telemetry >> difference;
+            }
         }
+
+        telemetry.save_state(i);
     }
+
+    telemetry.format_log(&structure);
 
     std::cout << std::endl;
     // add links and write files
