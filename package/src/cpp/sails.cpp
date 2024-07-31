@@ -20,49 +20,43 @@
 #include <iostream>
 #include <src/include/sails-gemmi-bindings.h>
 
-void display_progress_bar(size_t total, size_t &progress_count) {
-    std::cout << "[";
-    int position = progress_count * 60 / total;
-    for (int i = 0; i < 60; ++i) {
-        if (i < position) std::cout << "=";
-        else if (i == position) std::cout << ">";
-        else std::cout << " ";
-    }
-    std::cout << "] " << int((progress_count * 100.0) / total) << " %\r";
-    std::cout.flush();
-    ++progress_count;
+void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
+    std::cout << "Removing " << Sails::Utils::format_residue_from_site(s1, structure) << "--"
+    << Sails::Utils::format_residue_from_site(s2, structure) << " because of high DDS = " << score <<std::endl;
+}
+
+void print_removal_rscc(const gemmi::Residue& residue, float rscc) {
+    std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << " because of low RSCC =" << rscc << std::endl;
 }
 
 void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, bool debug) {
-    float rscc_threshold = 0.4;
+    constexpr float rscc_threshold = 0.4;
+    constexpr float dds_threshold = 1.1;
+
     std::vector<Sails::Sugar *> to_remove;
-    for (auto &sugar: *glycan) {
-        auto residue = Sails::Utils::get_residue_from_glycosite(sugar.second->site, structure);
-        auto sugar_result = glycan->find_previous_sugar(sugar.second.get());
-        if (!sugar_result) continue;
-        auto previous_residue =
-                Sails::Utils::get_residue_from_glycosite(sugar_result.value()->site, structure);
+    for (const auto &[fst, snd]: *glycan) {
+        gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(snd->site, structure);
 
-        if (residue.name == "ASN") { continue; } // don't remove ASN
-        if (residue.name == "TRP") { continue; } // don't remove ASN
+        std::optional<Sails::Sugar *> sugar_result = glycan->find_previous_sugar(snd.get());
+        if (!sugar_result.has_value()) continue; // if there is nothing previous, it must be a protein residue
 
-        if (float rscc = round(10 * density->rscc_score(residue)) / 10; rscc < rscc_threshold) {
-            to_remove.emplace_back(sugar.second.get()); // add pointer to
-            if (debug)
-                std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << " because of low RSCC =" <<
-                        rscc << std::endl;
+        gemmi::Residue previous_residue = Sails::Utils::get_residue_from_glycosite(
+            sugar_result.value()->site, structure);
+
+        // if (residue.name == "ASN") { continue; } // don't remove ASN
+        // if (residue.name == "TRP") { continue; } // don't remove TRP
+
+        // remove cases with low rscc
+        if (const float rscc = density->rscc_score(residue); rscc < rscc_threshold) {
+            to_remove.emplace_back(snd.get()); // add pointer to
+            if (debug) print_removal_rscc(residue, rscc);
             continue;
         }
 
-        // cases where sugar is clashing into protein density
-        if (float diff_score = density->difference_density_score(residue); diff_score > 1.1) {
-            if (debug)
-                std::cout << "Removing " << Sails::Utils::format_residue_from_site(
-                            sugar_result.value()->site, structure) << "--" <<
-                        Sails::Utils::format_residue_from_site(sugar.first, structure) << " because of high DDS = " <<
-                        diff_score <<
-                        std::endl;
-            to_remove.emplace_back(sugar.second.get());
+        // remove cases with high difference density score
+        if (const float diff_score = density->difference_density_score(residue); diff_score > dds_threshold) {
+            if (debug) print_rejection_dds(sugar_result.value()->site, fst, structure, diff_score);
+            to_remove.emplace_back(snd.get());
         }
     }
 
@@ -83,7 +77,6 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     for (auto &sugar: to_remove) {
         glycan->remove_sugar(sugar);
     }
-
 }
 
 Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite &glycosite) {
@@ -121,13 +114,11 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     Sails::Model model = {&structure, linkage_database, residue_database};
 
     Sails::Telemetry telemetry = Sails::Telemetry("");
-    size_t progress_count = 0;
 
     for (int i = 1; i <= cycles; i++) {
         if (!verbose) std::cout << "\rCycle #" << i;
         std::cout << std::flush;
         if (verbose) std::cout << "\rCycle #" << i << std::endl;
-        // display_progress_bar(cycles, progress_count);
 
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
@@ -136,10 +127,9 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
 
-            auto differences = new_glycan - glycan;
-            for (const auto& difference: differences) {
-                telemetry << difference;
-            }
+            std::set<Sails::Glycosite> differences = new_glycan - glycan;
+            telemetry << differences;
+
             topology.set_structure(model.get_structure());
         }
 
@@ -155,16 +145,19 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan old_glycan = glycan;
             remove_erroneous_sugars(&structure, &density, &glycan, verbose);
-            auto differences = old_glycan - glycan;
-            for (const auto& difference: differences) {
-                telemetry >> difference;
-            }
+
+            topology.set_structure(&structure); // need to update neighbor search after removing n residues
+            Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+
+            std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
+            telemetry >> differences;
+
         }
 
         telemetry.save_state(i);
     }
 
-    telemetry.format_log(&structure);
+    telemetry.format_log(&structure, &density);
 
     std::cout << std::endl;
     // add links and write files
