@@ -30,6 +30,8 @@ double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScore
             return rscc_score(residue);
         case rsr:
             return rsr_score(residue);
+        case dds:
+            return difference_density_score(residue);
         default:
             return -1;
     }

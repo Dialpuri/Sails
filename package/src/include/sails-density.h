@@ -21,7 +21,7 @@ namespace Sails {
 	typedef clipper::HKL_info::HKL_reference_index HRI;
 
 	enum DensityScoreMethod {
-		atomwise, rscc, rsr
+		atomwise, rscc, rsr, dds
 	};
 
 	class Density {
