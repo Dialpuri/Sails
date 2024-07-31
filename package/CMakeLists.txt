@@ -30,7 +30,7 @@ if (NOT SKBUILD)
   You may optionally add -Ceditable.rebuild=true to auto-rebuild when
   the package is imported. Otherwise, you need to re-run the above
   after editing C++ files.")
-endif()
+endif ()
 
 find_package(ZLIB REQUIRED)
 #set(CMAKE_BUILD_TYPE Debug)
@@ -51,8 +51,6 @@ add_subdirectory(${WRK_DIR}/rfftw)
 add_subdirectory(${WRK_DIR}/ccp4)
 add_subdirectory(${WRK_DIR}/mmdb2)
 add_subdirectory(${WRK_DIR}/gemmi)
-
-message(CMAKE_BINARY_DIR="${CMAKE_BINARY_DIR}")
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -132,7 +130,7 @@ file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
 add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
 set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
 target_compile_features(csails INTERFACE cxx_std_17)
-target_compile_options(csails PRIVATE -g )
+target_compile_options(csails PRIVATE -g)
 
 target_link_directories(csails
         PUBLIC
@@ -167,98 +165,125 @@ target_link_libraries(
         ZLIB::ZLIB
 )
 
- set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
+set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
 # install(TARGETS csails
 #         LIBRARY DESTINATION lib
 #         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
 
 
-# Try to import all Python components potentially needed by nanobind
-find_package(Python 3.8
-        REQUIRED COMPONENTS Interpreter Development.Module
-        OPTIONAL_COMPONENTS Development.SABIModule)
-
-# Import nanobind through CMake's find_package mechanism
-find_package(nanobind CONFIG REQUIRED)
-
-# We are now ready to compile the actual extension module
-nanobind_add_module(
-        sails_module
-
-        STABLE_ABI
-        NB_STATIC
-
-        # Python bound functions here
-        ${WRK_DIR}/src/bindings/python_sails.cpp
+#if (TESTING)
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
-
-
-target_include_directories(sails_module PUBLIC
-        ${WRK_DIR}/checkout/gemmi
-        ${WRK_DIR}/mmdb2
-        ${WRK_DIR}/clipper/mmdb
-        ${WRK_DIR}/clipper/cif
-        ${WRK_DIR}/clipper/core
-        ${WRK_DIR}/clipper/contrib
-        ${WRK_DIR}/clipper/ccp4
-        ${WRK_DIR}/clipper/minimol
-        ${WRK_DIR}/fftw
-        ${WRK_DIR}/rfftw
-        ${WRK_DIR}/ccp4
-
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+enable_testing()
+add_executable(
+        sails_tests
+        ${WRK_DIR}/src/cpp/tests/sails-glycan-test.cpp
+        ${WRK_DIR}/src/cpp/tests/sails-linkage-test.cpp
 )
-
-
-target_link_directories(sails_module
-        PUBLIC
-        ${CMAKE_BINARY_DIR}/clipper/mmdb
-        ${CMAKE_BINARY_DIR}/clipper/cif
-        ${CMAKE_BINARY_DIR}/clipper/ccp4
-        ${CMAKE_BINARY_DIR}/clipper/minimol
-        ${CMAKE_BINARY_DIR}/clipper/contrib
-        ${CMAKE_BINARY_DIR}/clipper/core
-        ${CMAKE_BINARY_DIR}/fftw
-        ${CMAKE_BINARY_DIR}/rfftw
-        ${CMAKE_BINARY_DIR}/ccp4
-        ${CMAKE_BINARY_DIR}/mmdb2
-        ${CMAKE_BINARY_DIR}/gemmi
-)
-
-
 target_link_libraries(
-        sails_module
-        PRIVATE
+        sails_tests
         sails_lib
-        clipper-mmdb
-        clipper-cif
-        clipper-ccp4
-        clipper-minimol
-        clipper-contrib
-        clipper-core
-        rfftw
-        fftw
-        ccp4
-        mmdb2
-        gemmi_cpp
-        ZLIB::ZLIB
-
+        ZLIB::ZLIB  #for writing tests
+        GTest::gtest_main
 )
 
+include(GoogleTest)
+gtest_discover_tests(sails_tests)
+#endif()
 
-# Install directive for scikit-build-core
-if(UNIX AND NOT APPLE)
-    install(TARGETS sails_module LIBRARY DESTINATION sails)
-    nanobind_add_stub(
-            sails_module_stubs
-            INSTALL_TIME
-            MODULE sails
-            OUTPUT __init__.pyi
-            PYTHON_PATH "."
+
+if (SKBUILD)
+    # Try to import all Python components potentially needed by nanobind
+    find_package(Python 3.8
+            REQUIRED COMPONENTS Interpreter Development.Module
+            OPTIONAL_COMPONENTS Development.SABIModule)
+
+    # Import nanobind through CMake's find_package mechanism
+    find_package(nanobind CONFIG REQUIRED)
+
+    # We are now ready to compile the actual extension module
+    nanobind_add_module(
+            sails_module
+
+            STABLE_ABI
+            NB_STATIC
+
+            # Python bound functions here
+            ${WRK_DIR}/src/bindings/python_sails.cpp
     )
-    install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
-endif()
 
-#if(APPLE)
+
+    target_include_directories(sails_module PUBLIC
+            ${WRK_DIR}/checkout/gemmi
+            ${WRK_DIR}/mmdb2
+            ${WRK_DIR}/clipper/mmdb
+            ${WRK_DIR}/clipper/cif
+            ${WRK_DIR}/clipper/core
+            ${WRK_DIR}/clipper/contrib
+            ${WRK_DIR}/clipper/ccp4
+            ${WRK_DIR}/clipper/minimol
+            ${WRK_DIR}/fftw
+            ${WRK_DIR}/rfftw
+            ${WRK_DIR}/ccp4
+
+    )
+
+
+    target_link_directories(sails_module
+            PUBLIC
+            ${CMAKE_BINARY_DIR}/clipper/mmdb
+            ${CMAKE_BINARY_DIR}/clipper/cif
+            ${CMAKE_BINARY_DIR}/clipper/ccp4
+            ${CMAKE_BINARY_DIR}/clipper/minimol
+            ${CMAKE_BINARY_DIR}/clipper/contrib
+            ${CMAKE_BINARY_DIR}/clipper/core
+            ${CMAKE_BINARY_DIR}/fftw
+            ${CMAKE_BINARY_DIR}/rfftw
+            ${CMAKE_BINARY_DIR}/ccp4
+            ${CMAKE_BINARY_DIR}/mmdb2
+            ${CMAKE_BINARY_DIR}/gemmi
+    )
+
+
+    target_link_libraries(
+            sails_module
+            PRIVATE
+            sails_lib
+            clipper-mmdb
+            clipper-cif
+            clipper-ccp4
+            clipper-minimol
+            clipper-contrib
+            clipper-core
+            rfftw
+            fftw
+            ccp4
+            mmdb2
+            gemmi_cpp
+            ZLIB::ZLIB
+
+    )
+
+
+    # Install directive for scikit-build-core
+    if (UNIX AND NOT APPLE)
+        install(TARGETS sails_module LIBRARY DESTINATION sails)
+        nanobind_add_stub(
+                sails_module_stubs
+                INSTALL_TIME
+                MODULE sails
+                OUTPUT __init__.pyi
+                PYTHON_PATH "."
+        )
+        install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
+    endif ()
+
+    #if(APPLE)
     nanobind_add_stub(
             sails_module_stubs
 
@@ -269,5 +294,6 @@ endif()
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
     install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
-#endif()
+    #endif()
 
+endif ()
