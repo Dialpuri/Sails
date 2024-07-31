@@ -26,6 +26,8 @@ namespace Sails {
 
 	class Density {
 	public:
+		Density() = default;
+
 		explicit Density(const std::string &mtz_path);
 
 		explicit Density(gemmi::Mtz &mtz);

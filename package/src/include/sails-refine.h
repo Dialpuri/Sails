@@ -20,6 +20,19 @@ namespace Sails {
     struct SuperpositionResult;
 
     struct TorsionAngleRefiner {
+        /**
+         * Refines torsion angles for a set of atoms using reference atoms and density information.
+         *
+         * @param atoms A reference to a vector of Atom pointers.
+         * @param reference_atoms A reference to a vector of Atom objects representing the reference atoms.
+         * @param density A reference to a Density object.
+         * @param superposition_result A reference to a SuperpositionResult object.
+         * @param length A double representing the length.
+         * @param angle_mean A reference to a vector of doubles representing the mean angles.
+         * @param angle_range A reference to a vector of doubles representing the angle ranges.
+         * @param torsion_mean A reference to a vector of doubles representing the mean torsions.
+         * @param torsion_range A reference to a vector of doubles representing the torsion ranges.
+         */
         TorsionAngleRefiner(
             std::vector<gemmi::Atom *> &atoms,
             std::vector<gemmi::Atom> &reference_atoms,
@@ -42,11 +55,39 @@ namespace Sails {
             m_torsion_range(torsion_range) {}
 
 
-        double score_function(std::vector<double>& angles); // {alpha, beta, gamma, phi, psi, omega}
+        /**
+         * Calculates the score function for refining torsion angles based on a set of angles and the density score.
+         *
+         * @param all_angles A reference to a vector of doubles representing the input angles.
+         *
+         * Angles are in the order alpha beta gamma psi phi omega
+         *
+         * @return The calculated score function value.
+         */
+        double score_function(std::vector<double>& angles);
 
+        /**
+         * Refines torsion angles using a Nelder-Mead optimization algorithm.
+         *
+         * @return A SuperpositionResult object containing the refined residue, transform, and reference residue.
+         */
         SuperpositionResult refine();
 
+
+
     private:
+
+        /**
+        * Calculates the penalty for a given angle based on its deviation from the mean angle
+        * using the penalty factor.
+        *
+        * @param angle The angle to calculate the penalty for.
+        * @param angle_mean The mean angle.
+        * @param angle_stddev The standard deviation of the angle.
+        * @param penalty_factor The penalty factor to be applied.
+        *
+        * @return The penalty value calculated for the given angle.
+        */
         static double calculate_penalty(double angle, double angle_mean, double angle_stddev, double penalty_factor);
 
         double m_length;
