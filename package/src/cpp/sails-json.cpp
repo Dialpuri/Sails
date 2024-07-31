@@ -109,11 +109,11 @@ Sails::AngleSet Sails::JSONLoader::extract_angles(simdjson::simdjson_result<simd
     const char *gamma_stddev_key = "gammaStdDev";
 
     auto alpha = Angle(value[alpha_mean_key].get_number().value().as_double(),
-                            value[alpha_stddevkey].get_number().value().as_double());
+                       value[alpha_stddevkey].get_number().value().as_double());
     auto beta = Angle(value[beta_mean_key].get_number().value().as_double(),
-                            value[beta_stddevkey].get_number().value().as_double());
+                      value[beta_stddevkey].get_number().value().as_double());
     auto gamma = Angle(value[gamma_mean_key].get_number().value().as_double(),
-                              value[gamma_stddev_key].get_number().value().as_double());
+                       value[gamma_stddev_key].get_number().value().as_double());
 
     return {alpha, beta, gamma};
 }
@@ -128,23 +128,64 @@ Sails::TorsionSet Sails::JSONLoader::extract_torsions(simdjson::simdjson_result<
     const char *omega_stddev_key = "omegaStdDev";
 
     auto phi = Angle(value[phi_mean_key].get_number().value().as_double(),
-                            value[phi_stddev_key].get_number().value().as_double());
+                     value[phi_stddev_key].get_number().value().as_double());
     auto psi = Angle(value[psi_mean_key].get_number().value().as_double(),
-                            value[psi_stddev_key].get_number().value().as_double());
+                     value[psi_stddev_key].get_number().value().as_double());
     auto omega = Angle(value[omega_mean_key].get_number().value().as_double(),
-                              value[omega_stddev_key].get_number().value().as_double());
+                       value[omega_stddev_key].get_number().value().as_double());
 
     return {psi, phi, omega};
+}
+
+/**
+ * {
+ *      date: DATE,
+ *      cycles: [
+ *          {
+ *              cycle: 0,
+ *              entries: {
+ *                  "NAG-1": {rscc: 0, rsr: 0, dds: 0},
+ *              }
+ *
+ *      ]
+ * }
+ *
+ */
+void Sails::JSONWriter::write_json_file(TelemetryLog &log) {
+    std::ofstream f(m_filename);
+    const auto now = std::chrono::system_clock::now();
+    const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
+    f << "{\n";
+    f << "\t\"date\": \"" << strtok(ctime(&t_c), "\n") << "\",\n";
+    f << "\t\"cycles\":[\n\t\t";
+    for (const auto &[cycle, entries]: log) {
+        f << "{\n";
+        f << "\t\t\t\"cycle\": " << cycle << ",\n";
+        f << "\t\t\t\"entries\": {\n";
+        for (int i = 0; i < entries.size(); ++i) {
+            f << "\t\t\t\t\"" << entries[i].residue_id << "\": {\"rscc\": " << entries[i].rscc_score <<
+                    ", \"rsr\": " << entries[i].rsr_score <<
+                    ", \"dds\": " << entries[i].dds_score << "}";
+            if (i < entries.size() - 1) {
+                f << ",";
+            }
+            f << "\n";
+        }
+        std::cout << cycle << " " << log.size() << std::endl;
+        f << "\t\t\t}\n\t\t}";
+        if (cycle < log.size()) f << ",";
+    }
+    f << "]\n}";
+    f.close();
 }
 
 
 std::vector<Sails::AtomSet>
 Sails::JSONLoader::extract_atom_set(simdjson::simdjson_result<simdjson::ondemand::value> &value, const char *key) {
-
-    const char* atom1_key = "atom1";
-    const char* atom2_key = "atom2";
-    const char* atom3_key = "atom3";
-    const char* identifier_key = "identifier";
+    const char *atom1_key = "atom1";
+    const char *atom2_key = "atom2";
+    const char *atom3_key = "atom3";
+    const char *identifier_key = "identifier";
 
     simdjson::simdjson_result<simdjson::ondemand::array> sets = value[key].get_array();
 

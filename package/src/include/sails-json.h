@@ -10,6 +10,8 @@
 
 #include <filesystem>
 
+#include "sails-telemetry.h"
+
 namespace Sails {
 
     /**
@@ -92,6 +94,17 @@ namespace Sails {
         simdjson::ondemand::document m_doc;
 
     }; // class JSONLoader
+
+
+    class JSONWriter {
+    public:
+        JSONWriter(const std::string& filename): m_filename(filename) {}
+
+        void write_json_file(TelemetryLog& log);
+
+    private:
+        std::string m_filename;
+    };
 
 } // namespace Sails
 
