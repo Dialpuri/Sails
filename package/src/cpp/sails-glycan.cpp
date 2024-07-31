@@ -5,7 +5,7 @@
 #include "../include/sails-glycan.h"
 
 
-void Sails::Glycan::print_list() {
+void Sails::Glycan::print_list() const {
     std::cout << "Adjacency List" << std::endl;
     for (const auto &pair: adjacency_list) {
         const Sugar *node = pair.first;
@@ -37,8 +37,8 @@ std::string Sails::Glycan::get_dot_string() {
     dot += "{\n";
 
     for (const auto &[root, sugar]: sugars) {
-        gemmi::Residue r2 = m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->site
-            .residue_idx];
+        gemmi::Residue r2 = m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues[sugar->
+            site.residue_idx];
         dot += Utils::format_site_key(sugar->site);
         dot += " [fillcolor=\"";
         dot += m_database[r2.name].snfg_colour;
@@ -61,8 +61,7 @@ std::string Sails::Glycan::get_dot_string() {
     return dot;
 }
 
-void
-Sails::Glycan::write_dot_file(const std::string &path) {
+void Sails::Glycan::write_dot_file(const std::string &path) {
     std::ofstream of(path);
     of << get_dot_string() << std::endl;
     of.close();

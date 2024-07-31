@@ -191,13 +191,16 @@ namespace Sails {
          * It returns a pointer to the sugar molecule that was linked to the removed sugar molecule.
          *
          * @param sugar A pointer to the sugar molecule to be removed.
+         * @param erase_from_structure Whether to erase the corresponding residue from the structure member.
          * @return A pointer to the sugar molecule that was linked to the removed sugar molecule, or nullptr if no sugar molecule was linked.
          */
-        Sugar* remove_sugar(Sugar* sugar) {
+        Sugar* remove_sugar(Sugar* sugar, bool erase_from_structure = true) {
 
             // erase residue from structure member
-            const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
-            residue_ptr->erase(residue_ptr->begin()+sugar->site.residue_idx);
+            if (erase_from_structure) {
+                const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].residues;
+                residue_ptr->erase(residue_ptr->begin()+sugar->site.residue_idx);
+            }
 
             Sugar* linked_donor = nullptr;
             // remove from adjacency list
@@ -245,7 +248,7 @@ namespace Sails {
         *
         * @return void
         */
-        void print_list();
+        void print_list() const;
 
         /**
         * @brief Prints the sugars contained within glycan structure.
@@ -287,7 +290,7 @@ namespace Sails {
          *
          * @return void
          */
-        void bfs(Sugar *root);
+        [[maybe_unused]] void bfs(Sugar *root);
 
         /**
          * @brief This function retrieves all the terminal sugars in a tree structure starting from the given root sugar.
@@ -310,7 +313,7 @@ namespace Sails {
          * @param terminal_sugars - A vector to store the terminal sugar molecules found.
          * @param depth - The depth of the current search
          */
-        void dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
+        [[maybe_unused]] void dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
 
 
         /**
