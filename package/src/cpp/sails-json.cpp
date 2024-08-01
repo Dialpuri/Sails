@@ -137,22 +137,7 @@ Sails::TorsionSet Sails::JSONLoader::extract_torsions(simdjson::simdjson_result<
     return {psi, phi, omega};
 }
 
-/**
- * {
- *      date: DATE,
- *      cycles: [
- *          {
- *              cycle: 0,
- *              entries: {
- *                  "NAG-1": {rscc: 0, rsr: 0, dds: 0},
- *              }
- *
- *      ]
- * }
- *
- */
 void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream) {
-    // std::ofstream stream(m_filename);
     const auto now = std::chrono::system_clock::now();
     const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
     stream << "{\n";
@@ -175,7 +160,6 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
         if (cycle < log.size()) stream << ",";
     }
     stream << "]\n}";
-    // stream.close();
 }
 
 
