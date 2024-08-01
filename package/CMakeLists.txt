@@ -172,30 +172,30 @@ file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
 #         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
 
 
-#if (TESTING)
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-enable_testing()
-add_executable(
-        sails_tests
-        ${WRK_DIR}/src/cpp/tests/sails-glycan-test.cpp
-#        ${WRK_DIR}/src/cpp/tests/sails-linkage-test.cpp
-)
-target_link_libraries(
-        sails_tests
-        sails_lib
-        ZLIB::ZLIB  #for writing tests
-        GTest::gtest_main
-)
+if (TESTING)
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    enable_testing()
+    add_executable(
+            sails_tests
+            ${WRK_DIR}/src/cpp/tests/sails-glycan-test.cpp
+    #        ${WRK_DIR}/src/cpp/tests/sails-linkage-test.cpp
+    )
+    target_link_libraries(
+            sails_tests
+            sails_lib
+            ZLIB::ZLIB  #for writing tests
+            GTest::gtest_main
+    )
 
-include(GoogleTest)
-gtest_discover_tests(sails_tests)
-#endif()
+    include(GoogleTest)
+    gtest_discover_tests(sails_tests)
+endif()
 
 
 if (SKBUILD)
@@ -270,31 +270,5 @@ if (SKBUILD)
 
     )
 
-
-    # Install directive for scikit-build-core
-    if (UNIX AND NOT APPLE)
-        install(TARGETS sails_module LIBRARY DESTINATION sails)
-        nanobind_add_stub(
-                sails_module_stubs
-                INSTALL_TIME
-                MODULE sails
-                OUTPUT __init__.pyi
-                PYTHON_PATH "."
-        )
-        install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
-    endif ()
-
-    if(APPLE)
-        nanobind_add_stub(
-                sails_module_stubs
-
-                MODULE sails
-                OUTPUT __init__.pyi
-                PYTHON_PATH "."
-        )
-
-        install(TARGETS sails_module LIBRARY DESTINATION sails)
-        install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
-    endif()
-
+    install(TARGETS sails_module LIBRARY DESTINATION sails)
 endif ()

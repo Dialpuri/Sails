@@ -1,12 +1,12 @@
 [build-system]
-requires = ["scikit-build-core >=0.4.3", "nanobind >=1.3.2", "typing-extensions"]
-build-backend = "scikit_build_core.build"
+requires = ["scikit-build-core<=0.9.9", "nanobind >=1.3.2", "typing-extensions", "setuptools"]
+build-backend = "scikit_build_core.setuptools.build_meta"
 
 [project]
 name = "pysails"
 dynamic = ["version"]
 description = "Sails: Software for the Automated Identification of Linked Sugars"
-readme = "../README.md"
+readme = "README.md"
 requires-python = ">=3.9"
 authors = [
     { name = "Jordan Dialpuri", email = "jordan.dialpuri@york.ac.uk" },
@@ -21,6 +21,11 @@ dependencies=[
     'typing-extensions',
     "graphviz"
 ]
+
+[tool.setuptools]
+packages = ["sails"]
+package-dir = {"" = "src"}
+
 [project.urls]
 Homepage = "https://github.com/Dialpuri/Sails"
 
@@ -37,15 +42,17 @@ minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 
 # Build stable ABI wheels for CPython 3.12+
-wheel.py-api = "cp312"
+#wheel.py-api = "cp312"
 
 #cmake.build-type = "Debug"
 
 
 # Dynamically assign the project version from the __version__.py file
-[tool.scikit-build.metadata.version]
-provider = "scikit_build_core.metadata.regex"
-input = "src/sails/__version__.py"
+#[tool.setuptools.dynamic]
+#version = {file = "src/sails/__ version__.py"}
+
+#provider = "scikit_build_core.metadata.regex"
+#input = "src/sails/__version__.py"
 
 [tool.cibuildwheel]
 # Necessary to see build output from the actual compilation
