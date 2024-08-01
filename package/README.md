@@ -2,7 +2,7 @@
 
 ## Overview
 
-Sails is a software package for automatic addition of glycans to protein models obtained through X-ray crystallography. 
+Sails is a software package for automatic addition of glycans to protein models obtained through X-ray crystallography.
 
 ## Authors
 
