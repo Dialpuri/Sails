@@ -7,20 +7,6 @@ on:
       - published
 
 jobs:
-  check_versioning:
-    name: Check versions match
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          cd package
-          ./get_sources
-          pip install . 
-          python tests/test_version.py -version ${{ github.event.release.tag_name }}
-
   run_tests:
     name: Run Python tests
     runs-on: ubuntu-latest
@@ -43,18 +29,20 @@ jobs:
         working-directory: ./package
 
       - name: Install NucleoFind
-        run: pip install .
+        run: pip install -v .
         working-directory: ./package
 
       - name: Install pytest
         run: pip install pytest
 
       - name: Run tests
-        run : pytest tests
+        run : |
+          pytest tests
+          python tests/test_version.py -version ${{ github.event.release.tag_name }}
         working-directory: ./package
 
   build_sdist:
-    needs: [ check_versioning, run_tests ]
+    needs: [  run_tests ]
     name: Build SDist
     runs-on: ubuntu-latest
     steps:
@@ -87,7 +75,7 @@ jobs:
 
 
   build_wheels:
-    needs: [ check_versioning, run_tests ]
+    needs: [  run_tests ]
     name: Wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
