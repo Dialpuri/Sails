@@ -100,13 +100,12 @@ namespace Sails {
      * @class JSONWriter
      * @brief The JSONWriter class is responsible for writing telemetry log data to a JSON file.
      *
-     * This class provides a method for writing telemetry log data to a JSON file. It requires a
-     * filename to write the data to. The class uses the TelemetryLog object to access the log data
-     * and construct the JSON structure.
+     * This class provides a method for writing telemetry log data to a JSON file. The class uses the TelemetryLog
+     * object to access the log data and construct the JSON structure.
      */
     class JSONWriter {
     public:
-        JSONWriter(const std::string& filename): m_filename(filename) {}
+        JSONWriter() = default;
 
         /**
          * @brief Writes the telemetry log data to a JSON file.
@@ -115,6 +114,7 @@ namespace Sails {
          * The JSON file includes information such as the date, cycles, and entries.
          *
          * @param log The TelemetryLog object containing the telemetry data to write.
+         * @param stream
          *
          * @note The log object should be populated with data prior to calling this method.
          * @note The filename of the JSON file to write is specified in the constructor of the JSONWriter class.
@@ -122,10 +122,8 @@ namespace Sails {
          * @see TelemetryLog
          * @see JSONWriter
          */
-        void write_json_file(TelemetryLog& log);
+        void write_json_file(TelemetryLog& log, std::ostream &stream);
 
-    private:
-        std::string m_filename;
     };
 
 } // namespace Sails
