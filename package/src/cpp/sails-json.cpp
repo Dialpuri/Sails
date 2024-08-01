@@ -5,13 +5,13 @@
 #include "../include/sails-json.h"
 
 
-Sails::JSONLoader::JSONLoader(const std::string &path) {
-    this->init(path);
+Sails::JSONLoader::JSONLoader(const std::string &file_path) {
+    this->init(file_path);
 }
 
-void Sails::JSONLoader::init(const std::string &path) {
-    if (!std::filesystem::exists(path)) { throw std::runtime_error("Data file could not be found"); }
-    m_path = path;
+void Sails::JSONLoader::init(const std::string &file_path) {
+    if (!std::filesystem::exists(file_path)) { throw std::runtime_error("Data file could not be found"); }
+    m_path = file_path;
 }
 
 
