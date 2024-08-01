@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <set>
+#include <optional>
+
 #include "sails-model.h"
 #include "sails-utils.h"
 #include "sails-density.h"

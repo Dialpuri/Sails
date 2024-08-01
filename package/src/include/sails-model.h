@@ -6,6 +6,7 @@
 #define SAILS_SAILS_MODEL_H
 
 #include <map>
+#include <optional>
 
 #include <gemmi/neighbor.hpp>
 

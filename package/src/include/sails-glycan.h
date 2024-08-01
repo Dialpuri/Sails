@@ -12,6 +12,7 @@
 #include <iostream>
 #include <queue>
 #include <fstream>
+#include <optional>
 
 #include <gemmi/model.hpp>
 

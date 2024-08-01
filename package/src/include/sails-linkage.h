@@ -13,6 +13,7 @@
 #include "sails-cif.h"
 
 #include <string>
+#include <optional>
 
 #include <gemmi/cif.hpp>             // for cif::read_file
 #include <gemmi/modify.hpp>
