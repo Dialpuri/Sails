@@ -25,6 +25,10 @@ dependencies=[
 [tool.setuptools]
 packages = ["sails"]
 package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+"sails" = ["src/sails/data/*.json"]
 
 [project.urls]
 Homepage = "https://github.com/Dialpuri/Sails"

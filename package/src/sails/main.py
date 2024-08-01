@@ -6,6 +6,7 @@ import gemmi
 from pathlib import Path
 import json
 import graphviz
+import importlib.resources
 
 
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
@@ -24,7 +25,8 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     """
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
-    result = func(sails_structure, sails_mtz, cycles, verbose)
+    resource = importlib.resources.files('sails.data').joinpath("data.json")
+    result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),
             json.loads(result.log))
