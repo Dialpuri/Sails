@@ -139,13 +139,15 @@ namespace Sails {
     /**
      * @brief Represents the output of a Sails process
      *
-     * This class is used to hold the output of a process, which includes a gemmi::Structure object and an MTZ object.
+     * This class is used to hold the output of a process, which includes a gemmi::Structure object, an MTZ object and
+     * log string.
      */
     struct Output {
-        Output(gemmi::Structure& structure, MTZ& mtz): structure(structure), mtz(mtz) {};
+        Output(gemmi::Structure& structure, MTZ& mtz, std::string log): structure(structure), mtz(mtz), log(std::move(log)) {};
 
         gemmi::Structure structure ;
         MTZ mtz;
+        std::string log;
     };
 
 }
