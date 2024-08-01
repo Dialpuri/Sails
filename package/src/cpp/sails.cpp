@@ -92,8 +92,10 @@ void check_spacegroup(gemmi::Mtz* mtz, gemmi::Structure* structure) {
     if (mtz->spacegroup_name.empty()) mtz->spacegroup_name = structure->spacegroup_hm;
 }
 
-Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, bool verbose) {
-    Sails::JSONLoader loader = {"/Users/dialpuri/Development/sails/package/data/data.json"};
+Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &
+                        data_file, bool verbose) {
+
+    Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
@@ -171,14 +173,16 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     };
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, bool verbose) {
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& data_file,
+                            bool verbose) {
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, verbose);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, data_file, verbose);
 }
 
-Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, bool verbose) {
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& data_file,
+                            bool verbose) {
     auto glycosites = Sails::find_c_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, verbose);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, data_file, verbose);
 }
 
 int main() {
@@ -195,7 +199,8 @@ int main() {
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
-    auto output = n_glycosylate(structure, sails_mtz, cycles, true);
+    std::string data_file = "package/src/sails/data/data.json";
+    auto output = n_glycosylate(structure, sails_mtz, cycles, data_file, true);
 
     std::string output_path = "structure.cif";
     std::string output_mtz_path = "reflections.mtz";
