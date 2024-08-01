@@ -30,7 +30,7 @@ void print_removal_rscc(const gemmi::Residue& residue, float rscc) {
 }
 
 void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, bool debug) {
-    constexpr float rscc_threshold = 0.4;
+    constexpr float rscc_threshold = 0.5;
     constexpr float dds_threshold = 1.1;
 
     std::vector<Sails::Sugar *> to_remove;
@@ -112,7 +112,6 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     structure.spacegroup_hm = density.m_mtz.spacegroup_name;
 
     Sails::Model model = {&structure, linkage_database, residue_database};
-
     Sails::Telemetry telemetry = Sails::Telemetry("");
 
     for (int i = 1; i <= cycles; i++) {
@@ -157,16 +156,18 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
         telemetry.save_state(i);
     }
 
-    telemetry.format_log(&structure, &density);
 
     std::cout << std::endl;
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
 
     Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz, "FP", "SIGFP");
+    std::string log_string = telemetry.format_log(&structure, &density, false).value();
+
     return {
         *model.get_structure(),
-        output_mtz
+        output_mtz,
+        log_string
     };
 }
 
