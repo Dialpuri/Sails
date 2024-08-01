@@ -221,7 +221,7 @@ void Sails::Density::calculate_po_pc_map(gemmi::Structure &structure) {
     new_mtz.set_data(recalculated_data.data(), recalculated_data.size());
     new_mtz.ensure_asu();
 
-    m_alt_grid = load_grid(new_mtz, "FDIFFCALC", "PDIFFCALC", false);
+    m_po_pc_grid = load_grid(new_mtz, "FDIFFCALC", "PDIFFCALC", false);
 }
 
 
@@ -232,7 +232,7 @@ void Sails::Density::write_mtz(const std::string &path) const {
 float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
     return std::transform_reduce(residue.atoms.begin(), residue.atoms.end(), 0.0f, std::plus<>(),
                                  [&](const gemmi::Atom &current_atom) {
-                                     return m_alt_grid.interpolate_value(current_atom.pos);
+                                     return m_po_pc_grid.interpolate_value(current_atom.pos);
                                  }) / (residue.atoms.size());
 }
 

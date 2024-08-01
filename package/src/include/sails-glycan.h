@@ -56,6 +56,18 @@ namespace Sails {
         }
     };
 
+    /**
+     * @struct Linkage
+     * @brief Represents a linkage between two sugar objects.
+     *
+     * The Linkage struct stores information about a linkage between a donor sugar and an acceptor sugar. It includes
+     * pointers to the donor and acceptor sugar, as well as the type of atom in each sugar that is involved in the linkage.
+     *
+     * @param donor_sugar Pointer to the donor sugar molecule.
+     * @param acceptor_sugar Pointer to the acceptor sugar molecule.
+     * @param donor_atom The type of atom in the donor sugar molecule that is involved in the linkage.
+     * @param acceptor_atom The type of atom in the acceptor sugar molecule that is involved in the linkage.
+     */
     struct Linkage {
         Linkage(Sugar *donor_sugar, Sugar *acceptor_sugar, const std::string &donor_atom,
                 const std::string &acceptor_atom)
@@ -360,14 +372,37 @@ namespace Sails {
          */
         [[nodiscard]] std::set<Glycosite> operator-(const Glycan &glycan);
 
+        /**
+         * Internal glycosite [[maybe_unused]]
+         */
         Glycosite glycosite;
 
         // private:
+
+        /**
+         * Adjaceny list describing links between sugar pointers
+         */
         std::map<Sugar *, std::set<Sugar *> > adjacency_list;
+
+        /**
+         * List of linkages used when creating link records
+         */
         std::vector<Linkage> linkage_list;
+
+
+        /**
+         * Sugars map used to store sugars in scope until the Glycan is destroyed
+         */
         std::map<Glycosite, std::unique_ptr<Sugar> > sugars; // used to store sugars until Glycan goes out of scope
 
+        /**
+         * Internal structure pointer - used so that the structure is updated with the caller's structure
+         */
         gemmi::Structure *m_structure;
+
+        /**
+         * Internal residue database - used to write local dot files [[DEPRECATED]]
+         */
         ResidueDatabase m_database;
     };
 }

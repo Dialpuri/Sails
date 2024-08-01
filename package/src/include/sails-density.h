@@ -268,21 +268,65 @@ namespace Sails {
 
 
 		// private:
+		/**
+		 * Best map
+		 */
 		gemmi::Grid<> m_grid{};
-		gemmi::Grid<> m_difference_grid{};
-		gemmi::Grid<> m_alt_grid{};
 
+		/**
+		 * Difference map
+		 */
+		gemmi::Grid<> m_difference_grid{};
+
+		/**
+		 * Po-Pc map
+		 */
+		gemmi::Grid<> m_po_pc_grid{};
+
+		/**
+		 * MTZ Object
+		 */
 		gemmi::Mtz m_mtz;
 
+		/**
+		 * Fc maps for residues in standard positions - used for fast RSCC calculations
+		 */
 		std::unordered_map<std::string, gemmi::Grid<> > calculated_maps;
 
 		// clipper HKL - initialised in initialise_hkl
+		/**
+		 * Clipper Spacegroup used for map recalcualtion - initialised in initialise_hkl
+		 */
 		clipper::Spacegroup m_spacegroup;
+
+		/**
+		 * Clipper Resolution used for map recalcualtion - initialised in initialise_hkl
+		 */
 		clipper::Resolution m_resolution;
+
+		/**
+		 * Clipper Cell used for map recalcualtion - initialised in initialise_hkl
+		 */
 		clipper::Cell m_cell;
+
+		/**
+		 * Clipper container for reflection metadata used for map recalcualtion
+		 */
 		clipper::HKL_info m_hkl_info;
+
+		/**
+		 * Clipper Grid sampling used for map recalcualtion - initialised in initialise_hkl
+		 */
 		clipper::Grid_sampling m_grid_sampling;
+
+		/**
+		 * Clipper list of F obs reflections
+		 */
 		clipper::HKL_data<clipper::data32::F_sigF> m_fobs; // initialsised in load_hkl
+
+		/**
+		 * Clipper best map
+		 */
 		clipper::Xmap<float> m_best_map;
 	};
 } // namespace Sails

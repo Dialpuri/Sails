@@ -105,7 +105,7 @@ namespace Sails {
      * @param omega The gamma angle.
      */
     struct AngleSet {
-        AngleSet(const Angle& alpha, const  Angle& beta, const  Angle& gamma) : alpha(alpha), beta(beta), gamma(gamma) {
+        AngleSet(const Angle &alpha, const Angle &beta, const Angle &gamma) : alpha(alpha), beta(beta), gamma(gamma) {
         }
 
         std::vector<double> get_means_in_order() {
@@ -116,11 +116,10 @@ namespace Sails {
             return {alpha.stddev, beta.stddev, gamma.stddev};
         }
 
-         Angle alpha;
-         Angle beta;
-         Angle gamma;
+        Angle alpha;
+        Angle beta;
+        Angle gamma;
     };
-
 
 
     /**
@@ -134,7 +133,7 @@ namespace Sails {
      */
     struct TorsionSet {
         TorsionSet(const Angle &psi, const Angle &phi, const Angle &omega) : psi(psi), phi(phi),
-            omega(omega) {
+                                                                             omega(omega) {
         }
 
         std::vector<double> get_means_in_order() {
@@ -168,6 +167,7 @@ namespace Sails {
         AngleSet angles;
         TorsionSet torsions;
     };
+
     typedef std::vector<Cluster> Clusters;
     /**
      * @struct LinkageData
@@ -187,11 +187,11 @@ namespace Sails {
     struct LinkageData {
         LinkageData(std::string donor, std::string acceptor, const int donor_number, const int acceptor_number,
                     const double length,
-                    const std::vector<Cluster>& clusters) : donor(std::move(donor)),
-            acceptor(std::move(acceptor)),
-            donor_number(donor_number),
-            acceptor_number(acceptor_number), length(length),
-            clusters(clusters) {
+                    const std::vector<Cluster> &clusters) : donor(std::move(donor)),
+                                                            acceptor(std::move(acceptor)),
+                                                            donor_number(donor_number),
+                                                            acceptor_number(acceptor_number), length(length),
+                                                            clusters(clusters) {
         };
 
         std::string donor;
@@ -204,9 +204,63 @@ namespace Sails {
 
     typedef std::map<std::string, std::vector<LinkageData> > LinkageDatabase;
 
+    /**
+     * @class Glycosite
+     * @brief A class representing a glycosite.
+     *
+     * The Glycosite class represents a glycosite, which is defined by its model index, chain index, residue index,
+     * and optional atom index. Glycosite can be used for set operations such as comparison and sorting.
+     *
+     *
+     * @fn bool Glycosite::operator<(const Glycosite &other) const
+     * @brief Less than operator.
+     * @param other The Glycosite object to compare with.
+     * @return True if this Glycosite object is less than the other Glycosite object, False otherwise.
+     *
+     * Compares this Glycosite object with the other Glycosite object based on model_idx, chain_idx,
+     * residue_idx, and atom_idx. Returns True if this Glycosite object is less than the other Glycosite
+     * object, and False otherwise.
+     *
+     * @var int Glycosite::model_idx
+     * @brief The model index of the glycosite.
+     *
+     * This variable stores the model index of the glycosite.
+     *
+     * @var int Glycosite::chain_idx
+     * @brief The chain index of the glycosite.
+     *
+     * This variable stores the chain index of the glycosite.
+     *
+     * @var int Glycosite::residue_idx
+     * @brief The residue index of the glycosite.
+     *
+     * This variable stores the residue index of the glycosite.
+     *
+     * @var int Glycosite::atom_idx
+     * @brief The atom index of the glycosite.
+     *
+     * This variable stores the atom index of the glycosite. It is set to -1 by default and is optional.
+     */
     struct Glycosite {
+        /**
+         * @constructor Glycosite
+         * @brief Default constructor.
+         *
+         * Constructs a Glycosite object with default values for model_idx, chain_idx, residue_idx, and atom_idx.
+         *
+         */
         Glycosite() = default;
 
+
+        /**
+         * @constructor Glycosite
+         * @brief Constructor with mark parameter.
+         * @param mark The neighbor search mark used to initialize the Glycosite object.
+         *
+         * Constructs a Glycosite object using the provided neighbor search mark. The model_idx is set to 0,
+         * and the chain_idx, residue_idx, and atom_idx are set based on the mark.
+         *
+         */
         explicit Glycosite(const gemmi::NeighborSearch::Mark &mark) {
             model_idx = 0;
             chain_idx = mark.chain_idx;
@@ -214,12 +268,30 @@ namespace Sails {
             atom_idx = mark.atom_idx;
         }
 
+        /**
+         * @constructor Glycosite
+         * @brief Constructor with model_idx, chain_idx, and residue_idx parameters.
+         * @param model_idx The model index of the glycosite.
+         * @param chain_idx The chain index of the glycosite.
+         * @param residue_idx The residue index of the glycosite.
+         *
+         * Constructs a Glycosite object using the provided model index, chain index, and residue index.
+         * The atom_idx is set to -1 by default.
+         */
         Glycosite(const int model_idx, const int chain_idx, const int residue_idx) : model_idx(model_idx),
             chain_idx(chain_idx),
             residue_idx(residue_idx) {
         }
 
-        // for set operations
+        /**
+         * @brief Overloaded less than operator for the Glycosite struct.
+         *
+         * This operator compares two Glycosite structs based on their model_idx, chain_idx, residue_idx, and atom_idx
+         * members. It returns true if this Glycosite is less than the other Glycosite, and false otherwise.
+         *
+         * @param other The Glycosite struct to compare.
+         * @return true if this Glycosite is less than the other Glycosite, false otherwise.
+         */
         bool operator<(const Glycosite &other) const {
             return std::tie(model_idx, chain_idx, residue_idx, atom_idx) < std::tie(
                        other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
@@ -233,6 +305,20 @@ namespace Sails {
 
     typedef std::vector<Glycosite> Glycosites;
 
+    /**
+     * @brief Finds a glycosite in a given structure.
+     *
+     * The method searches for a glycosite in the provided structure based on the specified chain name,
+     * residue name, and sequence ID. It returns an optional Glycosite object if found, otherwise it
+     * returns an empty optional.
+     *
+     * @param structure The input structure to search for the glycosite.
+     * @param chain_name The name of the chain where the glycosite is located.
+     * @param residue_name The name of the residue that represents the glycosite.
+     * @param seqId The sequence identifier of the residue in the chain.
+     * @return An optional Glycosite object representing the found glycosite, or an empty optional
+     *         if no glycosite is found.
+     */
     inline std::optional<Glycosite> find_site(const gemmi::Structure &structure,
                                               const std::string &chain_name, const std::string &residue_name,
                                               int seqId) {
