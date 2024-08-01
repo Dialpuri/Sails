@@ -34,14 +34,6 @@ jobs:
         with:
           working-directory: 'package/'
 
-      - name: Clone Moxygen Fork
-        uses: GuillaumeFalourd/clone-github-repo-action@v2.3
-        with:
-          depth: 1
-          branch: 'main'
-          owner: 'Dialpuri'
-          repository: 'moxygen'
-
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -49,6 +41,7 @@ jobs:
 
       - name: Build Moxygen MD Docs
         run: |
+          git clone https://github.com/Dialpuri/moxygen.git
           ls
           cd moxygen
           npm install
