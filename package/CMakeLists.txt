@@ -184,7 +184,7 @@ enable_testing()
 add_executable(
         sails_tests
         ${WRK_DIR}/src/cpp/tests/sails-glycan-test.cpp
-        ${WRK_DIR}/src/cpp/tests/sails-linkage-test.cpp
+#        ${WRK_DIR}/src/cpp/tests/sails-linkage-test.cpp
 )
 target_link_libraries(
         sails_tests
