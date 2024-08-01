@@ -50,7 +50,7 @@ jobs:
           ls
           ../../../../moxygen/bin/moxygen.js -c -a --output %s.md ../../../Doxygen/xml
           ls
-          ./transfer_docs.sh
+          ../../../transfer_docs.sh
 
       - name: Build Writerside docs using Docker
         uses: JetBrains/writerside-github-action@v4
