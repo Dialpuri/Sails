@@ -1,1 +1,2 @@
 include src/sails/data/*.json
+include src/sails/data/*.cif

@@ -25,7 +25,7 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     """
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
-    resource = importlib.resources.files('sails.data').joinpath("data.json")
+    resource = importlib.resources.files('sails.data').joinpath(".")
     result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),

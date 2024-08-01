@@ -118,6 +118,14 @@ namespace Sails {
    */
   [[nodiscard]] gemmi::Structure *get_structure() const { return structure; }
 
+  /**
+   * @brief Sets the directory for the special monomer.
+   *
+   * @param dir The directory path for the special monomer.
+   *
+   */
+  void set_special_monomer_dir(const std::string& dir) { special_monomer_path=dir; }
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -315,7 +323,7 @@ namespace Sails {
   LinkageDatabase linkage_database;
   ResidueDatabase residue_database;
   std::string monomer_library_path;
-  std::string special_monomer_path = "/Users/dialpuri/Development/sails/package/models/special_monomers";
+  std::string special_monomer_path;
   std::map<std::string, gemmi::Residue> monomers;
  };
 }

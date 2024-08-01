@@ -93,8 +93,9 @@ void check_spacegroup(gemmi::Mtz* mtz, gemmi::Structure* structure) {
 }
 
 Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &
-                        data_file, bool verbose) {
+                        resource_dir, bool verbose) {
 
+    std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
@@ -114,6 +115,8 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     structure.spacegroup_hm = density.m_mtz.spacegroup_name;
 
     Sails::Model model = {&structure, linkage_database, residue_database};
+    model.set_special_monomer_dir(resource_dir);
+
     Sails::Telemetry telemetry = Sails::Telemetry("");
 
     for (int i = 1; i <= cycles; i++) {
@@ -173,16 +176,16 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     };
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& data_file,
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, data_file, verbose);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
-Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& data_file,
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_c_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, data_file, verbose);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
 int main() {

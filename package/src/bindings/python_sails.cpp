@@ -143,7 +143,7 @@ NB_MODULE(sails_module, m) {
                         .def("get_all_dotfiles", &Sails::Dot::get_all_dotfiles)
                         .def("get_dotfile", &Sails::Dot::get_dotfile);
 
-    m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "data_file"_a, "verbose"_a);
-    m.def("c_glycosylate_from_objects", &c_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "data_file"_a, "verbose"_a);
+    m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+    m.def("c_glycosylate_from_objects", &c_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
 }
