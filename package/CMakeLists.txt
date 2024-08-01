@@ -284,17 +284,17 @@ if (SKBUILD)
         install(FILES "${CMAKE_INSTALL_PREFIX}/__init__.pyi" DESTINATION sails)
     endif ()
 
-    #if(APPLE)
-    nanobind_add_stub(
-            sails_module_stubs
+    if(APPLE)
+        nanobind_add_stub(
+                sails_module_stubs
 
-            MODULE sails
-            OUTPUT __init__.pyi
-            PYTHON_PATH "."
-    )
+                MODULE sails
+                OUTPUT __init__.pyi
+                PYTHON_PATH "."
+        )
 
-    install(TARGETS sails_module LIBRARY DESTINATION sails)
-    install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
-    #endif()
+        install(TARGETS sails_module LIBRARY DESTINATION sails)
+        install(FILES "${CMAKE_BINARY_DIR}/__init__.pyi" DESTINATION sails)
+    endif()
 
 endif ()
