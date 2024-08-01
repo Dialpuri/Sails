@@ -43,7 +43,7 @@ namespace Sails {
      * gemmi::Structure object.
      */
     struct Telemetry {
-        explicit Telemetry(const std::string& filepath): filepath_(filepath) {}
+        explicit Telemetry(const std::string& filepath): m_filepath(filepath) {}
 
         /**
          * @brief Overloaded operator<< for inserting Glycosite objects into a set.
@@ -150,6 +150,7 @@ namespace Sails {
          *
          * @param structure A pointer to the gemmi::Structure object.
          * @param density A pointer to the Density object.
+         * @param write
          *
          * @note The method assumes that the telemetry data has already been stored
          * using the add_glycosite() method.
@@ -159,13 +160,13 @@ namespace Sails {
          * @see Utils::get_residue_from_glycosite()
          * @see Density::score_residue()
          */
-        void format_log(gemmi::Structure *structure, Density* density);
+        std::optional<std::string> format_log(gemmi::Structure *structure, Density* density, bool write);
 
 
     private:
         std::set<Glycosite> sites{};
         std::map<int, std::set<Glycosite>> states{};
-        const std::string &filepath_;
+        const std::string &m_filepath;
     };
 
 }

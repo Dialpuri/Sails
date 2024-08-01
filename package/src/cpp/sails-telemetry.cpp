@@ -47,18 +47,27 @@ Sails::TelemetryLog Sails::Telemetry::calculate_log(gemmi::Structure *structure,
 }
 
 
-void Sails::Telemetry::format_log(gemmi::Structure *structure, Density *density) {
+std::optional<std::string> Sails::Telemetry::format_log(gemmi::Structure *structure, Density *density, bool write) {
     TelemetryLog log = calculate_log(structure, density);
 
-    JSONWriter writer = {"cycles.json"};
-    writer.write_json_file(log);
-
-    for (const auto &[cycle, entries]: log) {
-        std::cout << "Cycle " << cycle << "\n";
-        for (const auto &entry: entries) {
-            std::cout << "Added " << entry.residue_id << "\t" << entry.rscc_score << "\t" << entry.rsr_score << "\t"
-            << entry.dds_score << "\n";
-        }
-        std::cout << std::endl;
+    JSONWriter writer;
+    if (write) {
+        std::ofstream stream(m_filepath);
+        writer.write_json_file(log, stream);
+        stream.close();
+    } else {
+        std::stringstream stream;
+        writer.write_json_file(log, stream);
+        return stream.str();
     }
+    return std::nullopt;
+
+    // for (const auto &[cycle, entries]: log) {
+    //     std::cout << "Cycle " << cycle << "\n";
+    //     for (const auto &entry: entries) {
+    //         std::cout << "Added " << entry.residue_id << "\t" << entry.rscc_score << "\t" << entry.rsr_score << "\t"
+    //         << entry.dds_score << "\n";
+    //     }
+    //     std::cout << std::endl;
+    // }
 }
