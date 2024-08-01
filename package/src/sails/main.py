@@ -11,7 +11,17 @@ import graphviz
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
                 func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
     gemmi.Structure, gemmi.Mtz, str]:
-
+    """
+    :param structure: The input structure file in gemmi.Structure, Path, or str format.
+    :param mtz: The input MTZ file in gemmi.Mtz, Path, or str format.
+    :param cycles: The number of cycles to perform glycosylation.
+    :param f: The column label for the structure factor values.
+    :param sigf: The column label for the structure factor uncertainties.
+    :param func: The function to use for glycosylation. Default is n_glycosylate_from_objects.
+    :param verbose: Flag specifying whether to print verbose output. Default is False.
+    :return: A tuple containing the glycosylated structure in gemmi.Structure format,
+             the glycosylated MTZ file in gemmi.Mtz format, and the log as a string.
+    """
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
     result = func(sails_structure, sails_mtz, cycles, verbose)
@@ -21,6 +31,11 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
 
 
 def read_sf_cif(mtz: Path):
+    """
+    :param mtz: Path to the CIF file containing structure factor data.
+    :return: MTZ file containing the converted structure factor data.
+
+    """
     doc = gemmi.cif.read(str(mtz))
     rblocks = gemmi.as_refln_blocks(doc)
     if not rblocks:
@@ -30,6 +45,31 @@ def read_sf_cif(mtz: Path):
 
 
 def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
+    """
+    :param mtz: Path to an MTZ file, an instance of gemmi.Mtz, or a string representing the path to an MTZ file.
+    :param f: Column name of the F values in the MTZ file.
+    :param sigf: Column name of the SIGF values in the MTZ file.
+    :return: A gemmi.Mtz object containing only the specified F and SIGF columns.
+
+    This method extracts the specified F and SIGF columns from an MTZ file and returns a new MTZ object
+    containing only those columns. It supports three types of input for the 'mtz' parameter:
+    1) A string or Path object representing the path to the MTZ file.
+    2) An instance of the gemmi.Mtz class.
+    3) A gemmi.Mtz object.
+
+    If 'mtz' is an instance of the gemmi.Mtz class, the method directly extracts the specified columns
+    using the provided 'f' and 'sigf' column names.
+
+    If 'mtz' is a string or Path object representing the path to an MTZ file, the method first checks
+    the file extension to determine the format of the file. If the file has a CIF or ENT extension,
+    it is assumed to be a CIF file and the 'read_sf_cif' function is used to read the data. Otherwise,
+    the 'gemmi.read_mtz_file' function is used to read the MTZ file. The extracted columns are then
+    obtained from the resulting MTZ object using the specified 'f' and 'sigf' column names.
+
+    If 'mtz' is neither an instance of gemmi.Mtz, nor a string/Path object, a RuntimeError is raised.
+
+    The method returns a new gemmi.Mtz object containing only the specified F and SIGF columns.
+    """
     if isinstance(mtz, gemmi.Mtz):
         sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf])
     elif isinstance(mtz, Path) or isinstance(mtz, str):
@@ -46,6 +86,15 @@ def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
 
 
 def get_sails_structure(structure):
+    """
+    Retrieves the Sails structure from the provided input.
+
+    :param structure: The input structure. It can be either of type gemmi.Structure, or a file path as type Path
+                      or str.
+    :return: The Sails structure object.
+    :raises RuntimeError: If an unknown object is passed as the first argument. Only gemmi.Structure, Path, and str
+                          are allowed types.
+    """
     if isinstance(structure, gemmi.Structure):
         sails_structure = interface.extract_gemmi_structure(structure=structure)
     elif isinstance(structure, Path) or isinstance(structure, str):
