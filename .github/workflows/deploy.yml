@@ -33,7 +33,6 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
           working-directory: 'package/'
-          doxyfile-path: 'docs/Doxygen'
 
       - name: Clone Moxygen Fork
         uses: GuillaumeFalourd/clone-github-repo-action@v2.3
