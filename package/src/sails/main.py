@@ -4,17 +4,20 @@ from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_obje
 import time
 import gemmi
 from pathlib import Path
+import json
 import graphviz
 
 
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
                 func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
-    gemmi.Structure, gemmi.Mtz]:
+    gemmi.Structure, gemmi.Mtz, str]:
+
     sails_structure = get_sails_structure(structure)
     sails_mtz = get_sails_mtz(mtz, f, sigf)
     result = func(sails_structure, sails_mtz, cycles, verbose)
 
-    return interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz)
+    return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),
+            json.loads(result.log))
 
 
 def read_sf_cif(mtz: Path):
@@ -24,6 +27,7 @@ def read_sf_cif(mtz: Path):
         raise RuntimeError("SF CIF supplied has no reflections")
     cif2mtz = gemmi.CifToMtz()
     return cif2mtz.convert_block_to_mtz(rblocks[0])
+
 
 def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
     if isinstance(mtz, gemmi.Mtz):
@@ -59,7 +63,10 @@ def run_python():
     ip = gemmi.read_structure("package/models/5fji/5fji_deglycosylated.pdb")
     im = gemmi.read_mtz_file("package/models/5fji/5fji.mtz")
 
-    s, m = glycosylate(ip, im, 5, "FP", "SIGFP")
+    s, m, l = glycosylate(ip, im, 1, "FP", "SIGFP")
+
+    with open("sails-5fji-log.json", "w") as f:
+        json.dump(l, f, indent=4)
 
     s.make_mmcif_block().write_file("sails-5fji-test.cif")
     m.write_to_file("sails-5fji-test.mtz")

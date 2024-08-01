@@ -17,3 +17,4 @@ from .sails_module import (
                            GlycoSite,
                            Dot)
 from .__version__ import __version__
+from .main import glycosylate
