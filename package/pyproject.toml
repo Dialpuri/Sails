@@ -3,7 +3,7 @@ requires = ["scikit-build-core >=0.4.3", "nanobind >=1.3.2", "typing-extensions"
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "Sails"
+name = "pysails"
 dynamic = ["version"]
 description = "Sails: Software for the Automated Identification of Linked Sugars"
 readme = "../README.md"
@@ -15,8 +15,6 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
 ]
 dependencies=[
-#    'onnxruntime-gpu; platform_system != "Darwin"',
-#    'onnxruntime; platform_system == "Darwin"',
     'tqdm',
     'gemmi',
     'numpy<2.0.0',
