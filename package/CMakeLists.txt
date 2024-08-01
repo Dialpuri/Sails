@@ -83,6 +83,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-refine.cpp
         ${WRK_DIR}/src/cpp/sails-cif.cpp
         ${WRK_DIR}/src/cpp/sails-dot.cpp
+        ${WRK_DIR}/src/cpp/sails-telemetry.cpp
 
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
