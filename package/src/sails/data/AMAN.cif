@@ -1,0 +1,109 @@
+data_DEPOSITED_XRAY
+#
+_cell.entry_id           DEPOSITED_XRAY
+_cell.length_a           43.232
+_cell.length_b           89.892
+_cell.length_c           59.317
+_cell.angle_alpha        90.00
+_cell.angle_beta         95.94
+_cell.angle_gamma        90.00
+_cell.Z_PDB              2
+_cell.pdbx_unique_axis   ?
+#
+_symmetry.entry_id                         DEPOSITED_XRAY
+_symmetry.space_group_name_H-M             'P 1 21 1'
+_symmetry.pdbx_full_space_group_name_H-M   ?
+_symmetry.cell_setting                     ?
+_symmetry.Int_Tables_number                ?
+#
+_atom_sites.entry_id                    DEPOSITED_XRAY
+_atom_sites.fract_transf_matrix[1][1]   0.023131
+_atom_sites.fract_transf_matrix[1][2]   0.000000
+_atom_sites.fract_transf_matrix[1][3]   0.002407
+_atom_sites.fract_transf_matrix[2][1]   0.000000
+_atom_sites.fract_transf_matrix[2][2]   0.011124
+_atom_sites.fract_transf_matrix[2][3]   0.000000
+_atom_sites.fract_transf_matrix[3][1]   0.000000
+_atom_sites.fract_transf_matrix[3][2]   0.000000
+_atom_sites.fract_transf_matrix[3][3]   0.016950
+_atom_sites.fract_transf_vector[1]      0.00000
+_atom_sites.fract_transf_vector[2]      0.00000
+_atom_sites.fract_transf_vector[3]      0.00000
+#
+_refine.pdbx_refine_id   'X-RAY DIFFRACTION'
+_refine.pdbx_diffrn_id   1
+#
+loop_
+_atom_site.group_PDB
+_atom_site.id
+_atom_site.type_symbol
+_atom_site.label_atom_id
+_atom_site.label_alt_id
+_atom_site.label_comp_id
+_atom_site.label_asym_id
+_atom_site.label_entity_id
+_atom_site.label_seq_id
+_atom_site.pdbx_PDB_ins_code
+_atom_site.Cartn_x
+_atom_site.Cartn_y
+_atom_site.Cartn_z
+_atom_site.occupancy
+_atom_site.B_iso_or_equiv
+_atom_site.pdbx_formal_charge
+_atom_site.auth_seq_id
+_atom_site.auth_comp_id
+_atom_site.auth_asym_id
+_atom_site.auth_atom_id
+_atom_site.pdbx_PDB_model_num
+HETATM 1  C C1  . AMAN A 1 . ? -0.773 -20.315 -6.857 1.00 27.30 ? 301 AMAN C C1  1
+HETATM 2  C C2  . AMAN A 1 . ? -1.629 -21.564 -6.729 1.00 25.96 ? 301 AMAN C C2  1
+HETATM 3  C C3  . AMAN A 1 . ? -1.400 -22.247 -5.381 1.00 26.11 ? 301 AMAN C C3  1
+HETATM 4  C C4  . AMAN A 1 . ? -1.563 -21.233 -4.228 1.00 25.69 ? 301 AMAN C C4  1
+HETATM 5  C C5  . AMAN A 1 . ? -0.805 -19.927 -4.465 1.00 26.45 ? 301 AMAN C C5  1
+HETATM 6  C C6  . AMAN A 1 . ? 0.707  -20.086 -4.229 1.00 27.89 ? 301 AMAN C C6  1
+HETATM 7  O O2  . AMAN A 1 . ? -1.305 -22.537 -7.732 1.00 27.22 ? 301 AMAN C O2  1
+HETATM 8  O O3  . AMAN A 1 . ? -0.117 -22.862 -5.250 1.00 29.78 ? 301 AMAN C O3  1
+HETATM 9  O O4  . AMAN A 1 . ? -2.943 -20.920 -4.040 1.00 31.05 ? 301 AMAN C O4  1
+HETATM 10 O O5  . AMAN A 1 . ? -0.998 -19.421 -5.797 1.00 26.72 ? 301 AMAN C O5  1
+HETATM 11 O O6  . AMAN A 1 . ? 1.313  -18.799 -4.204 1.00 26.54 ? 301 AMAN C O6  1
+HETATM 12 H H1  . AMAN A 1 . ? 0.295  -20.573 -6.782 1.00 32.79 ? 301 AMAN C H1  1
+HETATM 13 H H2  . AMAN A 1 . ? -2.683 -21.269 -6.810 1.00 31.01 ? 301 AMAN C H2  1
+HETATM 14 H H3  . AMAN A 1 . ? -2.138 -23.052 -5.303 1.00 31.19 ? 301 AMAN C H3  1
+HETATM 15 H H4  . AMAN A 1 . ? -1.102 -21.712 -3.347 1.00 30.68 ? 301 AMAN C H4  1
+HETATM 16 H H5  . AMAN A 1 . ? -1.214 -19.175 -3.777 1.00 31.77 ? 301 AMAN C H5  1
+HETATM 17 H H61 . AMAN A 1 . ? 0.853  -20.615 -3.275 1.00 33.49 ? 301 AMAN C H61 1
+HETATM 18 H H62 . AMAN A 1 . ? 1.118  -20.707 -5.039 1.00 33.49 ? 301 AMAN C H62 1
+HETATM 19 H HO2 . AMAN A 1 . ? -1.999 -22.541 -8.402 1.00 32.69 ? 301 AMAN C HO2 1
+HETATM 20 H HO3 . AMAN A 1 . ? 0.022  -23.344 -6.082 1.00 35.76 ? 301 AMAN C HO3 1
+#
+loop_
+_atom_site_anisotrop.id
+_atom_site_anisotrop.type_symbol
+_atom_site_anisotrop.pdbx_label_atom_id
+_atom_site_anisotrop.pdbx_label_alt_id
+_atom_site_anisotrop.pdbx_label_comp_id
+_atom_site_anisotrop.pdbx_label_asym_id
+_atom_site_anisotrop.pdbx_label_seq_id
+_atom_site_anisotrop.pdbx_PDB_ins_code
+_atom_site_anisotrop.U[1][1]
+_atom_site_anisotrop.U[2][2]
+_atom_site_anisotrop.U[3][3]
+_atom_site_anisotrop.U[1][2]
+_atom_site_anisotrop.U[1][3]
+_atom_site_anisotrop.U[2][3]
+_atom_site_anisotrop.pdbx_auth_seq_id
+_atom_site_anisotrop.pdbx_auth_comp_id
+_atom_site_anisotrop.pdbx_auth_asym_id
+_atom_site_anisotrop.pdbx_auth_atom_id
+1  C C1 . AMAN A . ? 0.5263 0.2351 0.2760 -0.0438 -0.0414 -0.0128 301 AMAN C C1
+2  C C2 . AMAN A . ? 0.5131 0.2131 0.2600 -0.0483 -0.0497 -0.0076 301 AMAN C C2
+3  C C3 . AMAN A . ? 0.5182 0.2101 0.2638 -0.0470 -0.0539 -0.0061 301 AMAN C C3
+4  C C4 . AMAN A . ? 0.5097 0.2081 0.2581 -0.0461 -0.0472 -0.0007 301 AMAN C C4
+5  C C5 . AMAN A . ? 0.5154 0.2232 0.2664 -0.0422 -0.0386 -0.0055 301 AMAN C C5
+6  C C6 . AMAN A . ? 0.5350 0.2391 0.2855 -0.0364 -0.0396 -0.0156 301 AMAN C C6
+7  O O2 . AMAN A . ? 0.5327 0.2253 0.2762 -0.0485 -0.0559 -0.0137 301 AMAN C O2
+8  O O3 . AMAN A . ? 0.5676 0.2523 0.3116 -0.0421 -0.0575 -0.0153 301 AMAN C O3
+9  O O4 . AMAN A . ? 0.5757 0.2787 0.3253 -0.0511 -0.0452 0.0102  301 AMAN C O4
+10 O O5 . AMAN A . ? 0.5162 0.2307 0.2683 -0.0433 -0.0354 -0.0074 301 AMAN C O5
+11 O O6 . AMAN A . ? 0.5141 0.2272 0.2670 -0.0334 -0.0313 -0.0185 301 AMAN C O6
+#

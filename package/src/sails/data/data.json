@@ -58,7 +58,7 @@
             ]
         },
         {
-            "name": "MAN-1C4",
+            "name": "AMAN",
             "snfgShape": "circle",
             "snfgColour": "green",
             "preferredDepths": [
@@ -225,7 +225,7 @@
         },
         {
             "donorResidue": "TRP",
-            "acceptorResidue": "MAN-1C4",
+            "acceptorResidue": "AMAN",
             "donorNumber": 1,
             "acceptorNumber": 1,
             "length": 1.4,

@@ -294,8 +294,9 @@ namespace Sails {
    *
    * @param residue_ptr A pointer to the gemmi::Residue object representing the residue being added.
    * @param data The LinkageData object containing information about the donor and acceptor residues.
+   * @param site The site of the donor residue
    */
-  void print_attempted_addition_log(gemmi::Residue *residue_ptr, LinkageData &data);
+  void print_attempted_addition_log(gemmi::Residue *residue_ptr, LinkageData &data, const Glycosite *site);
 
   /**
    * @brief Prints the rejection log.

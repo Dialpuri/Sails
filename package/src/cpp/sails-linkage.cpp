@@ -12,8 +12,8 @@ void Sails::Model::print_addition_log(const Sails::Sugar *terminal_sugar, Sails:
             Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
 }
 
-void Sails::Model::print_attempted_addition_log(gemmi::Residue *residue_ptr, Sails::LinkageData &data) {
-    std::cout << "\tAttempting to add " << data.donor << "(" << residue_ptr->seqid.str() << ")-" << data.
+void Sails::Model::print_attempted_addition_log(gemmi::Residue *residue_ptr, Sails::LinkageData &data, const Glycosite *site) {
+    std::cout << "\tAttempting to add " << Utils::format_residue_from_site(*site, structure) << "(" << residue_ptr->seqid.str() << ")-" << data.
             donor_number << "," << data.acceptor_number << "-" << data.acceptor << "(?)...";
 }
 
@@ -237,6 +237,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
         rotate_exocyclic_atoms(residue, donor_atoms, density);
     }
 
+
     std::vector<gemmi::Atom *> atoms;
     for (const auto &donor: donor_atoms) {
         auto atom = residue->find_atom(donor, '*');
@@ -330,7 +331,7 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &c
     // calculate the sugars that can be linked to this terminal sugar
     PossibleAdditions possible_additions;
     for (LinkageData &data: linkage_database[residue_ptr->name]) {
-        if (debug) print_attempted_addition_log(residue_ptr, data);
+        if (debug) print_attempted_addition_log(residue_ptr, data, &terminal_sugar->site);
 
         std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
 
