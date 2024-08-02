@@ -87,27 +87,44 @@ def find_alternate_column_labels(mtz: gemmi.Mtz) -> Tuple[str, str]:
 
 def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
     if column_names is None:
-        column_names = ["FP", "SIGFP"]
+        column_names = ["FP", "SIGFP", None, None]
+    print(column_names)
 
+    # Find another suitable pair of F,SIGF values if they are not presented
     mtz_labels = mtz.column_labels()
-    for name in column_names:
+    for name in column_names[:2]: # only for F and SIGF columns
         if name not in mtz_labels:
             alternate_labels = find_alternate_column_labels(mtz)
             if alternate_labels:
                 logging.warning(f"Sails has located two columns of type F and Q ({','.join(alternate_labels)}), check they are "
-                                f"correct.")
+                                f"correct. Sails will ignore any map coefficient columns.")
 
-                column_names = alternate_labels
+                column_names = [*alternate_labels, None, None] # added None as FWT and PHWT columns
                 break
             raise RuntimeError("Could not find suitable column labels in MTZ to continue. Sails requires F and SIGF.")
 
-    fobs = mtz.get_value_sigma(*column_names)
+    f, sigf, fwt, phwt = column_names
+
+    fobs = mtz.get_value_sigma(f, sigf)
+
+    fwtobs = {}
+    if fwt and phwt:
+        f_phi = mtz.get_f_phi(fwt, phwt)
+        for hkl, val in zip(f_phi.miller_array, f_phi.value_array):
+            fwtobs[tuple(hkl)] = val
 
     data = []
-    for entry in fobs:
-        f_sigf = sails.Pair(entry.value.value, entry.value.sigma)
-        hkl = sails.HKL(*entry.hkl)
-        reflection = sails.Reflection(hkl, f_sigf)
+    for fo in fobs:
+        hkl = sails.HKL(*fo.hkl)
+        f_sigf = sails.Pair(fo.value.value, fo.value.sigma)
+        hkl_key = tuple(fo.hkl)
+        if hkl_key in fwtobs:
+            fw = fwtobs[hkl_key]
+            fwt_phwt = sails.Pair(np.abs(fw), np.rad2deg(np.angle(fw)))
+            reflection = sails.Reflection(hkl, f_sigf, fwt_phwt)
+        else:
+            reflection = sails.Reflection(hkl, f_sigf)
+
         data.append(reflection)
 
     cell = sails.Cell(mtz.cell.a, mtz.cell.b, mtz.cell.c, mtz.cell.alpha, mtz.cell.beta, mtz.cell.gamma)

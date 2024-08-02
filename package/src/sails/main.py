@@ -10,7 +10,7 @@ import importlib.resources
 
 
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
-                func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
+                fwt: str, phwt: str, func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
     gemmi.Structure, gemmi.Mtz, dict]:
     """
     :param structure: The input structure file in gemmi.Structure, Path, or str format.
@@ -18,13 +18,15 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     :param cycles: The number of cycles to perform glycosylation.
     :param f: The column label for the structure factor values.
     :param sigf: The column label for the structure factor uncertainties.
+    :param fwt: The column label for the structure factor amplitude weights (potentially None).
+    :param phwt: The column label for the structure factor phase weights (potentially None).
     :param func: The function to use for glycosylation. Default is n_glycosylate_from_objects.
     :param verbose: Flag specifying whether to print verbose output. Default is False.
     :return: A tuple containing the glycosylated structure in gemmi.Structure format,
              the glycosylated MTZ file in gemmi.Mtz format, and the log as a string.
     """
     sails_structure = get_sails_structure(structure)
-    sails_mtz = get_sails_mtz(mtz, f, sigf)
+    sails_mtz = get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files('sails').joinpath("data")
     result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
@@ -46,11 +48,13 @@ def read_sf_cif(mtz: Path):
     return cif2mtz.convert_block_to_mtz(rblocks[0])
 
 
-def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
+def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt: str):
     """
     :param mtz: Path to an MTZ file, an instance of gemmi.Mtz, or a string representing the path to an MTZ file.
     :param f: Column name of the F values in the MTZ file.
     :param sigf: Column name of the SIGF values in the MTZ file.
+    :param fwt: Column name of the FWT values in the MTZ file.
+    :param phwt: Column name of the PHWT values in the MTZ file.
     :return: A gemmi.Mtz object containing only the specified F and SIGF columns.
 
     This method extracts the specified F and SIGF columns from an MTZ file and returns a new MTZ object
@@ -73,14 +77,14 @@ def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str):
     The method returns a new gemmi.Mtz object containing only the specified F and SIGF columns.
     """
     if isinstance(mtz, gemmi.Mtz):
-        sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf])
+        sails_mtz = interface.extract_gemmi_mtz(mtz=mtz, column_names=[f, sigf, fwt, phwt])
     elif isinstance(mtz, Path) or isinstance(mtz, str):
         mtz = Path(mtz)
         if ".cif" in mtz.suffixes or ".ent" in mtz.suffixes:
             m = read_sf_cif(mtz)
         else:
             m = gemmi.read_mtz_file(str(mtz))
-        sails_mtz = interface.extract_gemmi_mtz(mtz=m, column_names=[f, sigf])
+        sails_mtz = interface.extract_gemmi_mtz(mtz=m, column_names=[f, sigf, fwt, phwt])
     else:
         raise RuntimeError("Unknown object passed to second argument of n_glycosylate function, allowed types are"
                            "gemmi.Mtz, Path, and str")
@@ -136,14 +140,27 @@ def run_python():
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")
 
 
-def get_column_labels(columns: str) -> List[str]:
-    if ',' not in columns:
-        raise RuntimeError(f"Supplied colin must be in form F,SIGF. Sails received {columns}")
-    labels = [c for c in columns.split(",") if c]
-    label_length = len(labels)
-    if label_length != 2:
-        raise RuntimeError(f"Too {'few' if label_length < 2 else 'many'} column labels were provided")
-    return labels
+def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
+    if ',' not in fo_columns:
+        raise RuntimeError(f"Supplied colin-fo must be in form F,SIGF. Sails received {fo_columns}")
+
+    fo_labels = [c for c in fo_columns.split(",") if c]
+    fo_label_length = len(fo_labels)
+    if fo_label_length != 2:
+        raise RuntimeError(f"Too {'few' if fo_label_length < 2 else 'many'} column labels were provided")
+
+    if fwt_columns == "":
+        return fo_labels + [None, None]
+
+    if ',' not in fwt_columns:
+            raise RuntimeError(f"Supplied colin-fwt must be in form FWT,PHWT. Sails received {fo_columns}")
+
+    fwt_labels = [c for c in fwt_columns.split(",") if c]
+    fwt_label_length = len(fwt_labels)
+    if fwt_label_length != 2:
+        raise RuntimeError(f"Too {'few' if fwt_label_length < 2 else 'many'} column labels were provided")
+
+    return fo_labels + fwt_labels
 
 
 def save_log(log: dict, args: argparse.Namespace) -> None:
@@ -157,11 +174,11 @@ def run_cli():
     args = parse_args()
     t0 = time.time()
 
-    f, sigf = get_column_labels(args.colin)
+    labels = get_column_labels(args.colin_fo, args.colin_fwt)
 
     func = c_glycosylate_from_objects if args.cglycan else n_glycosylate_from_objects
-    cycles = 1 if args.cglycan else args.cyclces
-    structure, mtz, log = glycosylate(args.pdbin, args.mtzin, cycles, f, sigf, func, args.v)
+    cycles = 1 if args.cglycan else args.cycles
+    structure, mtz, log = glycosylate(args.pdbin, args.mtzin, cycles, *labels, func, args.v)
 
     structure.make_mmcif_block().write_file(args.pdbout)
     mtz.write_to_file(args.mtzout)
@@ -180,7 +197,8 @@ def parse_args():
     parser.add_argument("-pdbout", type=str, required=False, default="sails-model-out.cif")
     parser.add_argument("-mtzout", type=str, required=False, default="sails-refln-out.mtz")
     parser.add_argument("-logout", type=str, default="sails-log.json")
-    parser.add_argument("-colin", type=str, required=False, default="FP,SIGFP")
+    parser.add_argument("-colin-fo", type=str, required=False, default="FP,SIGFP")
+    parser.add_argument("-colin-fwt", type=str, required=False, default="")
     parser.add_argument("-cycles", type=int, required=False, default=2)
     parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
     parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
