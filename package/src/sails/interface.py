@@ -1,10 +1,16 @@
+import logging
+from typing import List, Tuple
+
 import gemmi
 import sails
 import numpy as np
 
+
 def extract_gemmi_structure(structure: gemmi.Structure):
     os = sails.Structure()
-    os.set_cell(sails.Cell(structure.cell.a, structure.cell.b, structure.cell.c, structure.cell.alpha, structure.cell.beta, structure.cell.gamma))
+    os.set_cell(
+        sails.Cell(structure.cell.a, structure.cell.b, structure.cell.c, structure.cell.alpha, structure.cell.beta,
+                   structure.cell.gamma))
     om = sails.Model()
     om.name = structure[0].name
     for chain in structure[0]:
@@ -66,9 +72,34 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
     return os
 
 
+def find_alternate_column_labels(mtz: gemmi.Mtz) -> Tuple[str, str]:
+    f_type = mtz.columns_with_type("F")
+    q_type = mtz.columns_with_type("Q")
+    if f_type and q_type:
+        best_f_label = f_type[0].label
+        best_q_label = q_type[0].label
+        if len(q_type) > 1:
+            for label in q_type:
+                if best_f_label in label.label:
+                    best_q_label = label.label
+        return best_f_label, best_q_label
+
+
 def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
     if column_names is None:
         column_names = ["FP", "SIGFP"]
+
+    mtz_labels = mtz.column_labels()
+    for name in column_names:
+        if name not in mtz_labels:
+            alternate_labels = find_alternate_column_labels(mtz)
+            if alternate_labels:
+                logging.warning(f"Sails has located two columns of type F and Q ({','.join(alternate_labels)}), check they are "
+                                f"correct.")
+
+                column_names = alternate_labels
+                break
+            raise RuntimeError("Could not find suitable column labels in MTZ to continue. Sails requires F and SIGF.")
 
     fobs = mtz.get_value_sigma(*column_names)
 
