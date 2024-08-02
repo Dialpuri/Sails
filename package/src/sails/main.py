@@ -136,7 +136,7 @@ def run_python():
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")
 
 
-def get_f_sigf(columns: str) -> List[str]:
+def get_column_labels(columns: str) -> List[str]:
     if ',' not in columns:
         raise RuntimeError(f"Supplied colin must be in form F,SIGF. Sails received {columns}")
     labels = [c for c in columns.split(",") if c]
@@ -157,7 +157,7 @@ def run_cli():
     args = parse_args()
     t0 = time.time()
 
-    f, sigf = get_f_sigf(args.colin)
+    f, sigf = get_column_labels(args.colin)
 
     func = c_glycosylate_from_objects if args.cglycan else n_glycosylate_from_objects
     cycles = 1 if args.cglycan else args.cyclces
