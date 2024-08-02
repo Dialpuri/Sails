@@ -223,6 +223,17 @@ namespace Sails::Utils {
   */
  std::string get_next_string(const std::string& input);
 
+ /**
+  * @brief Checks if a file exists at the specified path.
+  *
+  * This function checks if a file exists at the specified path.
+  *
+  * @param path The path of the file to check.
+  *
+  * @return true if the file exists, false otherwise.
+  */
+ bool file_exists(const std::string& path);
+
 } // namespace Sails::Utils
 
 

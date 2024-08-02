@@ -37,9 +37,9 @@ std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monom
 
     std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
 
-    if (!std::filesystem::exists(path)) {
+    if (!Utils::file_exists(path)) {
         path = special_monomer_path + "/" + monomer + ".cif";
-        if (!std::filesystem::exists(path)) {
+        if (!Utils::file_exists(path)) {
             std::cout << path << " monomer does not exist" << std::endl;
             return std::nullopt;
         }

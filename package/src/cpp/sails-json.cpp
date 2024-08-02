@@ -10,7 +10,7 @@ Sails::JSONLoader::JSONLoader(const std::string &file_path) {
 }
 
 void Sails::JSONLoader::init(const std::string &file_path) {
-    if (!std::filesystem::exists(file_path)) { throw std::runtime_error("Data file could not be found"); }
+    if (!Utils::file_exists(file_path)) { throw std::runtime_error("Data file could not be found"); }
     m_path = file_path;
 }
 

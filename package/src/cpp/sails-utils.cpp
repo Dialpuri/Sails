@@ -114,3 +114,11 @@ std::string Sails::Utils::get_next_string(const std::string& input) {
     return "A" + result;
 }
 
+bool Sails::Utils::file_exists(const std::string &path) {
+    std::ifstream f;
+    f.open(path);
+    const bool good = f.good();
+    f.close();
+    return good;
+}
+
