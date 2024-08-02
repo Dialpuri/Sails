@@ -219,7 +219,10 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     // find library monomer for acceptor residue
     auto library_monomer = get_monomer(data.acceptor, true);
 
-    if (!library_monomer.has_value()) { throw std::runtime_error("Could not get monomer"); }
+    if (!library_monomer.has_value()) { throw std::runtime_error("Could not get required monomer, "
+                                                                 "ensure that CCP4 monomer library is sourced."
+                                                                 "If you have a local monomer library, ensure that you"
+                                                                 "have CLIBD set"); }
     auto reference_library_monomer = gemmi::Residue(library_monomer.value());
 
     std::vector<gemmi::Atom> reference_atoms;
