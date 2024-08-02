@@ -7,7 +7,7 @@ if [ -d "clipper" ]; then
     echo "Found clipper"
 else
     echo "Checking out clipper"
-    curl --retry 5 --retry-all-errors -L http://ftp.ccp4.ac.uk/opensource/clipper-2.1.20201109.tar.gz -o clipper-2.1.20201109.tar.gz
+    curl --retry 5 --retry-all-errors -L http://www.ysbl.york.ac.uk/jsd523/clipper-2.1.20201109.tar.gz -o clipper-2.1.20201109.tar.gz
     tar xf clipper-2.1.20201109.tar.gz
     mv clipper-2.1 clipper
 
