@@ -18,3 +18,4 @@ from .sails_module import (
                            Dot)
 from .__version__ import __version__
 from .main import glycosylate
+from .compare import compare
