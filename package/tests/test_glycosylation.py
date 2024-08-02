@@ -16,7 +16,7 @@ def cglycan(data_base_path):
 
     s = gemmi.read_structure(str(s_path))
     m = gemmi.read_mtz_file(str(m_path))
-    return s, m, 1, "FP", "SIGFP", sails.c_glycosylate_from_objects
+    return s, m, 1, "FP", "SIGFP", "", "", sails.c_glycosylate_from_objects
 
 
 def test_cglycosylation(cglycan):
@@ -38,7 +38,7 @@ def test_cglycosylation(cglycan):
     assert 'entries' in cycle
     entries = cycle['entries']
 
-    expected_key = 'D-MAN-1'
+    expected_key = 'D-AMAN-1'
     assert expected_key in entries
     assert len(entries.keys()) == 1
     sugar = entries[expected_key]
