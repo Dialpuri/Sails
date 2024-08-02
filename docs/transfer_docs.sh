@@ -7,9 +7,9 @@ echo """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <instance-profile id=\"s\"
                  name=\"Sails\"
                  start-page=\"Sails.md\">
-
-  <toc-element topic=\"Sails.md\">
-
+    <toc-element topic=\"Installation.topic\"/>
+    <toc-element topic=\"Command-Line-Usage.topic\"/>
+    <toc-element topic=\"Sails.md\">
 """ > $output_file
 
 dir_path="./"
@@ -27,7 +27,6 @@ echo $file_string >> $output_file
 
 echo """
     </toc-element>
-    <toc-element topic=\"Installation.topic\"/>
-    <toc-element topic=\"Command-Line-Usage.topic\"/>
+
 </instance-profile>
 """ >> $output_file

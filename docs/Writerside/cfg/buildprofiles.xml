@@ -2,7 +2,10 @@
 <buildprofiles xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/build-profiles.xsd"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <variables></variables>
+    <variables>
+        <product-web-url>https://github.com/Dialpuri/Sails</product-web-url>
+
+    </variables>
     <build-profile instance="in">
         <variables>
             <noindex-content>true</noindex-content>
@@ -10,8 +13,11 @@
     </build-profile>
     <build-profile instance="s">
         <variables>
-            <noindex-content>true</noindex-content>
+            <noindex-content>false</noindex-content>
         </variables>
     </build-profile>
-
+    <footer>
+        <copyright>Jordan Dialpuri | University of York 2024</copyright>
+        <social type="email" href="jordan.dialpuri@york.ac.uk"/>
+    </footer>
 </buildprofiles>
