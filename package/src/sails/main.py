@@ -1,5 +1,5 @@
 import argparse
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite
 import time
 import gemmi
@@ -11,7 +11,7 @@ import importlib.resources
 
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
                 func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
-    gemmi.Structure, gemmi.Mtz, str]:
+    gemmi.Structure, gemmi.Mtz, dict]:
     """
     :param structure: The input structure file in gemmi.Structure, Path, or str format.
     :param mtz: The input MTZ file in gemmi.Mtz, Path, or str format.
@@ -136,18 +136,37 @@ def run_python():
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")
 
 
+def get_f_sigf(columns: str) -> List[str]:
+    if ',' not in columns:
+        raise RuntimeError(f"Supplied colin must be in form F,SIGF. Sails received {columns}")
+    labels = [c for c in columns.split(",") if c]
+    label_length = len(labels)
+    if label_length != 2:
+        raise RuntimeError(f"Too {'few' if label_length < 2 else 'many'} column labels were provided")
+    return labels
+
+
+def save_log(log: dict, args: argparse.Namespace) -> None:
+    arguments = vars(args)
+    log['arguments'] = arguments
+    with open(args.logout, "w") as f:
+        json.dump(log, f, indent=4)
+
+
 def run_cli():
     args = parse_args()
     t0 = time.time()
 
-    f, sigf = args.colin.split(",")
-    if args.cglycan:
-        s, m = glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf, c_glycosylate_from_objects, args.v)
-    else:
-        s, m = glycosylate(args.pdbin, args.mtzin, args.cycles, f, sigf, n_glycosylate_from_objects, args.v)
+    f, sigf = get_f_sigf(args.colin)
 
-    s.make_mmcif_block().write_file(args.pdbout)
-    m.write_to_file(args.mtzout)
+    func = c_glycosylate_from_objects if args.cglycan else n_glycosylate_from_objects
+    cycles = 1 if args.cglycan else args.cyclces
+    structure, mtz, log = glycosylate(args.pdbin, args.mtzin, cycles, f, sigf, func, args.v)
+
+    structure.make_mmcif_block().write_file(args.pdbout)
+    mtz.write_to_file(args.mtzout)
+
+    save_log(log, args)
 
     t1 = time.time()
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")
@@ -158,8 +177,9 @@ def parse_args():
 
     parser.add_argument("-pdbin", type=str, required=True)
     parser.add_argument("-mtzin", type=str, required=True)
-    parser.add_argument("-pdbout", type=str, required=False)
-    parser.add_argument("-mtzout", type=str, required=False)
+    parser.add_argument("-pdbout", type=str, required=False, default="sails-model-out.cif")
+    parser.add_argument("-mtzout", type=str, required=False, default="sails-refln-out.mtz")
+    parser.add_argument("-logout", type=str, default="sails-log.json")
     parser.add_argument("-colin", type=str, required=False, default="FP,SIGFP")
     parser.add_argument("-cycles", type=int, required=False, default=2)
     parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
