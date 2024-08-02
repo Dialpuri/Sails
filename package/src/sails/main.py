@@ -1,6 +1,6 @@
 import argparse
 from typing import Tuple, Callable, List
-from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite
+from sails import interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite, __version__
 import time
 import gemmi
 from pathlib import Path
@@ -203,5 +203,6 @@ def parse_args():
     parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
     parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
     parser.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--version", action="version", version=__version__)
 
     return parser.parse_args()
