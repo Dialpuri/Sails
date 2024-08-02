@@ -30,6 +30,7 @@ NB_MODULE(sails_module, m) {
 
         nb::class_<Sails::Reflection>(m, "Reflection")
                         .def(nb::init<Sails::HKL, Sails::NumberPair>())
+                        .def(nb::init<Sails::HKL, Sails::NumberPair, Sails::NumberPair>())
                         .def(nb::init<Sails::HKL, Sails::NumberPair, Sails::NumberPair, Sails::NumberPair>())
                         .def_rw("hkl", &Sails::Reflection::hkl)
                         .def_rw("f_sigf", &Sails::Reflection::f_sigf)

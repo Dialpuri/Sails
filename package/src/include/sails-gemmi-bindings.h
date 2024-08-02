@@ -58,6 +58,12 @@ namespace Sails {
                     f_sigf(f_sigf) {
         }
 
+        Reflection(const HKL &hkl, const NumberPair &f_sigf, const NumberPair &fwt_phwt)
+                  : hkl(hkl),
+                    f_sigf(f_sigf),
+                    fwt_phwt(fwt_phwt){
+        }
+
         Reflection(const HKL &hkl, const NumberPair &f_sigf, const NumberPair &fwt_phwt,
                    const NumberPair &delfwt_phdelwt)
                    : hkl(hkl),
