@@ -88,7 +88,6 @@ def find_alternate_column_labels(mtz: gemmi.Mtz) -> Tuple[str, str]:
 def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
     if column_names is None:
         column_names = ["FP", "SIGFP", None, None]
-    print(column_names)
 
     # Find another suitable pair of F,SIGF values if they are not presented
     mtz_labels = mtz.column_labels()
