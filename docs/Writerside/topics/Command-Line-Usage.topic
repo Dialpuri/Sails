@@ -26,7 +26,7 @@
         <p>Simple Example:</p>
 
         <code-block lang="shell">
-            sails -pdbin ABCD.cif -mtzin ABCD.mtz -cycles 1 -colin-fo
+            sails -pdbin ABCD.cif -mtzin ABCD.mtz -cycles 1 -colin-fo FP,SIGFP
         </code-block>
 
         <p>Advanced Example:</p>
