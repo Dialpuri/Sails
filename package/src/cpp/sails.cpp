@@ -64,6 +64,9 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     for (auto &sugar: to_remove) {
         std::vector<Sails::Sugar *> additional_sugars;
         for (auto &linked_sugar: glycan->adjacency_list[sugar]) {
+            // check that the linked sugar is not already in the removal list
+            if (std::find(to_remove.begin(), to_remove.end(), linked_sugar) != to_remove.end()) continue;
+
             additional_sugars.emplace_back(linked_sugar);
         }
         to_remove.insert(to_remove.end(), additional_sugars.begin(), additional_sugars.end());

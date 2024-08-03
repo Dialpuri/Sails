@@ -298,6 +298,12 @@ namespace Sails {
                        other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
         }
 
+        bool operator==(const Glycosite& other) const {
+            return std::tie(model_idx, chain_idx, residue_idx, atom_idx) ==  std::tie(
+                       other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
+        }
+
+
         int model_idx{};
         int chain_idx{};
         int residue_idx{};

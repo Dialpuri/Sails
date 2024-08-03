@@ -55,6 +55,10 @@ namespace Sails {
         bool operator<(const Sugar &rhs) const {
             return seqId < rhs.seqId;
         }
+
+        bool operator==(const Sugar& other) const {
+            return this->site == other.site;
+        }
     };
 
     /**
