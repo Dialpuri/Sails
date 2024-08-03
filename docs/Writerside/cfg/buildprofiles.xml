@@ -5,6 +5,7 @@
     <variables>
         <product-web-url>https://github.com/Dialpuri/Sails</product-web-url>
         <header-logo>../images/logo.png</header-logo>
+        <custom-favicons>../images/favicon.png</custom-favicons>
     </variables>
     <build-profile instance="in">
         <variables>
