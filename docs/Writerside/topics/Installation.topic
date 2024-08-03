@@ -18,7 +18,7 @@
     </procedure>
 
     <procedure title="From GitHub" id="gh">
-        <p>To install <code>NucleoFind</code> from source:</p>
+        <p>To install <code>Sails</code> from source:</p>
         <step>
             <p>Clone the repository</p>
             <code-block>git clone https://github.com/Dialpuri/Sails.git</code-block>

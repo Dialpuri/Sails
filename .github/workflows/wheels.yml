@@ -28,7 +28,7 @@ jobs:
           ./get_sources
         working-directory: ./package
 
-      - name: Install NucleoFind
+      - name: Install Sails
         run: pip install -v .
         working-directory: ./package
 
