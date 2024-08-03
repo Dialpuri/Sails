@@ -4,7 +4,7 @@
 
     <variables>
         <product-web-url>https://github.com/Dialpuri/Sails</product-web-url>
-
+        <header-logo>../images/logo.png</header-logo>
     </variables>
     <build-profile instance="in">
         <variables>
