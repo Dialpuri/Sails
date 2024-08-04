@@ -9,6 +9,11 @@ echo """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                  start-page=\"Sails.md\">
     <toc-element topic=\"Installation.topic\"/>
     <toc-element topic=\"Command-Line-Usage.topic\"/>
+    <toc-element topic=\"Automated-Glycan-Building.topic\"/>
+    	<toc-element toc-title=\"Utility Functions\">
+    		<toc-element topic=\"Compare-Structures.topic\"/>
+    		<toc-element topic=\"Find-Glycosylation-SItes.topic\"/>
+    	</toc-element>
     <toc-element topic=\"Sails.md\">
 """ > $output_file
 

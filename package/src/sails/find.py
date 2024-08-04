@@ -87,7 +87,7 @@ def run():
     :return: None
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-pdbin", required=True, type=str, help="Path to a PDB model")
+    parser.add_argument("-model", required=True, type=str, help="Path to a model in PDB or CIF format")
     parser.add_argument("-logout", required=False, default="sites.json", type=str, help="Path to output file")
 
     args = parser.parse_args()

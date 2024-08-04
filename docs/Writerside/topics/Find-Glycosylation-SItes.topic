@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Find Glycosylation SItes" id="Find-Glycosylation-SItes">
+
+    <p>
+        Sails provides a utility tool to find potential glycosylation sites in a given structure.
+        Sails will search for N-glycosylation sites following the consensus sequence N-X-S/T where X is
+        not proline, as well as for C-glycosylation sites following the consensus sequence W-X-X-W. The tool
+        will output a JSON file with the residues that follow the respective motifs.
+    </p>
+
+    <chapter title="Find Sites" id="find">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails-find [OPTIONS]
+        </code-block>
+
+        <p>Example:</p>
+        <code-block lang="shell">
+            sails-find -model built.cif -logout potential_sites.json
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-model">
+                Path to a model that requires comparison to a reference.
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-logout">
+                Path to output JSON file
+                <p>Default: sites.json </p>
+            </def>
+            <def title="-h, --help">
+                Displays help.
+            </def>
+        </deflist>
+    </chapter>
+
+    <seealso>
+        <!--Provide links to related how-to guides, overviews, and tutorials.-->
+    </seealso>
+</topic>

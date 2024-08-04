@@ -4,9 +4,48 @@
 
 <instance-profile id="s"
                  name="Sails"
-                 start-page="starter.md">
-
-    <toc-element topic="starter.md"/>
+                 start-page="Sails.md">
     <toc-element topic="Installation.topic"/>
-    <toc-element topic="Command-Line-Usage.topic"/>
+    <toc-element topic="Automated-Glycan-Building.topic"/>
+	<toc-element toc-title="Utility Functions">
+		<toc-element topic="Compare-Structures.topic"/>
+		<toc-element topic="Find-Glycosylation-SItes.topic"/>
+	</toc-element>
+
+	<toc-element topic="Sails.md">
+
+	<toc-element topic="Sails--Angle.md"/>
+	<toc-element topic="Sails--AngleSet.md"/>
+	<toc-element topic="Sails--AtomSet.md"/>
+	<toc-element topic="Sails--Cell.md"/>
+	<toc-element topic="Sails--Cluster.md"/>
+	<toc-element topic="Sails--Density.md"/>
+	<toc-element topic="Sails--Dot.md"/>
+	<toc-element topic="Sails--Glycan.md"/>
+	<toc-element topic="Sails--Glycosite.md"/>
+	<toc-element topic="Sails--HKL.md"/>
+	<toc-element topic="Sails--JSONLoader.md"/>
+	<toc-element topic="Sails--JSONWriter.md"/>
+	<toc-element topic="Sails--LinkRecord.md"/>
+	<toc-element topic="Sails--Linkage.md"/>
+	<toc-element topic="Sails--LinkageData.md"/>
+	<toc-element topic="Sails--MTZ.md"/>
+	<toc-element topic="Sails--Model.md"/>
+	<toc-element topic="Sails--NumberPair.md"/>
+	<toc-element topic="Sails--Output.md"/>
+	<toc-element topic="Sails--Reflection.md"/>
+	<toc-element topic="Sails--ResidueData.md"/>
+	<toc-element topic="Sails--Sugar.md"/>
+	<toc-element topic="Sails--SuperpositionResult.md"/>
+	<toc-element topic="Sails--Telemetry.md"/>
+	<toc-element topic="Sails--TelemetryFormat.md"/>
+	<toc-element topic="Sails--Topology.md"/>
+	<toc-element topic="Sails--TorsionAngleRefiner.md"/>
+	<toc-element topic="Sails--TorsionSet.md"/>
+	<toc-element topic="Sails--Utils.md"/>
+
+
+    </toc-element>
+
 </instance-profile>
+

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Compare Structures" id="Compare-Structures" help-id="Utilities">
+
+    <p>
+        Sails provides a utility tool to compare a structure under investigation to another model. This comparison
+        is completed for all sugars. A sugar will be counted as built if all atoms are within the specified radius
+        of the same atom type in the reference model. This tool may be useful for evaluating the model building output
+        of Sails.
+    </p>
+
+    <chapter title="Compare Structures" id="compare">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails-compare [OPTIONS]
+        </code-block>
+
+        <p>Example:</p>
+        <code-block lang="shell">
+            sails-compare -model built.cif -reference deposited.cif -radius 1
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-model">
+                Path to a model that requires comparison to a reference.
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-reference">
+                Path to reference model
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-radius">
+                Radius for atomwise comparison, a larger radius provides are more lenient comparison
+                <p>Default: 1.5</p>
+            </def>
+            <def title="-h, --help">
+                Displays help.
+            </def>
+        </deflist>
+    </chapter>
+
+    <seealso>
+        <!--Provide links to related how-to guides, overviews, and tutorials.-->
+    </seealso>
+</topic>
