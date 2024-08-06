@@ -13,23 +13,16 @@
 
 namespace Sails {
 
-    // struct SNFGNode {
-    //     SNFGNode() = default;;
-    //
-    //     explicit SNFGNode(Sugar* sugar): sugar(sugar) {}
-    //
-    //     SNFGNode(Sugar *sugar, std::vector<std::unique_ptr<SNFGNode>> &children, int x, int y)
-    //         : sugar(sugar),
-    //           children(std::move(children)),
-    //           x(x),
-    //           y(y) {
-    //     }
-    //
-    //     Sugar* sugar{};
-    //     std::vector<std::unique_ptr<SNFGNode>> children;
-    //     int x{};
-    //     int y{};
-    // };
+
+    enum SVGType {
+        square, circle, line, text
+    };
+
+    struct SVGObject {
+        SVGObject(const std::string& object, SVGType type): object(object), type(type) {}
+        std::string object;
+        SVGType type;
+    };
 
     struct SNFGNode {
         SNFGNode() = default;
@@ -40,8 +33,8 @@ namespace Sails {
         SNFGNode* parent;
         std::vector<std::unique_ptr<SNFGNode>> children;
         int parent_position = 0;
-        int x = 0;
         int y = 0;
+        int x = 0;
         int mod = 0;
         int prelim_x = 0;
         int preLim_y = 0;
@@ -95,7 +88,7 @@ namespace Sails {
     class SNFG {
     public:
 
-        explicit SNFG(gemmi::Structure* structure): m_structure(structure) {}
+        explicit SNFG(gemmi::Structure* structure, ResidueDatabase* database): m_structure(structure), m_database(database) {}
 
         std::string create_snfg(Glycan& glycan, Glycosite& base_residue);
 
@@ -104,11 +97,11 @@ namespace Sails {
 
         void calculate_node_positions(SNFGNode* node);
 
-        void init_nodes(SNFGNode* node, int depth);
+        void initialise_nodes(Sails::SNFGNode *node, int depth);
 
         void calculate_final_positions(SNFGNode* node, float mod_sum);
 
-        void calculate_initial_x(SNFGNode* node);
+        void calculate_initial_positions(Sails::SNFGNode *node);
 
         void check_for_conflicts(SNFGNode* node);
 
@@ -121,7 +114,10 @@ namespace Sails {
         void get_rcontour(SNFGNode* node, int mod_sum, std::map<int, int>& values);
 
 
-        void create_svg(std::ofstream &f, SNFGNode *parent, SNFGNode *node);
+        void create_svg(std::vector<Sails::SVGObject>& snfg_objects, SNFGNode *parent, SNFGNode *node);
+
+        void order_svg(std::vector<Sails::SVGObject> &objects);
+
 
         void printTree(SNFGNode *root, SNFGNode* node, int level);
 
@@ -132,25 +128,26 @@ namespace Sails {
 
         [[nodiscard]] static std::string create_svg_footer() ;
 
-        [[nodiscard]] static std::string create_svg_circle(int cx, int cy, int r, const std::string &color) ;
+        [[nodiscard]] static Sails::SVGObject create_svg_circle(int cx, int cy, int r, const std::string &color) ;
 
-        [[nodiscard]] static std::string create_svg_line(int x1, int y1, int x2, int y2) ;
+        [[nodiscard]] static Sails::SVGObject create_svg_square(int x, int y, int s, const std::string &color) ;
 
-        [[nodiscard]] static std::string create_svg_text(int x, int y, const std::string &text) ;
+        [[nodiscard]] static Sails::SVGObject create_svg_line(int x1, int y1, int x2, int y2) ;
+
+        [[nodiscard]] static Sails::SVGObject create_svg_text(int x, int y, const std::string &text) ;
 
     private:
         gemmi::Structure* m_structure;
+        ResidueDatabase* m_database;
 
         // Constants for SVG dimensions
         const int SVG_WIDTH = 2400;
         const int SVG_HEIGHT = 2400;
-        const int NODE_RADIUS = 20;
-        const int VERTICAL_SPACING = 80;
-        const int HORIZONTAL_SPACING = 60;
 
         const int node_size = 100;
         const int sibling_distance = 1;
         const int tree_distance = 2;
+
     };
 
 
