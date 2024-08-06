@@ -146,5 +146,5 @@ NB_MODULE(sails_module, m) {
 
     m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
     m.def("c_glycosylate_from_objects", &c_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
-
+    m.def("test_snfg", &test);
 }

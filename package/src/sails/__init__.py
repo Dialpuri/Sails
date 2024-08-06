@@ -15,7 +15,8 @@ from .sails_module import (
                            Cell,
                            MTZ,
                            GlycoSite,
-                           Dot)
+                           Dot,
+                            test_snfg)
 from .__version__ import __version__
 from .main import glycosylate
 from .interface import extract_gemmi_mtz, extract_sails_mtz, extract_gemmi_structure, extract_sails_structure
