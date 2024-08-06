@@ -85,13 +85,14 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-dot.cpp
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
 
+        # SNFG
+        ${WRK_DIR}/src/cpp/snfg/sails-snfg.cpp
+        ${WRK_DIR}/src/cpp/snfg/sails-snfg-shape.cpp
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
 
         # Third Party
         ${WRK_DIR}/src/third-party/simdjson.cpp
-        src/cpp/sails-snfg.cpp
-        src/include/sails-snfg.h
 )
 
 # target_include_directories(csails PUBLIC checkout/gemmi)

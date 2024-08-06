@@ -10,7 +10,7 @@
 #include "../include/sails-linkage.h"
 #include "../include/sails-cif.h"
 #include "../include/sails-telemetry.h"
-
+#include "../include/snfg/sails-snfg.h"
 
 #include "gemmi/model.hpp" // for Structure
 #include "gemmi/mmread.hpp" // for read_structure
@@ -20,7 +20,6 @@
 #include <iostream>
 #include <src/include/sails-gemmi-bindings.h>
 
-#include "src/include/sails-snfg.h"
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
     std::cout << "Removing " << Sails::Utils::format_residue_from_site(s1, structure) << "--"
@@ -209,11 +208,14 @@ void test() {
     Sails::Topology topology = {&structure, residue_database};
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
-    // for (auto& site: glycosites) {
-    auto site = glycosites[4];
+    for (auto& site: glycosites) {
+    // auto site = glycosites[4];
         auto glycan = topology.find_glycan_topology(site);
-        snfg.create_snfg(glycan, site);
-    // }
+        std::string path = "snfgs/" + Sails::Utils::format_residue_from_site(site, &structure) + ".svg";
+        std::ofstream f(path);
+        f << snfg.create_snfg(glycan, site);
+        f.close();
+    }
 }
 
 // testbed

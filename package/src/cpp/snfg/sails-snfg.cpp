@@ -2,7 +2,9 @@
 // Created by Jordan Dialpuri on 04/08/2024.
 //
 
-#include "../include/sails-snfg.h"
+#include "../../include/snfg/sails-snfg.h"
+
+#include "src/include/snfg/sails-snfg-shape.h"
 
 std::string Sails::SNFG::create_svg_header() const {
     return "<svg width=\"" + std::to_string(SVG_WIDTH) + "\" height=\"" + std::to_string(SVG_HEIGHT) +
@@ -13,32 +15,30 @@ std::string Sails::SNFG::create_svg_footer() {
     return "</svg>\n";
 }
 
-Sails::SVGObject Sails::SNFG::create_svg_circle(int cx, int cy, int r, const std::string &color) {
+Sails::SVGStringObject Sails::SNFG::create_svg_circle(int cx, int cy, int r, const std::string &color) {
     std::string object =
             "<circle cx=\"" + std::to_string(cx) + "\" cy=\"" + std::to_string(cy) + "\" r=\"" + std::to_string(r) +
             "\" stroke=\"black\" stroke-width=\"4\" fill=\"" + color + "\" />\n";
     return {object, SVGType::circle};
 }
 
-Sails::SVGObject Sails::SNFG::create_svg_square(int x, int y, int s, const std::string &color) {
+Sails::SVGStringObject Sails::SNFG::create_svg_square(int x, int y, int s, const std::string &color) {
     x = x - (s / 2);
     y = y - (s / 2);
     std::string object =
             "<rect x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) + "\" width=\"" + std::to_string(s) +
             "\" height=\"" + std::to_string(s) + "\" stroke=\"black\" stroke-width=\"4\" fill=\"" + color + "\" />\n";
     return {object, SVGType::square};
-
 }
 
-Sails::SVGObject Sails::SNFG::create_svg_line(int x1, int y1, int x2, int y2) {
+Sails::SVGStringObject Sails::SNFG::create_svg_line(int x1, int y1, int x2, int y2) {
     std::string object =
             "<line x1=\"" + std::to_string(x1) + "\" y1=\"" + std::to_string(y1) + "\" x2=\"" + std::to_string(x2) +
-            "\" y2=\"" + std::to_string(y2) + "\" stroke=\"black\" stroke-width=\"2\" />\n";
+            "\" y2=\"" + std::to_string(y2) + "\" stroke=\"black\" stroke-width=\"4\" />\n";
     return {object, SVGType::line};
-
 }
 
-Sails::SVGObject Sails::SNFG::create_svg_text(int x, int y, const std::string &text) {
+Sails::SVGStringObject Sails::SNFG::create_svg_text(int x, int y, const std::string &text) {
     std::string object = "<text x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) +
                          "\" font-family=\"Verdana\" font-size=\"20\" fill=\"black\" text-anchor=\"middle\">" + text +
                          "</text>\n";
@@ -49,8 +49,8 @@ void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
     if (node == nullptr) return;
 
     std::cout << "Level: " << level << " -> node: "
-              << Sails::Utils::format_residue_from_site(node->sugar->site, m_structure) << ", x: " << node->y << ", y: "
-              << node->x << std::endl;
+            << Sails::Utils::format_residue_from_site(node->sugar->site, m_structure) << ", x: " << node->y << ", y: "
+            << node->x << std::endl;
 
     for (auto &child: node->children) {
         printTree(root, child.get(), level + 1);
@@ -58,12 +58,23 @@ void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
 }
 
 
+void Sails::SNFG::assign_snfg_types(Sugar *child, SNFGNode *new_child) {
+    const gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(child->site, m_structure);
+    if (m_database->find(residue_ptr->name) != m_database->end()) {
+        const ResidueData *instance = &m_database->operator[](residue_ptr->name);
+        new_child->snfg_colour = instance->snfg_colour;
+        new_child->snfg_shape = instance->snfg_shape;
+    }
+}
+
 void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan) {
     int pos = 0;
     for (auto &child: glycan.adjacency_list[sugar]) {
-        auto new_child = std::make_unique<SNFGNode>(child);
+        std::unique_ptr<SNFGNode> new_child = std::make_unique<SNFGNode>(child);
         new_child->parent_position = pos;
         new_child->parent = root;
+
+        assign_snfg_types(child, new_child.get());
 
         root->children.push_back(std::move(new_child));
 
@@ -71,6 +82,89 @@ void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &gl
         pos++;
     }
 }
+
+
+void Sails::SNFG::check_for_conflicts(SNFGNode *node) {
+    int min_distance = tree_distance + node_size;
+    int shift = 0;
+
+    std::map<int, int> node_contour;
+    get_lcontour(node, 0, node_contour);
+
+    auto sibling = node->get_leftmost_sibling();
+    while (sibling != nullptr && sibling != node) {
+        std::map<int, int> sibling_contour;
+        get_rcontour(sibling, 0, sibling_contour);
+
+        auto last_sibling_contour = std::prev(sibling_contour.end())->first;
+        auto last_node_contour = std::prev(node_contour.end())->first;
+        for (int i = node->x + 1; i <= std::min(last_sibling_contour, last_node_contour); i++) {
+            int distance = node_contour[i] - sibling_contour[i];
+            if (distance + shift < min_distance) {
+                shift = min_distance - distance;
+            }
+        }
+
+        if (shift > 0) {
+            node->y += shift;
+            node->mod += shift;
+
+            center_nodes_between(node, sibling);
+            shift = 0;
+        }
+        sibling = sibling->get_right_sibling();
+    }
+}
+
+void Sails::SNFG::center_nodes_between(SNFGNode *lnode, SNFGNode *rnode) {
+    int li = lnode->parent_position;
+    int ri = rnode->parent_position;
+
+    int node_between = (ri - li) - 1;
+    if (node_between > 0) {
+        int node_distance = (lnode->y - rnode->y) / (node_between + 1);
+        int count = 1;
+        for (int i = li + 1; i < ri; i++) {
+            SNFGNode *mid_node = lnode->parent->children[i].get();
+            int desired_x = rnode->y + (node_distance * count);
+            int offset = desired_x - mid_node->y;
+            mid_node->y += offset;
+            mid_node->y += offset;
+            count++;
+        }
+        check_for_conflicts(lnode);
+    }
+}
+
+
+void Sails::SNFG::get_lcontour(Sails::SNFGNode *node, int mod_sum, std::map<int, int> &values) {
+    if (values.find(node->x) == values.end()) {
+        values[node->x] = node->y + mod_sum;
+    } else {
+        values[node->x] = std::min(values[node->x], node->y + mod_sum);
+    }
+
+    mod_sum += node->mod;
+
+    for (auto &child: node->children) {
+        get_lcontour(child.get(), mod_sum, values);
+    }
+}
+
+void Sails::SNFG::get_rcontour(Sails::SNFGNode *node, int mod_sum, std::map<int, int> &values) {
+    if (values.find(node->x) == values.end()) {
+        values[node->x] = node->y + mod_sum;
+    } else {
+        values[node->x] = std::max(values[node->x], node->y + mod_sum);
+    }
+
+    mod_sum += node->mod;
+
+    for (auto &child: node->children) {
+        get_rcontour(child.get(), mod_sum, values);
+    }
+}
+
 
 void Sails::SNFG::calculate_node_positions(Sails::SNFGNode *node) {
     initialise_nodes(node, 0);
@@ -89,19 +183,6 @@ void Sails::SNFG::initialise_nodes(Sails::SNFGNode *node, int depth) {
 
     for (auto &child: node->children) {
         initialise_nodes(child.get(), depth + 1);
-    }
-}
-
-void Sails::SNFG::calculate_final_positions(Sails::SNFGNode *node, float mod_sum) {
-    node->y += mod_sum;
-    mod_sum += node->mod;
-
-    for (auto &child: node->children) {
-        calculate_final_positions(child.get(), mod_sum);
-    }
-
-    if (node->children.empty()) {
-
     }
 }
 
@@ -141,59 +222,7 @@ void Sails::SNFG::calculate_initial_positions(Sails::SNFGNode *node) {
 }
 
 
-void Sails::SNFG::check_for_conflicts(SNFGNode *node) {
-    int min_distance = tree_distance + node_size;
-    int shift = 0;
-
-    std::map<int, int> node_contour;
-    get_lcontour(node, 0, node_contour);
-
-    auto sibling = node->get_leftmost_sibling();
-    while (sibling != nullptr && sibling != node) {
-        std::map<int, int> sibling_contour;
-        get_rcontour(sibling, 0, sibling_contour);
-
-        auto last_sibling_contour = std::prev(sibling_contour.end())->first;
-        auto last_node_contour = std::prev(node_contour.end())->first;
-        for (int i = node->x + 1; i <= std::min(last_sibling_contour, last_node_contour); i++) {
-            int distance = node_contour[i] - sibling_contour[i];
-            if (distance + shift < min_distance) {
-                shift = min_distance - distance;
-            }
-        }
-
-        if (shift > 0) {
-            node->y += shift;
-            node->mod += shift;
-
-            center_nodes_between(node, sibling);
-            shift = 0;
-        }
-        sibling = sibling->get_right_sibling();
-    }
-}
-
-void Sails::SNFG::center_nodes_between(Sails::SNFGNode *lnode, Sails::SNFGNode *rnode) {
-    int li = lnode->parent_position;
-    int ri = rnode->parent_position;
-
-    int node_between = (ri - li) - 1;
-    if (node_between > 0) {
-        int node_distance = (lnode->y - rnode->y) / (node_between + 1);
-        int count = 1;
-        for (int i = li + 1; i < ri; i++) {
-            SNFGNode *mid_node = lnode->parent->children[i].get();
-            int desired_x = rnode->y + (node_distance * count);
-            int offset = desired_x - mid_node->y;
-            mid_node->y += offset;
-            mid_node->y += offset;
-            count++;
-        }
-        check_for_conflicts(lnode);
-    }
-}
-
-void Sails::SNFG::check_all_children_on_screen(Sails::SNFGNode *node) {
+void Sails::SNFG::check_all_children_on_screen(SNFGNode *node) {
     std::map<int, int> node_contour;
 
     get_lcontour(node, 0, node_contour);
@@ -210,60 +239,38 @@ void Sails::SNFG::check_all_children_on_screen(Sails::SNFGNode *node) {
     }
 }
 
-void Sails::SNFG::get_lcontour(Sails::SNFGNode *node, int mod_sum, std::map<int, int> &values) {
-    if (values.find(node->x) == values.end()) {
-        values[node->x] = node->y + mod_sum;
-    } else {
-        values[node->x] = std::min(values[node->x], node->y + mod_sum);
-    }
-
+void Sails::SNFG::calculate_final_positions(Sails::SNFGNode *node, float mod_sum) {
+    node->y += mod_sum;
     mod_sum += node->mod;
 
     for (auto &child: node->children) {
-        get_lcontour(child.get(), mod_sum, values);
+        calculate_final_positions(child.get(), mod_sum);
     }
+
+    if (node->children.empty()) {
+    }
+
+    node->x = SVG_WIDTH - 200 - (100 * node->x);
+    node->y += 400;
 }
 
-void Sails::SNFG::get_rcontour(Sails::SNFGNode *node, int mod_sum, std::map<int, int> &values) {
-    if (values.find(node->x) == values.end()) {
-        values[node->x] = node->y + mod_sum;
-    } else {
-        values[node->x] = std::max(values[node->x], node->y + mod_sum);
-    }
 
-    mod_sum += node->mod;
 
-    for (auto &child: node->children) {
-        get_rcontour(child.get(), mod_sum, values);
-    }
-}
+void Sails::SNFG::create_svg(std::vector<SVGStringObject> &snfg_objects, SNFGNode *parent, SNFGNode *node) {
+    snfg_objects.emplace_back(get_svg_shape(node)->draw());
+    snfg_objects.emplace_back(create_svg_line(parent->x, parent->y, node->x, node->y));
 
-void Sails::SNFG::create_svg(std::vector<Sails::SVGObject> &snfg_objects, SNFGNode *parent, SNFGNode *node) {
-    int x = 200 + 100 * node->x;
-    int y = 400 + node->y;
-    int px = 200 + 100 * parent->x;
-    int py = 400 + parent->y;
-
-    auto residue = Utils::get_residue_ptr_from_glycosite(node->sugar->site, m_structure);
-    auto data = m_database->operator[](residue->name);
-
-    if (data.snfg_shape == "circle") {
-        snfg_objects.emplace_back(create_svg_circle(x, y, 30, data.snfg_colour));
-    } else {
-        snfg_objects.emplace_back(create_svg_square(x, y, 50, data.snfg_colour));
-    }
-
-//    f << create_svg_text(x, y, Utils::format_residue_from_site(node->sugar->site, m_structure));
-    snfg_objects.emplace_back(create_svg_line(px, py, x, y));
     for (auto &child: node->children) {
         create_svg(snfg_objects, node, child.get());
     }
 }
 
 
-void Sails::SNFG::order_svg(std::vector<Sails::SVGObject> &objects) {
+void Sails::SNFG::order_svg(std::vector<Sails::SVGStringObject> &objects) {
     std::sort(objects.begin(), objects.end(),
-              [&](Sails::SVGObject &obj1, Sails::SVGObject &obj2) { return obj1.type > obj2.type; });
+              [&](Sails::SVGStringObject &obj1, Sails::SVGStringObject &obj2) {
+                  return obj1.priority > obj2.priority;
+              });
 }
 
 
@@ -275,18 +282,15 @@ std::string Sails::SNFG::create_snfg(Glycan &glycan, Glycosite &base_residue) {
 
     calculate_node_positions(root.get());
 
-    printTree(root.get(), root.get(), 0);
-
-    std::vector<Sails::SVGObject> objects;
+    std::vector<Sails::SVGStringObject> objects;
     create_svg(objects, root.get(), root.get());
     order_svg(objects);
 
-    std::ofstream f("tree.svg");
+    std::stringstream f("tree.svg");
     f << create_svg_header();
     for (const auto &obj: objects) {
         f << obj.object;
     }
     f << create_svg_footer();
-    f.close();
-    return "";
+    return f.str();
 }
