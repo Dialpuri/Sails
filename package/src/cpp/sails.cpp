@@ -195,13 +195,13 @@ Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
 
 
 void test() {
-    const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.cif";
-    const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.mtz";
+    const std::string path = "testing/test_data/5fji/5FJI.cif";
+    const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
-    std::string data_file = "/Users/dialpuri/Development/sails/package/src/sails/data/data.json";
+    std::string data_file = "package/src/sails/data/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
 
@@ -218,8 +218,8 @@ void test() {
 
 // testbed
 int main() {
-    const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.cif";
-    const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.mtz";
+    const std::string path = "testing/test_data/5fji/5fji.cif";
+    const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);

@@ -77,7 +77,7 @@ namespace Sails {
         }
 
         [[nodiscard]] SNFGNode* get_rightmost_child() const {
-            return this->children[parent->children.size()-1].get();
+            return this->children[this->children.size()-1].get();
         }
 
         [[nodiscard]] bool has_right_sibling() const {
@@ -100,29 +100,33 @@ namespace Sails {
         std::string create_snfg(Glycan& glycan, Glycosite& base_residue);
 
     private:
+        // reingold algorith,
 
-        // walker algorith,
-        void first_walk(SNFGNode *root, SNFGNode* node, int depth);
+        void calculate_node_positions(SNFGNode* node);
 
-        bool second_walk(SNFGNode *node, int level = 0, int modsum = 0);
+        void init_nodes(SNFGNode* node, int depth);
 
-        void create_svg(std::ofstream& f, SNFGNode* node);
+        void calculate_final_positions(SNFGNode* node, float mod_sum);
+
+        void calculate_initial_x(SNFGNode* node);
+
+        void check_for_conflicts(SNFGNode* node);
+
+        void center_nodes_between(SNFGNode* lnode, SNFGNode* rnode);
+
+        void check_all_children_on_screen(SNFGNode* node);
+
+        void get_lcontour(SNFGNode* node, int mod_sum, std::map<int, int>& values);
+
+        void get_rcontour(SNFGNode* node, int mod_sum, std::map<int, int>& values);
+
+
+        void create_svg(std::ofstream &f, SNFGNode *parent, SNFGNode *node);
 
         void printTree(SNFGNode *root, SNFGNode* node, int level);
 
         void form_snfg_node_system(SNFGNode* root, Sugar* sugar, Glycan& glycan);
 
-        void check_for_conflicts(SNFGNode* node);
-
-        void contour(SNFGNode* node, int mod_sum, std::map<int, int>& values);
-
-        void center_nodes(SNFGNode* l, SNFGNode* r);
-
-        void apportion(SNFGNode* root, SNFGNode* node, int depth);
-
-        SNFGNode* get_leftmost_node(SNFGNode* node, int level, int depth);
-
-        [[nodiscard]] SNFGNode* get_previous_node_at_level(SNFGNode *root, SNFGNode *node) const;
 
         [[nodiscard]] std::string create_svg_header() const ;
 
@@ -138,11 +142,15 @@ namespace Sails {
         gemmi::Structure* m_structure;
 
         // Constants for SVG dimensions
-        const int SVG_WIDTH = 1200;
-        const int SVG_HEIGHT = 1200;
+        const int SVG_WIDTH = 2400;
+        const int SVG_HEIGHT = 2400;
         const int NODE_RADIUS = 20;
         const int VERTICAL_SPACING = 80;
         const int HORIZONTAL_SPACING = 60;
+
+        const int node_size = 100;
+        const int sibling_distance = 1;
+        const int tree_distance = 2;
     };
 
 
