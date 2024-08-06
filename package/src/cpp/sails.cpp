@@ -205,7 +205,7 @@ void test() {
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
 
-    auto snfg = Sails::SNFG(&structure);
+    auto snfg = Sails::SNFG(&structure, &residue_database);
     Sails::Topology topology = {&structure, residue_database};
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
@@ -228,7 +228,7 @@ int main() {
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
 
-    auto snfg = Sails::SNFG(&structure);
+    auto snfg = Sails::SNFG(&structure, &residue_database);
     Sails::Topology topology = {&structure, residue_database};
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
