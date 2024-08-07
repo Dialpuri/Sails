@@ -134,50 +134,52 @@ target_link_libraries(
 )
 
 file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
-#
-#add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
-#set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
-#target_compile_features(csails INTERFACE cxx_std_17)
-#target_compile_options(csails PRIVATE -g)
-##
-#target_link_directories(csails
-#        PUBLIC
-#        ${CMAKE_BINARY_DIR}/clipper/mmdb
-#        ${CMAKE_BINARY_DIR}/clipper/cif
-#        ${CMAKE_BINARY_DIR}/clipper/ccp4
-#        ${CMAKE_BINARY_DIR}/clipper/minimol
-#        ${CMAKE_BINARY_DIR}/clipper/core
-#        ${CMAKE_BINARY_DIR}/clipper/contrib
-#        ${CMAKE_BINARY_DIR}/fftw
-#        ${CMAKE_BINARY_DIR}/rfftw
-#        ${CMAKE_BINARY_DIR}/ccp4
-#        ${CMAKE_BINARY_DIR}/mmdb2
-#        ${CMAKE_BINARY_DIR}/gemmi
-#)
-#
-#target_link_libraries(
-#        csails
-#        PUBLIC
-#        sails_lib
-#        clipper-mmdb
-#        clipper-cif
-#        clipper-ccp4
-#        clipper-minimol
-#        clipper-core
-#        clipper-contrib
-#        rfftw
-#        fftw
-#        ccp4
-#        mmdb2
-#        gemmi_cpp
-#        ZLIB::ZLIB
-#)
 
-#set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
-# install(TARGETS csails
-#         LIBRARY DESTINATION lib
-#         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
+if (BUILD_EXECUTABLE STREQUAL "ON")
+    add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
+    set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
+    target_compile_features(csails INTERFACE cxx_std_17)
+    target_compile_options(csails PRIVATE -g)
 
+    target_link_directories(csails
+            PUBLIC
+            ${CMAKE_BINARY_DIR}/clipper/mmdb
+            ${CMAKE_BINARY_DIR}/clipper/cif
+            ${CMAKE_BINARY_DIR}/clipper/ccp4
+            ${CMAKE_BINARY_DIR}/clipper/minimol
+            ${CMAKE_BINARY_DIR}/clipper/core
+            ${CMAKE_BINARY_DIR}/clipper/contrib
+            ${CMAKE_BINARY_DIR}/fftw
+            ${CMAKE_BINARY_DIR}/rfftw
+            ${CMAKE_BINARY_DIR}/ccp4
+            ${CMAKE_BINARY_DIR}/mmdb2
+            ${CMAKE_BINARY_DIR}/gemmi
+    )
+
+    target_link_libraries(
+            csails
+            PUBLIC
+            sails_lib
+            clipper-mmdb
+            clipper-cif
+            clipper-ccp4
+            clipper-minimol
+            clipper-core
+            clipper-contrib
+            rfftw
+            fftw
+            ccp4
+            mmdb2
+            gemmi_cpp
+            ZLIB::ZLIB
+    )
+
+    set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
+    install(TARGETS csails
+            LIBRARY DESTINATION lib
+            PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
+
+endif ()
 
 if (TESTING)
     include(FetchContent)
@@ -205,7 +207,7 @@ if (TESTING)
 endif()
 
 
-#if (SKBUILD)
+if (SKBUILD)
     # Try to import all Python components potentially needed by nanobind
     find_package(Python 3.8
             REQUIRED COMPONENTS Interpreter Development.Module
@@ -278,4 +280,4 @@ endif()
     )
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
-#endif ()
+endif ()
