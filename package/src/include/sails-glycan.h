@@ -41,12 +41,16 @@ namespace Sails {
               acceptor_sugar(acceptor_sugar),
               donor_atom(donor_atom),
               acceptor_atom(acceptor_atom) {
+
+            std::string donor_number_s = {donor_atom[donor_atom.size()-1]};
+            donor_number = std::stoi(donor_number_s);
         }
 
         Sugar *donor_sugar;
         Sugar *acceptor_sugar;
         std::string donor_atom;
         std::string acceptor_atom;
+        int donor_number;
     };
 
 
@@ -218,6 +222,7 @@ namespace Sails {
                 sugars[sugar_2].get(),
                 donor_atom,
                 acceptor_atom
+
             };
             linkage_list.emplace_back(linkage);
 
