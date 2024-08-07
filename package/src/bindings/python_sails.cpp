@@ -130,7 +130,8 @@ NB_MODULE(sails_module, m) {
         nb::class_<Sails::Output>(m, "SailsOutput")
                         .def_ro("structure", &Sails::Output::structure)
                         .def_ro("mtz", &Sails::Output::mtz)
-                        .def_ro("log", &Sails::Output::log);
+                        .def_ro("log", &Sails::Output::log)
+                        .def_ro("snfgs", &Sails::Output::snfgs);
 
         nb::class_<Sails::Glycosite>(m, "GlycoSite")
                         .def(nb::init<int, int, int>())

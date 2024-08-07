@@ -128,6 +128,19 @@ namespace Sails {
          */
         void save_state(int cycle);
 
+
+        /**
+         * @brief Saves the SNFG (Symbol Nomenclature for Glycans) representation of a glycan structure.
+         *
+         * This method saves the SNFG representation of a glycan structure for a specific cycle and glycosite.
+         * The SNFG representation is stored as a string in the provided `snfg` parameter.
+         *
+         * @param cycle The cycle number of the glycan structure.
+         * @param key The key corresponding to the glycosite.
+         * @param snfg The string to store the SNFG representation of the glycan structure.
+         */
+        void save_snfg(int cycle, std::string& key, std::string &snfg);
+
         /**
          * @brief Formats the log with a given gemmi::Structure object.
          *
@@ -142,6 +155,7 @@ namespace Sails {
 
 
         TelemetryLog calculate_log(gemmi::Structure *structure, Density *density);
+
         /**
          * @brief Formats the log with the given gemmi::Structure object.
          *
@@ -164,10 +178,13 @@ namespace Sails {
          */
         std::optional<std::string> format_log(gemmi::Structure *structure, Density* density, bool write);
 
+        [[nodiscard]] std::map<int, std::map<std::string, std::string>> get_snfgs() const {return snfgs;};
+
 
     private:
         std::set<Glycosite> sites{};
         std::map<int, std::set<Glycosite>> states{};
+        std::map<int, std::map<std::string, std::string>> snfgs;
         const std::string &m_filepath;
     };
 

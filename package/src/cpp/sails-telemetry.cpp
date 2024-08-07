@@ -18,6 +18,10 @@ void Sails::Telemetry::save_state(int cycle) {
     states[cycle] = difference;
 }
 
+void Sails::Telemetry::save_snfg(int cycle, std::string& key, std::string &snfg) {
+    snfgs[cycle][key] = snfg;
+}
+
 void Sails::Telemetry::format_log(gemmi::Structure *structure) {
     for (const auto &[cycle, sites]: states) {
         std::cout << "Cycle " << cycle << "\n";

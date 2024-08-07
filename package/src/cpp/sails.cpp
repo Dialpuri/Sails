@@ -109,6 +109,7 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     check_spacegroup(&mtz, &structure); // check to ensure the MTZ has a spacegroup
 
     Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
 
     Sails::Density density = Sails::Density(mtz);
     density.load_hkl("FP", "SIGFP");
@@ -159,6 +160,10 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
+
+            std::string snfg_string = snfg.create_snfg(new_glycan, glycosite);
+            std::string glycosite_key = Sails::Utils::format_residue_from_site(glycosite, &structure);
+            telemetry.save_snfg(i, glycosite_key, snfg_string);
         }
 
         telemetry.save_state(i);
@@ -172,10 +177,12 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz, "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
+    auto snfgs = telemetry.get_snfgs();
     return {
         *model.get_structure(),
         output_mtz,
-        log_string
+        log_string,
+        snfgs
     };
 }
 
