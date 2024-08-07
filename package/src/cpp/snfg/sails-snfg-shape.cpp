@@ -15,6 +15,14 @@ std::string Sails::SNFGShapeBase::kwargs_to_string(std::map<std::string, std::st
     return object.str();
 }
 
+std::string Sails::SNFGShapeBase::format_tooltip(const SNFGNode *node) {
+    std::stringstream stream;
+    stream << "<title>";
+    stream << node->chain->name << "-" << node->residue->name << "-" << node->residue->seqid.str();
+    stream << "</title>";
+    return stream.str();
+}
+
 Sails::SVGStringObject Sails::SNFGShapeBase::draw() const {
     std::stringstream object;
     auto types = get_type();
@@ -22,7 +30,9 @@ Sails::SVGStringObject Sails::SNFGShapeBase::draw() const {
     for (int i = 0; i < types.size(); i++) {
         object << "<" + types[i] + " ";
         object << kwargs_to_string(kwargs[i]);
-        object << "/>\n";
+        object << ">";
+        object << get_tooltips();
+        object << "</" << types[i] << ">\n";
     }
     object << get_special_tags();
 
