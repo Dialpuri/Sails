@@ -85,6 +85,13 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-dot.cpp
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
 
+        # SNFG
+        ${WRK_DIR}/src/cpp/snfg/sails-snfg.cpp
+        ${WRK_DIR}/src/cpp/snfg/sails-snfg-shape.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/circle.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/square.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/rectangle.cpp
+
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
 
@@ -127,12 +134,12 @@ target_link_libraries(
 )
 
 file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
-
+#
 #add_executable(csails ${WRK_DIR}/src/cpp/sails.cpp)
 #set_target_properties(csails PROPERTIES OUTPUT_NAME sails_exec)
 #target_compile_features(csails INTERFACE cxx_std_17)
 #target_compile_options(csails PRIVATE -g)
-#
+##
 #target_link_directories(csails
 #        PUBLIC
 #        ${CMAKE_BINARY_DIR}/clipper/mmdb
@@ -198,7 +205,7 @@ if (TESTING)
 endif()
 
 
-if (SKBUILD)
+#if (SKBUILD)
     # Try to import all Python components potentially needed by nanobind
     find_package(Python 3.8
             REQUIRED COMPONENTS Interpreter Development.Module
@@ -271,4 +278,4 @@ if (SKBUILD)
     )
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
-endif ()
+#endif ()

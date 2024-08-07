@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Generate SNFG Diagrams" id="Generate-SNFG-Diagrams" help-id="Generate-SNFG-Diagrams">
+
+    <p>
+        Sails provides a fast utility tool to generate SNFG diagrams using Sails' internal diagram engine. A specific
+        site can be specified with -chain and -seqid parameters, or, all the detectable SNFGs will be generated.
+    </p>
+
+    <chapter title="Command" id="command">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails-snfg [OPTIONS]
+        </code-block>
+
+        <p>Example for one site:</p>
+        <code-block lang="shell">
+            sails-snfg -model built.cif -chain A -seqid 23 -snfgout snfg.svg
+        </code-block>
+
+        <p>Example for all sites:</p>
+        <code-block lang="shell">
+            sails-snfg -model built.cif --all -snfgout snfgs
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-model">
+                Path to a model that requires comparison to a reference.
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-snfgout">
+                Path to output SNFG(s)
+                <p>Supply a directory if using --all, otherwise a path to an SVG file</p>
+                <b>Required</b>
+            </def>
+            <def title="--all">
+                Ignore chain and seqid, and generate all SNFGs that can be found for the input model
+            </def>
+            <def title="-chain">
+                Chain name
+                <p>Example: A</p>
+            </def>
+            <def title="-seqid">
+                Sequence Id of desired SNFG root
+                <p>Example: 123</p>
+            </def>
+
+        </deflist>
+    </chapter>
+
+    <seealso>
+        <!--Provide links to related how-to guides, overviews, and tutorials.-->
+    </seealso>
+</topic>

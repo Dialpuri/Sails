@@ -10,7 +10,7 @@
 #include "../include/sails-linkage.h"
 #include "../include/sails-cif.h"
 #include "../include/sails-telemetry.h"
-
+#include "../include/snfg/sails-snfg.h"
 
 #include "gemmi/model.hpp" // for Structure
 #include "gemmi/mmread.hpp" // for read_structure
@@ -19,6 +19,7 @@
 #include <chrono>
 #include <iostream>
 #include <src/include/sails-gemmi-bindings.h>
+
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
     std::cout << "Removing " << Sails::Utils::format_residue_from_site(s1, structure) << "--"
@@ -129,7 +130,7 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            if (glycan.empty()) { continue; }
+            // if (glycan.empty()) { continue; }
 
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
@@ -158,7 +159,6 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
-
         }
 
         telemetry.save_state(i);
@@ -179,42 +179,106 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     };
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
-Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_c_glycosylation_sites(structure);
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
-int main() {
-    // const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/8dvl/8DVL_deglycosylated.cif";
-    // const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/8dvl/8DVL.mtz";
+std::string get_snfg(std::string chain, int seqid, gemmi::Structure& structure, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
 
-    const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI_deglycosylated.cif";
-    const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/5fji/5FJI.mtz";
-    //
-    // const std::string path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU_deglycosylated.cif";
-    // const std::string mtz_path = "/Users/dialpuri/Development/sails/testing/test_data/3sku/3SKU.mtz";
-    int cycles = 3;
+    Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
+
+    std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+    if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    Sails::Glycosite glycosite = potential_glycosite.value();
+
+    Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+
+    return snfg.create_snfg(glycan, glycosite);
+}
+
+std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+    Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
+
+    std::map<std::string, std::string> snfg_map;
+    Sails::Glycosites n_glycosites = Sails::find_n_glycosylation_sites(structure);
+    for (auto& site: n_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        snfg_map[key] = snfg.create_snfg(glycan, site);
+    }
+
+    Sails::Glycosites c_glycosites = Sails::find_c_glycosylation_sites(structure);
+    for (auto& site: c_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        snfg_map[key] = snfg.create_snfg(glycan, site);
+    }
+
+    return snfg_map;
+}
+
+void test() {
+    const std::string path = "testing/test_data/5fji/5FJI.cif";
+    const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
+
+    gemmi::Structure structure = gemmi::read_structure_file(path);
+
+    std::string data_file = "package/src/sails/data/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+    auto snfg = Sails::SNFG(&structure, &residue_database);
+    Sails::Topology topology = {&structure, residue_database};
+    auto glycosites = Sails::find_n_glycosylation_sites(structure);
+
+    for (auto& site: glycosites) {
+        // auto site = glycosites[4];
+        auto glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string snfg_path = "snfgs/" + Sails::Utils::format_residue_from_site(site, &structure) + ".svg";
+        std::ofstream f(snfg_path);
+        f << snfg.create_snfg(glycan, site);
+    f.close();
+    }
+}
+
+// testbed
+int main() {
+    const std::string path = "testing/test_data/5fji/5fji.cif";
+    const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
     gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
     Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
     std::string data_file = "package/src/sails/data/data.json";
-    auto output = n_glycosylate(structure, sails_mtz, cycles, data_file, true);
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
 
-    std::string output_path = "structure.cif";
-    std::string output_mtz_path = "reflections.mtz";
+    auto snfg = Sails::SNFG(&structure, &residue_database);
+    Sails::Topology topology = {&structure, residue_database};
+    auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
-    std::ofstream os(output_path);
-    gemmi::cif::Document document = make_mmcif_document(output.structure);
-    write_cif_to_stream(os, document);
-    os.close();
-
-    form_gemmi_mtz(output.mtz).write_to_file(output_mtz_path);
+    for (auto &site: glycosites) {
+        auto glycan = topology.find_glycan_topology(site);
+        snfg.create_snfg(glycan, site);
+    }
 }

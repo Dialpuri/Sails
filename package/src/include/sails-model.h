@@ -344,5 +344,37 @@ namespace Sails {
         }
         return std::nullopt;
     }
+
+    /**
+     * @brief Finds a glycosite in a given structure.
+     *
+     * The method searches for a glycosite in the provided structure based on the specified chain name,
+     * and sequence ID. It returns an optional Glycosite object if found, otherwise it
+     * returns an empty optional.
+     *
+     * @param structure The input structure to search for the glycosite.
+     * @param chain_name The name of the chain where the glycosite is located.
+     * @param seqId The sequence identifier of the residue in the chain.
+     * @return An optional Glycosite object representing the found glycosite, or an empty optional
+     *         if no glycosite is found.
+     */
+    inline std::optional<Glycosite> find_site(const gemmi::Structure &structure,
+                                              const std::string &chain_name,
+                                              int seqId) {
+        for (int model_idx = 0; model_idx < structure.models.size(); ++model_idx) {
+            auto &model = structure.models[model_idx];
+            for (int chain_idx = 0; chain_idx < model.chains.size(); ++chain_idx) {
+                auto &chain = model.chains[chain_idx];
+                if (chain.name != chain_name) continue;
+                for (int residue_idx = 0; residue_idx < chain.residues.size(); ++residue_idx) {
+                    if (auto &residue = chain.residues[residue_idx];
+                        residue.seqid.num.value == seqId) {
+                        return Glycosite(model_idx, chain_idx, residue_idx);
+                        }
+                }
+            }
+        }
+        return std::nullopt;
+    }
 }
 #endif //SAILS_SAILS_MODEL_H
