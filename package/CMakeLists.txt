@@ -173,10 +173,10 @@ file(GLOB sails_HEADERS ${WRK_DIR}/src/include/*.h)
 #        ZLIB::ZLIB
 #)
 
-set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
- install(TARGETS csails
-         LIBRARY DESTINATION lib
-         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
+#set_target_properties(csails PROPERTIES PUBLIC_HEADER "${sails_HEADERS}")
+# install(TARGETS csails
+#         LIBRARY DESTINATION lib
+#         PUBLIC_HEADER DESTINATION ${WRK_DIR}/include/sails)
 
 
 if (TESTING)
