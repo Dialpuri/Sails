@@ -130,7 +130,7 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            if (glycan.empty()) { continue; }
+            // if (glycan.empty()) { continue; }
 
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
@@ -159,7 +159,6 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
-
         }
 
         telemetry.save_state(i);
@@ -180,13 +179,13 @@ Sails::Output run_cycle(Sails::Glycosites& glycosites, gemmi::Structure &structu
     };
 }
 
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
-Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string& resource_dir,
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
                             bool verbose) {
     auto glycosites = Sails::find_c_glycosylation_sites(structure);
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
@@ -209,12 +208,13 @@ void test() {
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
     for (auto& site: glycosites) {
-    // auto site = glycosites[4];
+        // auto site = glycosites[4];
         auto glycan = topology.find_glycan_topology(site);
-        std::string path = "snfgs/" + Sails::Utils::format_residue_from_site(site, &structure) + ".svg";
-        std::ofstream f(path);
+        if (glycan.empty()) continue;
+        std::string snfg_path = "snfgs/" + Sails::Utils::format_residue_from_site(site, &structure) + ".svg";
+        std::ofstream f(snfg_path);
         f << snfg.create_snfg(glycan, site);
-        f.close();
+    f.close();
     }
 }
 
@@ -234,9 +234,8 @@ int main() {
     Sails::Topology topology = {&structure, residue_database};
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
-    for (auto& site: glycosites) {
+    for (auto &site: glycosites) {
         auto glycan = topology.find_glycan_topology(site);
         snfg.create_snfg(glycan, site);
     }
-
 }
