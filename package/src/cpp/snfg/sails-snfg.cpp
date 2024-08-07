@@ -245,7 +245,18 @@ void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &gl
     root->residue = Utils::get_residue_ptr_from_glycosite(root->sugar->site, m_structure);
     root->chain = Utils::get_chain_ptr_from_glycosite(root->sugar->site, m_structure);
 
-    for (auto &child: glycan.adjacency_list[sugar]) {
+    // transform set of linked sugars, to a vector, so we can sort by donor_number. This affects what node is positioned
+    // where in the SNFG. We want lower donor numbers to be on top, so sort here.
+    std::vector<Sugar *> adjacency_list = std::vector(glycan.adjacency_list[sugar].begin(),
+                                                      glycan.adjacency_list[sugar].end());
+    std::sort(adjacency_list.begin(), adjacency_list.end(), [&](const Sugar* s1, const Sugar* s2) {
+        const Linkage *l1 = sugar->find_linkage(sugar, s1);
+        const Linkage *l2 = sugar->find_linkage(sugar, s2);
+        if (l1 == nullptr || l2 == nullptr) return false;
+        return l1->donor_number < l2->donor_number;
+    });
+
+    for (auto &child: adjacency_list) {
         std::unique_ptr<SNFGNode> new_child = std::make_unique<SNFGNode>(child);
         new_child->parent_position = pos;
         new_child->parent = root;
@@ -300,7 +311,7 @@ std::string Sails::SNFG::create_snfg(Glycan &glycan, Glycosite &base_residue) {
     create_svg(objects, root.get(), root.get());
     order_svg(objects);
 
-    std::stringstream f("tree.svg");
+    std::stringstream f;
     f << create_svg_header();
     for (const auto &obj: objects) {
         f << obj.object;
