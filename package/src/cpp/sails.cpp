@@ -191,14 +191,48 @@ Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, verbose);
 }
 
+std::string get_snfg(std::string chain, int seqid, gemmi::Structure& structure, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+    Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
+
+    std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+    if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    Sails::Glycosite glycosite = potential_glycosite.value();
+
+    Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+
+    return snfg.create_snfg(glycan, glycosite);
+}
+
+std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+    Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
+
+    std::map<std::string, std::string> snfg_map;
+    Sails::Glycosites n_glycosites = Sails::find_n_glycosylation_sites(structure);
+    for (auto& site: n_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        snfg_map[key] = snfg.create_snfg(glycan, site);
+    }
+    return snfg_map;
+}
 
 void test() {
     const std::string path = "testing/test_data/5fji/5FJI.cif";
     const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
-    gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
-    Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
+
     std::string data_file = "package/src/sails/data/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
