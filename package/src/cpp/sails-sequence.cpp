@@ -44,6 +44,9 @@ Sails::Glycosites Sails::find_c_glycosylation_sites(const gemmi::Structure &stru
         for (int chain_idx = 0; chain_idx < chains.size(); chain_idx++) {
 
             auto residues = chains[chain_idx].children();
+            // if there are less than three residues, skip
+            if (residues.size() < 4) continue;
+
             for (int residue_idx = 0; residue_idx < residues.size() - 3; residue_idx++) {
 
                 char first = gemmi::find_tabulated_residue(residues[residue_idx].name).one_letter_code;
