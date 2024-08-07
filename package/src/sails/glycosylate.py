@@ -1,4 +1,5 @@
 import argparse
+import logging
 from typing import Tuple, Callable, List
 from sails import (interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite, __version__)
 import time
@@ -10,7 +11,7 @@ import importlib.resources
 
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
                 fwt: str, phwt: str, func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
-    gemmi.Structure, gemmi.Mtz, dict]:
+    gemmi.Structure, gemmi.Mtz, dict, dict]:
     """
     :param structure: The input structure file in gemmi.Structure, Path, or str format.
     :param mtz: The input MTZ file in gemmi.Mtz, Path, or str format.
@@ -22,7 +23,7 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     :param func: The function to use for glycosylation. Default is n_glycosylate_from_objects.
     :param verbose: Flag specifying whether to print verbose output. Default is False.
     :return: A tuple containing the glycosylated structure in gemmi.Structure format,
-             the glycosylated MTZ file in gemmi.Mtz format, and the log as a string.
+             the glycosylated MTZ file in gemmi.Mtz format, the log as a string, and a dictionary of snfgs.
     """
     sails_structure = interface.get_sails_structure(structure)
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
@@ -30,36 +31,7 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),
-            json.loads(result.log))
-
-
-
-def run_python():
-    print("Running Sails")
-    t0 = time.time()
-    ip = gemmi.read_structure("package/models/5fji/5fji_deglycosylated.pdb")
-    im = gemmi.read_mtz_file("package/models/5fji/5fji.mtz")
-
-    s, m, l = glycosylate(ip, im, 1, "FP", "SIGFP")
-
-    with open("sails-5fji-log.json", "w") as f:
-        json.dump(l, f, indent=4)
-
-    s.make_mmcif_block().write_file("sails-5fji-test.cif")
-    m.write_to_file("sails-5fji-test.mtz")
-
-    # s = get_sails_structure(s)
-    # d = Dot(s)
-    # a = d.get_all_dotfiles()
-    # for k, v in a.items():
-    #     r = ip[k.model_idx][k.chain_idx][k.residue_idx]
-    #     src = graphviz.Source(v)
-    #     snfg = src.pipe(format='svg', encoding='utf-8')
-    #     with open(f"testing/snfgs/{r.__str__()}.svg", "w") as f:
-    #         f.write(snfg)
-
-    t1 = time.time()
-    print(f"Sails - Time Taken = {(t1 - t0)} seconds")
+            json.loads(result.log), result.snfgs)
 
 
 def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
@@ -75,7 +47,7 @@ def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
         return fo_labels + [None, None]
 
     if ',' not in fwt_columns:
-            raise RuntimeError(f"Supplied colin-fwt must be in form FWT,PHWT. Sails received {fo_columns}")
+        raise RuntimeError(f"Supplied colin-fwt must be in form FWT,PHWT. Sails received {fo_columns}")
 
     fwt_labels = [c for c in fwt_columns.split(",") if c]
     fwt_label_length = len(fwt_labels)
@@ -92,6 +64,23 @@ def save_log(log: dict, args: argparse.Namespace) -> None:
         json.dump(log, f, indent=4)
 
 
+def save_snfgs(snfgs: dict, snfg_path: Path):
+    output_path = snfg_path
+    if snfg_path.suffixes:
+        logging.warning("Supplied SNFG path is a file, not a directory. A new directory will be made.")
+        output_path = snfg_path.parent / "sails-snfgs"
+
+    output_path.mkdir(exist_ok=True)
+
+    for cycle_no, snfg_strings in snfgs.items():
+        cycle = output_path / f"cycle-{cycle_no}"
+        cycle.mkdir(exist_ok=True)
+        for site, snfg_string in snfg_strings.items():
+            path = cycle / f"{site}.svg"
+            with open(path, "w") as f:
+                f.write(snfg_string)
+
+
 def run_cli():
     args = parse_args()
     t0 = time.time()
@@ -100,7 +89,10 @@ def run_cli():
 
     func = c_glycosylate_from_objects if args.cglycan else n_glycosylate_from_objects
     cycles = 1 if args.cglycan else args.cycles
-    structure, mtz, log = glycosylate(args.pdbin, args.mtzin, cycles, *labels, func, args.v)
+    structure, mtz, log, snfgs = glycosylate(args.pdbin, args.mtzin, cycles, *labels, func, args.v)
+
+    if args.snfgout:
+        save_snfgs(snfgs, Path(args.snfgout))
 
     structure.make_mmcif_block().write_file(args.pdbout)
     mtz.write_to_file(args.mtzout)
@@ -119,6 +111,7 @@ def parse_args():
     parser.add_argument("-pdbout", type=str, required=False, default="sails-model-out.cif")
     parser.add_argument("-mtzout", type=str, required=False, default="sails-refln-out.mtz")
     parser.add_argument("-logout", type=str, default="sails-log.json")
+    parser.add_argument("-snfgout", type=str)
     parser.add_argument("-colin-fo", type=str, required=False, default="FP,SIGFP")
     parser.add_argument("-colin-fwt", type=str, required=False, default="")
     parser.add_argument("-cycles", type=int, required=False, default=2)
