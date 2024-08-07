@@ -15,22 +15,6 @@ std::string Sails::SNFG::create_svg_footer() {
     return "</svg>\n";
 }
 
-Sails::SVGStringObject Sails::SNFG::create_svg_circle(int cx, int cy, int r, const std::string &color) {
-    std::string object =
-            "<circle cx=\"" + std::to_string(cx) + "\" cy=\"" + std::to_string(cy) + "\" r=\"" + std::to_string(r) +
-            "\" stroke=\"black\" stroke-width=\"4\" fill=\"" + color + "\" />\n";
-    return {object, SVGType::circle};
-}
-
-Sails::SVGStringObject Sails::SNFG::create_svg_square(int x, int y, int s, const std::string &color) {
-    x = x - (s / 2);
-    y = y - (s / 2);
-    std::string object =
-            "<rect x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) + "\" width=\"" + std::to_string(s) +
-            "\" height=\"" + std::to_string(s) + "\" stroke=\"black\" stroke-width=\"4\" fill=\"" + color + "\" />\n";
-    return {object, 2};
-}
-
 Sails::SVGStringObject Sails::SNFG::create_svg_line(int x1, int y1, int x2, int y2) {
     std::string object =
             "<line x1=\"" + std::to_string(x1) + "\" y1=\"" + std::to_string(y1) + "\" x2=\"" + std::to_string(x2) +
@@ -43,6 +27,23 @@ Sails::SVGStringObject Sails::SNFG::create_svg_text(int x, int y, const std::str
                          "\" font-family=\"Verdana\" font-size=\"20\" fill=\"black\" text-anchor=\"middle\">" + text +
                          "</text>\n";
     return {object, 0};
+}
+
+Sails::SVGStringObject Sails::SNFG::create_donor_labels(SNFGNode *parent, SNFGNode *node, Linkage *linkage) {
+
+    int dx = node->x - parent->x;
+    int dy = node->y - parent->y;
+
+    double ratio = 0.3;
+
+    int xbuffer = -10;
+    int ybuffer = dy == 0 ? 20: 19;
+    ybuffer += dy > 0 ? (dy*0.2) : 0;
+    double xt = parent->x + (ratio*dx) + xbuffer;
+    double yt = parent->y + (ratio*dy) + ybuffer;
+
+    std::string donor_number = {linkage->donor_atom[linkage->donor_atom.size()-1]};
+    return create_svg_text(xt, yt, donor_number);
 }
 
 void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
@@ -264,6 +265,7 @@ void Sails::SNFG::create_svg(std::vector<SVGStringObject> &snfg_objects, SNFGNod
     Linkage *linkage = parent->sugar->find_linkage(parent->sugar, node->sugar);
     if (linkage != nullptr) {
         node->linkage = linkage;
+        snfg_objects.emplace_back(create_donor_labels(parent, node, linkage));
     }
 
     // get shape
@@ -271,7 +273,6 @@ void Sails::SNFG::create_svg(std::vector<SVGStringObject> &snfg_objects, SNFGNod
 
     // get line
     snfg_objects.emplace_back(create_svg_line(parent->x, parent->y, node->x, node->y));
-
     // snfg_objects.emplace_back(create_svg_text(parent->x, parent->y, linkage->donor_atom));
     for (auto &child: node->children) {
         create_svg(snfg_objects, node, child.get());

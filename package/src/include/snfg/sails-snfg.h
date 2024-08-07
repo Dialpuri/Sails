@@ -544,38 +544,6 @@ namespace Sails {
   [[nodiscard]] static std::string create_svg_footer();
 
   /**
-   * @brief Create an SVG circle element.
-   *
-   * This function creates an SVG circle element with the given properties such as the center coordinates and radius.
-   * The circle is created with a specified color and stroke width. The resulting SVGObject contains the generated SVG
-   * code and its respective SVGType, which in this case is circle.
-   *
-   * @param cx The x-coordinate of the center of the circle.
-   * @param cy The y-coordinate of the center of the circle.
-   * @param r The radius of the circle.
-   * @param color The color of the circle.
-   * @return An SVGObject representing the generated SVG circle element.
-   */
-  [[nodiscard]] static Sails::SVGStringObject create_svg_circle(int cx, int cy, int r, const std::string &color);
-
-  /**
-   * @brief Creates an SVG square element.
-   *
-   * The create_svg_square method is used to create an SVG square element with the specified coordinates, size, and color.
-   * The x and y parameters specify the top-left corner coordinates of the square. The s parameter defines the length of the sides
-   * of the square. The color parameter specifies the fill color of the square.
-   *
-   * @param x The x-coordinate of the top-left corner of the square.
-   * @param y The y-coordinate of the top-left corner of the square.
-   * @param s The length of the sides of the square.
-   * @param color The fill color of the square.
-   *
-   * @return An SVGObject representing the created square element. The SVGObject contains the SVG markup of the square
-   *         element and its corresponding SVGType as SVGType::square.
-   */
-  [[nodiscard]] static Sails::SVGStringObject create_svg_square(int x, int y, int s, const std::string &color);
-
-  /**
    * @brief Creates an SVG line element.
    *
    * The create_svg_line method creates an SVG line element with the specified coordinates and returns it as an SVGObject.
@@ -613,6 +581,27 @@ namespace Sails {
    * @see SVGType::text
    */
   [[nodiscard]] static Sails::SVGStringObject create_svg_text(int x, int y, const std::string &text);
+
+
+  /**
+   * @brief Create donor labels for a given SNFG node.
+   *
+   * The create_donor_labels method is used to create donor labels for a given SNFG (Symbol Nomenclature For Glycans) node.
+   * Donor labels provide information about the linkage between glycan residues.
+   *
+   * This method takes three parameters: parent, node, and linkage.
+   *
+   * @param parent A pointer to the parent SNFG node.
+   * @param node A pointer to the SNFG node for which donor labels need to be created.
+   * @param linkage A pointer to the Linkage object that represents the linkage information.
+   *
+   * @note The parent parameter should not be null, and the node and linkage parameters can be null if there is no corresponding
+   * linkage information available.
+   *
+   * @see SNFGNode, Linkage
+   */
+  [[nodiscard]] SVGStringObject create_donor_labels(SNFGNode * parent, SNFGNode * node, Linkage * linkage);
+
 
  private:
   /**
