@@ -73,7 +73,28 @@ namespace Sails {
   std::string snfg_shape;
 
 
+  /**
+  @brief Pointer to the linkage which describes the bond between the previous node and this node. Used to draw text
+  on certain nodes
+  */
+  Linkage* linkage;
+
+
+  /**
+  @brief Pointer to the sugar which corresponds to this SNFGNode
+  */
   Sugar *sugar;
+
+  /**
+  @brief Pointer to the residue which corresponds to this SNFGNode
+  */
+  gemmi::Residue *residue;
+
+  /**
+   @brief Pointer to the chain which corresponds to this SNFGNode
+   */
+  gemmi::Chain *chain;
+
   /**
    * @brief Pointer to the parent SNFGNode of the current node.
    *

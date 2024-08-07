@@ -28,21 +28,21 @@ Sails::SVGStringObject Sails::SNFG::create_svg_square(int x, int y, int s, const
     std::string object =
             "<rect x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) + "\" width=\"" + std::to_string(s) +
             "\" height=\"" + std::to_string(s) + "\" stroke=\"black\" stroke-width=\"4\" fill=\"" + color + "\" />\n";
-    return {object, SVGType::square};
+    return {object, 2};
 }
 
 Sails::SVGStringObject Sails::SNFG::create_svg_line(int x1, int y1, int x2, int y2) {
     std::string object =
             "<line x1=\"" + std::to_string(x1) + "\" y1=\"" + std::to_string(y1) + "\" x2=\"" + std::to_string(x2) +
             "\" y2=\"" + std::to_string(y2) + "\" stroke=\"black\" stroke-width=\"4\" />\n";
-    return {object, SVGType::line};
+    return {object, 2};
 }
 
 Sails::SVGStringObject Sails::SNFG::create_svg_text(int x, int y, const std::string &text) {
     std::string object = "<text x=\"" + std::to_string(x) + "\" y=\"" + std::to_string(y) +
                          "\" font-family=\"Verdana\" font-size=\"20\" fill=\"black\" text-anchor=\"middle\">" + text +
                          "</text>\n";
-    return {object, SVGType::text};
+    return {object, 0};
 }
 
 void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
@@ -54,32 +54,6 @@ void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
 
     for (auto &child: node->children) {
         printTree(root, child.get(), level + 1);
-    }
-}
-
-
-void Sails::SNFG::assign_snfg_types(Sugar *child, SNFGNode *new_child) {
-    const gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(child->site, m_structure);
-    if (m_database->find(residue_ptr->name) != m_database->end()) {
-        const ResidueData *instance = &m_database->operator[](residue_ptr->name);
-        new_child->snfg_colour = instance->snfg_colour;
-        new_child->snfg_shape = instance->snfg_shape;
-    }
-}
-
-void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan) {
-    int pos = 0;
-    for (auto &child: glycan.adjacency_list[sugar]) {
-        std::unique_ptr<SNFGNode> new_child = std::make_unique<SNFGNode>(child);
-        new_child->parent_position = pos;
-        new_child->parent = root;
-
-        assign_snfg_types(child, new_child.get());
-
-        root->children.push_back(std::move(new_child));
-
-        form_snfg_node_system(root->children.back().get(), child, glycan);
-        pos++;
     }
 }
 
@@ -255,11 +229,50 @@ void Sails::SNFG::calculate_final_positions(Sails::SNFGNode *node, float mod_sum
 }
 
 
+void Sails::SNFG::assign_snfg_types(Sugar *child, SNFGNode *new_child) {
+    const gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(child->site, m_structure);
+    if (m_database->find(residue_ptr->name) != m_database->end()) {
+        const ResidueData *instance = &m_database->operator[](residue_ptr->name);
+        new_child->snfg_colour = instance->snfg_colour;
+        new_child->snfg_shape = instance->snfg_shape;
+    }
+}
+
+void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan) {
+    int pos = 0;
+
+    root->residue = Utils::get_residue_ptr_from_glycosite(root->sugar->site, m_structure);
+    root->chain = Utils::get_chain_ptr_from_glycosite(root->sugar->site, m_structure);
+
+    for (auto &child: glycan.adjacency_list[sugar]) {
+        std::unique_ptr<SNFGNode> new_child = std::make_unique<SNFGNode>(child);
+        new_child->parent_position = pos;
+        new_child->parent = root;
+
+        assign_snfg_types(child, new_child.get());
+
+        root->children.push_back(std::move(new_child));
+
+        form_snfg_node_system(root->children.back().get(), child, glycan);
+        pos++;
+    }
+}
+
 
 void Sails::SNFG::create_svg(std::vector<SVGStringObject> &snfg_objects, SNFGNode *parent, SNFGNode *node) {
+    // find linkage
+    Linkage *linkage = parent->sugar->find_linkage(parent->sugar, node->sugar);
+    if (linkage != nullptr) {
+        node->linkage = linkage;
+    }
+
+    // get shape
     snfg_objects.emplace_back(get_svg_shape(node)->draw());
+
+    // get line
     snfg_objects.emplace_back(create_svg_line(parent->x, parent->y, node->x, node->y));
 
+    // snfg_objects.emplace_back(create_svg_text(parent->x, parent->y, linkage->donor_atom));
     for (auto &child: node->children) {
         create_svg(snfg_objects, node, child.get());
     }

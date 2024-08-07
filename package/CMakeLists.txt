@@ -88,6 +88,10 @@ add_library(
         # SNFG
         ${WRK_DIR}/src/cpp/snfg/sails-snfg.cpp
         ${WRK_DIR}/src/cpp/snfg/sails-snfg-shape.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/circle.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/square.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/rectangle.cpp
+
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
 

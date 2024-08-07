@@ -20,6 +20,36 @@
 #include "sails-utils.h"
 
 namespace Sails {
+    struct Sugar; // forward declaration
+
+    /**
+     * @struct Linkage
+     * @brief Represents a linkage between two sugar objects.
+     *
+     * The Linkage struct stores information about a linkage between a donor sugar and an acceptor sugar. It includes
+     * pointers to the donor and acceptor sugar, as well as the type of atom in each sugar that is involved in the linkage.
+     *
+     * @param donor_sugar Pointer to the donor sugar molecule.
+     * @param acceptor_sugar Pointer to the acceptor sugar molecule.
+     * @param donor_atom The type of atom in the donor sugar molecule that is involved in the linkage.
+     * @param acceptor_atom The type of atom in the acceptor sugar molecule that is involved in the linkage.
+     */
+    struct Linkage {
+        Linkage(Sugar *donor_sugar, Sugar *acceptor_sugar, const std::string &donor_atom,
+                const std::string &acceptor_atom)
+            : donor_sugar(donor_sugar),
+              acceptor_sugar(acceptor_sugar),
+              donor_atom(donor_atom),
+              acceptor_atom(acceptor_atom) {
+        }
+
+        Sugar *donor_sugar;
+        Sugar *acceptor_sugar;
+        std::string donor_atom;
+        std::string acceptor_atom;
+    };
+
+
     /**
      * @struct Sugar
      * @brief Represents a sugar molecule.
@@ -51,42 +81,26 @@ namespace Sails {
         int seqId{};
         Glycosite site;
         int depth{};
+        std::vector<Linkage> linkages;
 
         bool operator<(const Sugar &rhs) const {
             return seqId < rhs.seqId;
         }
 
-        bool operator==(const Sugar& other) const {
+        bool operator==(const Sugar &other) const {
             return this->site == other.site;
         }
-    };
 
-    /**
-     * @struct Linkage
-     * @brief Represents a linkage between two sugar objects.
-     *
-     * The Linkage struct stores information about a linkage between a donor sugar and an acceptor sugar. It includes
-     * pointers to the donor and acceptor sugar, as well as the type of atom in each sugar that is involved in the linkage.
-     *
-     * @param donor_sugar Pointer to the donor sugar molecule.
-     * @param acceptor_sugar Pointer to the acceptor sugar molecule.
-     * @param donor_atom The type of atom in the donor sugar molecule that is involved in the linkage.
-     * @param acceptor_atom The type of atom in the acceptor sugar molecule that is involved in the linkage.
-     */
-    struct Linkage {
-        Linkage(Sugar *donor_sugar, Sugar *acceptor_sugar, const std::string &donor_atom,
-                const std::string &acceptor_atom)
-            : donor_sugar(donor_sugar),
-              acceptor_sugar(acceptor_sugar),
-              donor_atom(donor_atom),
-              acceptor_atom(acceptor_atom) {
+        Linkage* find_linkage(const Sugar *sugar1, const Sugar *sugar2) {
+            for (auto &linkage: linkages) {
+                if (sugar1 == linkage.donor_sugar && sugar2 == linkage.acceptor_sugar) {
+                    return &linkage;
+                }
+            }
+            return nullptr;
         }
-
-        Sugar *donor_sugar;
-        Sugar *acceptor_sugar;
-        std::string donor_atom;
-        std::string acceptor_atom;
     };
+
 
     /**
      * @brief Glycan represents a glycan structure.
@@ -198,8 +212,19 @@ namespace Sails {
             }
 
             adjacency_list[sugars[sugar_1].get()].insert(sugars[sugar_2].get());
-            Linkage linkage = {sugars[sugar_1].get(), sugars[sugar_2].get(), donor_atom, acceptor_atom};
+
+            Linkage linkage = {
+                sugars[sugar_1].get(),
+                sugars[sugar_2].get(),
+                donor_atom,
+                acceptor_atom
+            };
             linkage_list.emplace_back(linkage);
+
+            // add linkage ptr to the sugars, so we can search the linkages and get information about donor/acceptor atoms
+            // make a copy on purpose
+            sugars[sugar_1]->linkages.emplace_back(linkage);
+            sugars[sugar_2]->linkages.emplace_back(linkage);
         }
 
         /**
