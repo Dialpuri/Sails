@@ -5,7 +5,6 @@ import time
 import gemmi
 from pathlib import Path
 import json
-import graphviz
 import importlib.resources
 
 
