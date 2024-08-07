@@ -24,6 +24,8 @@ namespace Sails {
 
         [[nodiscard]] std::string get_special_tags() const override {return special_obj;}
 
+        [[nodiscard]] std::string get_tooltips() const override { return tooltip;}
+
     private:
         static std::string get_donor_string(const SNFGNode *node);
 
@@ -34,6 +36,8 @@ namespace Sails {
 
         std::string type1;
         std::string type2;
+
+        std::string tooltip;
 
         int priority;
     };

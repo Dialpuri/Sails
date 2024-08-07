@@ -20,10 +20,14 @@ namespace Sails {
 
         [[nodiscard]] std::string get_special_tags() const override { return ""; }; // no special tags for square
 
+        [[nodiscard]] std::string get_tooltips() const override { return tooltip;}
 
     private:
         std::map<std::string, std::string> kwargs = {};
         std::string type;
+
+        std::string tooltip;
+
         int priority;
     };
 }

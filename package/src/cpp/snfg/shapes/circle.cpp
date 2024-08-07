@@ -14,5 +14,7 @@ Sails::Circle::Circle(const SNFGNode *node) {
 
     type = "circle";
 
+    tooltip = format_tooltip(node);
+
     priority = 1;
 }

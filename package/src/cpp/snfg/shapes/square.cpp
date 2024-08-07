@@ -15,5 +15,7 @@ Sails::Square::Square(const SNFGNode *node) {
 
     type = "rect";
 
+    tooltip = format_tooltip(node);
+
     priority = 1;
 }

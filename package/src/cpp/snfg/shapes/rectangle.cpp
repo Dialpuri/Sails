@@ -77,8 +77,10 @@ Sails::Rectangle::Rectangle(const SNFGNode *node) {
     std::stringstream special_stream;
     special_stream << get_donor_atom_tag(node);
     special_stream << get_donor_tag(node);
-
     special_obj = special_stream.str();
+
+    tooltip = format_tooltip(node);
+
     priority = 1;
 }
 
