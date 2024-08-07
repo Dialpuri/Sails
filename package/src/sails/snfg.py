@@ -7,13 +7,22 @@ from pathlib import Path
 
 
 def main(args):
+
+    if args.all and args.chain:
+        logging.warning("--all and -chain were both specified, ignoring chain")
+
+    if args.all and args.seqid:
+        logging.warning("--all and -seqid were both specified, ignoring seqid")
+
     if args.all:
         create_all_snfgs(args)
         return
 
     if args.chain and args.seqid:
         create_single_snfg(args)
+        return
 
+    logging.warning("No valid parameters were specified, no SNFGs have been generated")
 
 def create_all_snfgs(args):
     """
@@ -35,10 +44,10 @@ def create_all_snfgs(args):
         args = Namespace(pdbin='input.cif', svgout='output', "all": True)
         create_all_snfgs(args)
     """
-    sails_structure = interface.get_sails_structure(args.pdbin)
+    sails_structure = interface.get_sails_structure(args.model)
     resource = importlib.resources.files('sails').joinpath("data")
 
-    supplied_output_path = Path(args.svgout)
+    supplied_output_path = Path(args.snfgout)
     output_dir = supplied_output_path
 
     if not supplied_output_path.is_dir():
@@ -74,10 +83,10 @@ def create_single_snfg(args):
     Finally, it calls the `get_snfg` method with the chain, seqid, sails structure, and resource path to obtain the
     snfg. It then opens the output file in write mode and writes the snfg content to the file.
     """
-    sails_structure = interface.get_sails_structure(args.pdbin)
+    sails_structure = interface.get_sails_structure(args.model)
     resource = importlib.resources.files('sails').joinpath("data")
 
-    supplied_output_path = Path(args.svgout)
+    supplied_output_path = Path(args.snfgout)
     output_dir = supplied_output_path
 
     if supplied_output_path.exists():
@@ -100,8 +109,8 @@ def create_single_snfg(args):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-pdbin", type=str, required=True)
-    parser.add_argument("-svgout", type=str, required=True)
+    parser.add_argument("-model", type=str, required=True)
+    parser.add_argument("-snfgout", type=str, required=True)
     parser.add_argument("-chain", type=str, required=False)
     parser.add_argument("-seqid", type=int, required=False)
     parser.add_argument("--all", action=argparse.BooleanOptionalAction, required=False)
