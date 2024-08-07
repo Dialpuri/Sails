@@ -154,6 +154,19 @@ namespace Sails {
         void format_log(gemmi::Structure* structure);
 
 
+        /**
+         * @brief Calculates the telemetry log for Sails.
+         *
+         * This method takes a gemmi::Structure pointer and a Density pointer and calculates
+         * the telemetry log for Sails. It iterates through the states and sites and calculates
+         * the rscc, rsr, and dds scores for each site by calling the density->score_residue method.
+         * It then formats the residue and adds it along with the scores to the telemetry log.
+         * Finally, it returns the telemetry log.
+         *
+         * @param structure A pointer to the gemmi::Structure object.
+         * @param density A pointer to the Density object.
+         * @return The calculated telemetry log for Sails.
+         */
         TelemetryLog calculate_log(gemmi::Structure *structure, Density *density);
 
         /**
@@ -178,13 +191,24 @@ namespace Sails {
          */
         std::optional<std::string> format_log(gemmi::Structure *structure, Density* density, bool write);
 
-        [[nodiscard]] std::map<int, std::map<std::string, std::string>> get_snfgs() const {return snfgs;};
+        typedef std::map<int, std::map<std::string, std::string>> SNFGCycleData;
+        /**
+         * @brief Get the SNFGs.
+         *
+         * This method returns the SNFGs (Symbol Nomenclature for Glycans) as a map of maps.
+         * The outer map uses the cycle number as keys.
+         * The inner map uses the base residue as keys and the SNFGs are the values
+         *
+         * @return A map of maps representing the SNFGs. The outer map uses integers as keys
+         *         and the inner map uses strings as keys.
+         */
+        [[nodiscard]] SNFGCycleData get_snfgs() const {return snfgs;};
 
 
     private:
         std::set<Glycosite> sites{};
         std::map<int, std::set<Glycosite>> states{};
-        std::map<int, std::map<std::string, std::string>> snfgs;
+        SNFGCycleData snfgs;
         const std::string &m_filepath;
     };
 
