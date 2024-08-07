@@ -224,6 +224,15 @@ std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, st
         std::string key = Sails::Utils::format_residue_from_site(site, &structure);
         snfg_map[key] = snfg.create_snfg(glycan, site);
     }
+
+    Sails::Glycosites c_glycosites = Sails::find_c_glycosylation_sites(structure);
+    for (auto& site: c_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        snfg_map[key] = snfg.create_snfg(glycan, site);
+    }
+
     return snfg_map;
 }
 
