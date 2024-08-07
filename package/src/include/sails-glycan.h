@@ -171,7 +171,7 @@ namespace Sails {
          * @return `true` if the container is empty, `false` otherwise.
          */
         [[nodiscard]] bool empty() const {
-            return sugars.empty();
+            return sugars.size() == 1;
         }
 
 
