@@ -285,6 +285,23 @@ namespace Sails {
         }
 
         /**
+         * @constructor Glycosite
+         * @brief Constructor with model_idx, chain_idx, and residue_idx parameters.
+         * @param model_idx The model index of the glycosite.
+         * @param chain_idx The chain index of the glycosite.
+         * @param residue_idx The residue index of the glycosite.
+         * @param atom_idx The atom index of the glycosite.
+         *
+         * Constructs a Glycosite object using the provided model index, chain index, and residue index.
+         */
+        Glycosite(const int model_idx, const int chain_idx, const int residue_idx,
+                  const int atom_idx) : model_idx(model_idx),
+                                        chain_idx(chain_idx),
+                                        residue_idx(residue_idx),
+                                        atom_idx(atom_idx) {
+        }
+
+        /**
          * @brief Overloaded less than operator for the Glycosite struct.
          *
          * This operator compares two Glycosite structs based on their model_idx, chain_idx, residue_idx, and atom_idx
@@ -298,8 +315,8 @@ namespace Sails {
                        other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
         }
 
-        bool operator==(const Glycosite& other) const {
-            return std::tie(model_idx, chain_idx, residue_idx, atom_idx) ==  std::tie(
+        bool operator==(const Glycosite &other) const {
+            return std::tie(model_idx, chain_idx, residue_idx, atom_idx) == std::tie(
                        other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
         }
 
@@ -370,7 +387,7 @@ namespace Sails {
                     if (auto &residue = chain.residues[residue_idx];
                         residue.seqid.num.value == seqId) {
                         return Glycosite(model_idx, chain_idx, residue_idx);
-                        }
+                    }
                 }
             }
         }
