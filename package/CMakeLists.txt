@@ -84,6 +84,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-cif.cpp
         ${WRK_DIR}/src/cpp/sails-dot.cpp
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
+        ${WRK_DIR}/src/cpp/sails-solvent.cpp
 
         # SNFG
         ${WRK_DIR}/src/cpp/snfg/sails-snfg.cpp
