@@ -8,7 +8,6 @@ echo """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                  name=\"Sails\"
                  start-page=\"Sails.md\">
     <toc-element topic=\"Installation.topic\"/>
-    <toc-element topic=\"Command-Line-Usage.topic\"/>
     <toc-element topic=\"Automated-Glycan-Building.topic\"/>
     	<toc-element toc-title=\"Utility Functions\">
     		<toc-element topic=\"Compare-Structures.topic\"/>
