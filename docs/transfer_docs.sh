@@ -11,10 +11,11 @@ echo """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
     <toc-element topic=\"Automated-Glycan-Building.topic\"/>
     	<toc-element toc-title=\"Utility Functions\">
     		<toc-element topic=\"Compare-Structures.topic\"/>
-    		<toc-element topic=\"Find-Glycosylation-SItes.topic\"/>
+    		<toc-element topic=\"Find-Glycosylation-Sites.topic\"/>
+    		<toc-element topic=\"Generate-SNFG-Diagrams.topic\"/>
     	</toc-element>
     <toc-element topic=\"Sails.md\">
-""" > $output_file
+    """ > $output_file
 
 dir_path="./"
 file_string=""
