@@ -284,33 +284,6 @@
             ]
         },
         {
-            "donorResidue": "TRP",
-            "acceptorResidue": "AMAN",
-            "donorNumber": 1,
-            "acceptorNumber": 1,
-            "length": 1.4,
-            "clusters": [
-                {
-                    "angles": {
-                        "alphaMean": 127.838,
-                        "alphaStdDev": 5.582,
-                        "betaMean": 109.84,
-                        "betaStdDev": 5.582,
-                        "gammaMean": 116.699,
-                        "gammaStdDev": 2.541
-                    },
-                    "torsions": {
-                        "phiMean": 116.884,
-                        "phiStdDev": 25.889,
-                        "psiMean": -176.651,
-                        "psiStdDev": 11.025,
-                        "omegaMean": 162.145,
-                        "omegaStdDev": 35.401
-                    }
-                }
-            ]
-        },
-        {
             "donorResidue": "SER",
             "acceptorResidue": "MAN",
             "donorNumber": 1,
