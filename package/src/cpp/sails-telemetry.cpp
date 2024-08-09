@@ -65,13 +65,4 @@ std::optional<std::string> Sails::Telemetry::format_log(gemmi::Structure *struct
         return stream.str();
     }
     return std::nullopt;
-
-    // for (const auto &[cycle, entries]: log) {
-    //     std::cout << "Cycle " << cycle << "\n";
-    //     for (const auto &entry: entries) {
-    //         std::cout << "Added " << entry.residue_id << "\t" << entry.rscc_score << "\t" << entry.rsr_score << "\t"
-    //         << entry.dds_score << "\n";
-    //     }
-    //     std::cout << std::endl;
-    // }
 }

@@ -105,7 +105,7 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
                 // }
                 // std::cout << std::endl;
                 continue;
-            };
+            }
 
             // Add the sugar, and then linkage
             // This is required to ensure the sugar objects live until the Glycan goes out of scope.

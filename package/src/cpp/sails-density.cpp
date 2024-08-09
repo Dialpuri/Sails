@@ -170,7 +170,7 @@ void Sails::Density::recalculate_map(gemmi::Structure &structure) {
     new_mtz.add_column("FWT", 'F', -1, -1, true);
     new_mtz.add_column("PHWT", 'P', -1, -1, true);
     new_mtz.add_column("DELFWT", 'F', -1, -1, true);
-    new_mtz.add_column("PHDELWT", 'P', -1, -1, true);;
+    new_mtz.add_column("PHDELWT", 'P', -1, -1, true);
     new_mtz.set_data(recalculated_data.data(), recalculated_data.size());
     new_mtz.ensure_asu();
 
@@ -217,7 +217,7 @@ void Sails::Density::calculate_po_pc_map(gemmi::Structure &structure) {
     new_mtz.add_dataset("SAILS");
     new_mtz.add_base();
     new_mtz.add_column("FDIFFCALC", 'F', -1, -1, true);
-    new_mtz.add_column("PDIFFCALC", 'P', -1, -1, true);;
+    new_mtz.add_column("PDIFFCALC", 'P', -1, -1, true);
     new_mtz.set_data(recalculated_data.data(), recalculated_data.size());
     new_mtz.ensure_asu();
 
