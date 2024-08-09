@@ -30,9 +30,9 @@
         </code-block>
 
         <p>Advanced Example:</p>
-        Attempt to build N-glycans into ABCD.cif with structure factors.
+        Attempt to build O-mannoses into ABCD.cif with structure factors.
         <code-block lang="shell">
-            sails -pdbin ABCD.cif -mtzin ABCD-sf.cif.gz -cycles 4 -colin-fo F,SIGF -nglycan
+            sails -pdbin ABCD.cif -mtzin ABCD-sf.cif.gz -type o-mannosylate -cycles 1 -colin-fo F,SIGF
         </code-block>
     </chapter>
 
@@ -51,30 +51,33 @@
             </def>
             <def title="-pdbout">
                 Path to output CIF file.
-                <p>Default: sails-model-out.cif</p>
+                <p>Default: <code>sails-model-out.cif</code></p>
             </def>
             <def title="-mtzout">
                 Path to output MTZ file.
-                <p>Default: sails-refln-out.mtz</p>
+                <p>Default: <code>sails-refln-out.mtz</code></p>
             </def>
             <def title="-logout">
                 Path to output MTZ file.
-                <p>Default: sails-log.json</p>
+                <p>Default: <code>sails-log.json</code></p>
             </def>
             <def title="-cycles">
                 Number of internal cycles to run.
-                <p>Default: 2</p>
+                <p>Default: <code>2</code></p>
             </def>
-            <def title="-n-glycan">
-                Build N-glycans into the given structure
-                <p>Default Option</p>
+            <def title="-type">
+                Type of glycosylation
+                <p>Options: </p>
+                <list>
+                    <li><code>n-glycosylate</code></li>
+                    <li><code>c-glycosylate</code></li>
+                    <li><code>o-mannosylate</code></li>
+                </list>
+                <p>Default: <code>n-glycosylate</code></p>
             </def>
-           <def title="-c-glycan">
-               Build C-glycans (tryptophan mannosylation) into the given structure
-           </def>
             <def title="-colin-fo">
                 Comma separated SF observations and associated uncertainty.
-                <p>Default: FP,SIGFP</p>
+                <p>Default: <code>FP,SIGFP</code></p>
             </def>
             <def title="-colin-fwt">
                 Comma separated SF weight and associated phase.
