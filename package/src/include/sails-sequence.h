@@ -41,6 +41,10 @@ namespace Sails {
      *         If no C-glycosylation sites are found, an empty vector is returned.
      */
     Glycosites find_c_glycosylation_sites(const gemmi::Structure &structure);
+
+
+
+    Glycosites find_o_mannosylation_sites(const gemmi::Structure& structure, std::map<Glycosite, double>& solvent_accessibility_map);
 }
 
 #endif //SAILS_SAILS_SEQUENCE_H
