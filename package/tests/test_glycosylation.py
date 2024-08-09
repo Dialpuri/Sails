@@ -19,7 +19,7 @@ def cglycan(data_base_path):
 
     s = gemmi.read_structure(str(s_path))
     m = gemmi.read_mtz_file(str(m_path))
-    return s, m, 1, "FP", "SIGFP", "", "", sails.c_glycosylate_from_objects
+    return s, m, 1, "FP", "SIGFP", "", "", sails.Type.c_glycosylate
 
 
 def test_cglycosylation(cglycan):
