@@ -6,8 +6,13 @@
        title="Generate SNFG Diagrams" id="Generate-SNFG-Diagrams" help-id="Generate-SNFG-Diagrams">
 
     <p>
-        Sails provides a fast utility tool to generate SNFG diagrams using Sails' internal diagram engine. A specific
+        Sails provides a fast utility tool to generate Symbol Nomeclature for Glycans Diagram (SNFG) diagrams using Sails' internal diagram engine. A specific
         site can be specified with -chain and -seqid parameters, or, all the detectable SNFGs will be generated.
+    </p>
+
+    <p>
+        Example SNFG Diagram for a high mannose glycan
+    <img src="example-snfg.png" alt="Symbol Nomeclature for Glycans Diagram for a high mannose structure"/>
     </p>
 
     <chapter title="Command" id="command">
@@ -27,6 +32,7 @@
             sails-snfg -model built.cif --all -snfgout snfgs
         </code-block>
     </chapter>
+    
 
     <chapter title="Options" id="options">
         <p>Describe what each option is used for:</p>

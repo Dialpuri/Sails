@@ -134,7 +134,6 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
                                           ChainType &chain_type) {
     int chain_idx = terminal_sugar->site.chain_idx;
-    int residue_idx = terminal_sugar->site.residue_idx;
 
     if (chain_type == protein) {
         const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
@@ -142,7 +141,6 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
         gemmi::Chain chain;
         chain.name = Utils::get_next_string(
             structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
-        residue_idx = -1;
         structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
     }
 
@@ -220,8 +218,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     auto library_monomer = get_monomer(data.acceptor, true);
 
     if (!library_monomer.has_value()) { throw std::runtime_error("Could not get required monomer, "
-                                                                 "ensure that CCP4 monomer library is sourced."
-                                                                 "If you have a local monomer library, ensure that you"
+                                                                 "ensure that CCP4 monomer library is sourced. "
+                                                                 "If you have a local monomer library, ensure that you "
                                                                  "have CLIBD set"); }
     auto reference_library_monomer = gemmi::Residue(library_monomer.value());
 
@@ -338,7 +336,7 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &c
         if (!opt_result.has_value()) {
             if (debug) print_rejection_log();
             continue;
-        };
+        }
 
         possible_additions[data.donor_number].emplace_back(opt_result.value());
 

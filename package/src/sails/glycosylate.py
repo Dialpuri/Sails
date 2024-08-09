@@ -1,7 +1,9 @@
 import argparse
+import enum
 import logging
 from typing import Tuple, Callable, List
-from sails import (interface, n_glycosylate_from_objects, c_glycosylate_from_objects, Dot, GlycoSite, __version__)
+from sails import (interface, n_glycosylate_from_objects, c_glycosylate_from_objects, o_mannosylate_from_objects, Dot,
+                   GlycoSite, __version__)
 import time
 import gemmi
 from pathlib import Path
@@ -9,8 +11,37 @@ import json
 import importlib.resources
 
 
+class Type(enum.IntEnum):
+    n_glycosylate = 1
+    c_glycosylate = 2
+    o_mannosylate = 3
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def from_string(s: str):
+        try:
+            return Type[s]
+        except KeyError:
+            raise ValueError("Invalid Type")
+
+
+def map_type_to_function(type: Type):
+    if type == Type.n_glycosylate:
+        return n_glycosylate_from_objects
+
+    if type == Type.c_glycosylate:
+        return c_glycosylate_from_objects
+
+    if type == Type.o_mannosylate:
+        return o_mannosylate_from_objects
+
+    raise TypeError("Type not found")
+
+
 def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
-                fwt: str, phwt: str, func: Callable = n_glycosylate_from_objects, verbose: bool = False) -> Tuple[
+                fwt: str, phwt: str, type: Type = Type.n_glycosylate, verbose: bool = False) -> Tuple[
     gemmi.Structure, gemmi.Mtz, dict, dict]:
     """
     :param structure: The input structure file in gemmi.Structure, Path, or str format.
@@ -20,7 +51,7 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     :param sigf: The column label for the structure factor uncertainties.
     :param fwt: The column label for the structure factor amplitude weights (potentially None).
     :param phwt: The column label for the structure factor phase weights (potentially None).
-    :param func: The function to use for glycosylation. Default is n_glycosylate_from_objects.
+    :param type: The type of glycosylation to perform. Default is n_glycosylate.
     :param verbose: Flag specifying whether to print verbose output. Default is False.
     :return: A tuple containing the glycosylated structure in gemmi.Structure format,
              the glycosylated MTZ file in gemmi.Mtz format, the log as a string, and a dictionary of snfgs.
@@ -28,6 +59,8 @@ def glycosylate(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path |
     sails_structure = interface.get_sails_structure(structure)
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files('sails').joinpath("data")
+
+    func = map_type_to_function(type)
     result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),
@@ -87,9 +120,8 @@ def run_cli():
 
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
 
-    func = c_glycosylate_from_objects if args.cglycan else n_glycosylate_from_objects
-    cycles = 1 if args.cglycan else args.cycles
-    structure, mtz, log, snfgs = glycosylate(args.pdbin, args.mtzin, cycles, *labels, func, args.v)
+    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    structure, mtz, log, snfgs = glycosylate(args.pdbin, args.mtzin, cycles, *labels, args.type, args.v)
 
     if args.snfgout:
         save_snfgs(snfgs, Path(args.snfgout))
@@ -115,8 +147,7 @@ def parse_args():
     parser.add_argument("-colin-fo", type=str, required=False, default="FP,SIGFP")
     parser.add_argument("-colin-fwt", type=str, required=False, default="")
     parser.add_argument("-cycles", type=int, required=False, default=2)
-    parser.add_argument("-nglycan", action=argparse.BooleanOptionalAction)
-    parser.add_argument("-cglycan", action=argparse.BooleanOptionalAction)
+    parser.add_argument("-type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate)
     parser.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--version", action="version", version=__version__)
 

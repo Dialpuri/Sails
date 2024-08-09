@@ -174,8 +174,41 @@
                 }
             ],
             "acceptorSets": []
+        },
+        {
+            "name": "SER",
+            "snfgShape": "square",
+            "snfgColour": "white",
+            "preferredDepths": [
+                0
+            ],
+            "donorSets": [
+                {
+                    "atom1": "CA",
+                    "atom2": "CB",
+                    "atom3": "OG",
+                    "identifier": 1
+                }
+            ],
+            "acceptorSets": []
+        },
+        {
+            "name": "THR",
+            "snfgShape": "square",
+            "snfgColour": "white",
+            "preferredDepths": [
+                0
+            ],
+            "donorSets": [
+                {
+                    "atom1": "CA",
+                    "atom2": "CB",
+                    "atom3": "OG1",
+                    "identifier": 1
+                }
+            ],
+            "acceptorSets": []
         }
-
     ],
     "linkages": [
         {
@@ -232,20 +265,74 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 120,
-                        "alphaStdDev": 10,
-                        "betaMean": 115,
-                        "betaStdDev": 10,
-                        "gammaMean": 110,
-                        "gammaStdDev": 10
+                        "alphaMean": 127.838,
+                        "alphaStdDev": 5.582,
+                        "betaMean": 109.84,
+                        "betaStdDev": 5.582,
+                        "gammaMean": 116.699,
+                        "gammaStdDev": 2.541
                     },
                     "torsions": {
-                        "phiMean": 130,
-                        "phiStdDev": 15,
-                        "psiMean": 180,
-                        "psiStdDev": 15,
-                        "omegaMean": 180,
-                        "omegaStdDev": 15
+                        "phiMean": 116.884,
+                        "phiStdDev": 25.889,
+                        "psiMean": -176.651,
+                        "psiStdDev": 11.025,
+                        "omegaMean": 162.145,
+                        "omegaStdDev": 35.401
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "SER",
+            "acceptorResidue": "MAN",
+            "donorNumber": 1,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 113.548,
+                        "alphaStdDev": 5.876,
+                        "betaMean": 111.95,
+                        "betaStdDev": 5.876,
+                        "gammaMean": 114.725,
+                        "gammaStdDev": 1.774
+                    },
+                    "torsions": {
+                        "phiMean": 72.866,
+                        "phiStdDev": 28.094,
+                        "psiMean": 175.3,
+                        "psiStdDev": 33.92,
+                        "omegaMean": 60.137,
+                        "omegaStdDev": 10.249
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "THR",
+            "acceptorResidue": "MAN",
+            "donorNumber": 1,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 113.367,
+                        "alphaStdDev": 6.634,
+                        "betaMean": 111.89,
+                        "betaStdDev": 6.634,
+                        "gammaMean": 114.592,
+                        "gammaStdDev": 2.038
+                    },
+                    "torsions": {
+                        "phiMean": 86.251,
+                        "phiStdDev": 27.802,
+                        "psiMean": 130.215,
+                        "psiStdDev": 25.722,
+                        "omegaMean": 61.975,
+                        "omegaStdDev": 11.282
                     }
                 }
             ]

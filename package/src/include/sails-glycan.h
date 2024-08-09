@@ -43,7 +43,7 @@ namespace Sails {
               acceptor_atom(acceptor_atom) {
 
             std::string donor_number_s = {donor_atom[donor_atom.size()-1]};
-            donor_number = std::stoi(donor_number_s);
+            donor_number = std::isdigit(donor_number_s[0]) ? std::stoi(donor_number_s): 1;
         }
 
         Sugar *donor_sugar;

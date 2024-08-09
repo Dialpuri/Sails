@@ -57,7 +57,7 @@ namespace Sails {
    *
    * @return A map containing the solvent accessibility value for each glycosite.
    */
-  std::map<Glycosite, double> calculate_solvent_accessibility();
+  [[nodiscard]] std::map<Glycosite, double> calculate_solvent_accessibility();
 
   /**
    * @brief  Calculates the bounding box of the structure.
