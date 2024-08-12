@@ -87,16 +87,14 @@ add_subdirectory(${WRK_DIR}/gemmi)
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${WRK_DIR}/checkout/mmdb2
-        ${WRK_DIR}/checkout/clipper
-        ${WRK_DIR}/checkout/libccp4/ccp4
-        ${WRK_DIR}/checkout/gemmi/include
+        ${clipper-dependencies_SOURCE_DIR}
+        ${gemmi-dependencies_SOURCE_DIR}/include
 )
 
 link_directories(
-        ${WRK_DIR}/mmdb2
-        ${WRK_DIR}/clipper
-        ${WRK_DIR}/ccp4
+        ${CMAKE_BINARY_DIR}/mmdb2
+        ${CMAKE_BINARY_DIR}/clipper
+        ${CMAKE_BINARY_DIR}/ccp4
         ${WRK_DIR}/src
         ${CMAKE_BINARY_DIR}
 )
@@ -241,7 +239,7 @@ if (TESTING)
 endif()
 
 
-if (SKBUILD)
+#if (SKBUILD)
     # Try to import all Python components potentially needed by nanobind
     find_package(Python 3.8
             REQUIRED COMPONENTS Interpreter Development.Module
@@ -314,4 +312,4 @@ if (SKBUILD)
     )
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
-endif ()
+#endif ()

@@ -18,13 +18,13 @@ target_include_directories(clipper-minimol PRIVATE
 )
 
 set(clipper-minimol_HEADERS
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol_data.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/container_minimol.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol_io.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol_seq.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol_utils.h
-        ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/clipper-minimol.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_data.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/container_minimol.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_io.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_seq.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_utils.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/clipper-minimol.h
 )
 
 target_compile_options(clipper-minimol PUBLIC "-DFFTW_ENABLE_FLOAT")

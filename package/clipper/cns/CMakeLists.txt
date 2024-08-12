@@ -12,9 +12,9 @@ target_include_directories(clipper-cns PRIVATE
 )
 
 set(clipper-cns_HEADERS
-${WRK_DIR}/checkout/clipper//clipper/cns/cns_map_io.h
-${WRK_DIR}/checkout/clipper//clipper/cns/cns_hkl_io.h
-${WRK_DIR}/checkout/clipper//clipper/clipper-cns.h
+${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_map_io.h
+${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_hkl_io.h
+${clipper-dependencies_SOURCE_DIR}/clipper/clipper-cns.h
 )
 
 target_compile_options(clipper-cns PUBLIC "-DFFTW_ENABLE_FLOAT")

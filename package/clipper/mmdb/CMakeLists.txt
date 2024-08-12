@@ -12,7 +12,7 @@ target_include_directories(clipper-mmdb PRIVATE
         ${fftw-dependencies_SOURCE_DIR}
 )
 set(clipper-mmdb_HEADERS
-${WRK_DIR}/checkout/clipper//clipper/mmdb/clipper_mmdb.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/mmdb/clipper_mmdb.h
 )
 
 target_compile_options(clipper-mmdb PUBLIC "-DFFTW_ENABLE_FLOAT")

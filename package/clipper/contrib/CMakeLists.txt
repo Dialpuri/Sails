@@ -23,19 +23,19 @@ target_include_directories(clipper-contrib PRIVATE
 )
 
 set(clipper-contrib_HEADERS
-${WRK_DIR}/checkout/clipper//clipper/contrib/originmatch.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/fffear.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/function_object_bases.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/test_contrib.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/sfscale.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/skeleton.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/sfcalc_obs.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/edcalc.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/sfweight.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/convolution_search.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/mapfilter.h
-${WRK_DIR}/checkout/clipper//clipper/contrib/sfcalc.h
-${WRK_DIR}/checkout/clipper//clipper/clipper-contrib.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/originmatch.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/fffear.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/function_object_bases.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/test_contrib.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/sfscale.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/skeleton.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/sfcalc_obs.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/edcalc.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/sfweight.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/convolution_search.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/mapfilter.h
+${clipper-dependencies_SOURCE_DIR}/clipper/contrib/sfcalc.h
+${clipper-dependencies_SOURCE_DIR}/clipper/clipper-contrib.h
 )
 
 target_compile_options(clipper-contrib PUBLIC "-DFFTW_ENABLE_FLOAT")
