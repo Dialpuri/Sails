@@ -38,6 +38,39 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+include(FetchContent)
+# Download Clipper
+FetchContent_Declare(
+        clipper-dependencies
+        URL http://www.ysbl.york.ac.uk/jsd523/clipper-2.1.20201109.tar.gz
+)
+
+# Download MMDB
+FetchContent_Declare(
+        mmdb2-dependencies
+        URL http://www.ysbl.york.ac.uk/jsd523/mmdb2-2.0.22.tar.gz
+)
+
+# Download FFTW
+FetchContent_Declare(
+        fftw-dependencies
+        URL http://www.fftw.org/fftw-2.1.5.tar.gz
+)
+
+# Download CCP4
+FetchContent_Declare(
+        ccp4-dependencies
+        URL http://www.ysbl.york.ac.uk/jsd523/libccp4-8.0.0.tar.gz
+)
+
+# Download Gemmi
+FetchContent_Declare(
+        gemmi-dependencies
+        URL http://www.ysbl.york.ac.uk/jsd523/gemmi-0.6.5.tar.gz
+)
+
+FetchContent_MakeAvailable(clipper-dependencies mmdb2-dependencies fftw-dependencies ccp4-dependencies gemmi-dependencies)
+
 add_subdirectory(${WRK_DIR}/clipper/minimol)
 add_subdirectory(${WRK_DIR}/clipper/core)
 add_subdirectory(${WRK_DIR}/clipper/contrib)
