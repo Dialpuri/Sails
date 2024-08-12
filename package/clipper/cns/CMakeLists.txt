@@ -1,11 +1,15 @@
 project(clipper-cns)
 
 add_library(clipper-cns STATIC 
-${WRK_DIR}/checkout/clipper/clipper/cns/cns_hkl_io.cpp
-${WRK_DIR}/checkout/clipper/clipper/cns/cns_map_io.cpp
+${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_hkl_io.cpp
+${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_map_io.cpp
 )
 
-target_include_directories(clipper-cns PRIVATE ../.. ${WRK_DIR}/checkout/clipper ${WRK_DIR}/fftw ${WRK_DIR}/rfftw)
+#target_include_directories(clipper-cns PRIVATE ../.. ${WRK_DIR}/checkout/clipper ${WRK_DIR}/fftw ${WRK_DIR}/rfftw)
+target_include_directories(clipper-cns PRIVATE
+        ${clipper-dependencies_SOURCE_DIR}/clipper
+        ${fftw-dependencies_SOURCE_DIR}
+)
 
 set(clipper-cns_HEADERS
 ${WRK_DIR}/checkout/clipper//clipper/cns/cns_map_io.h

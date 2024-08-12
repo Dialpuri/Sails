@@ -1,15 +1,21 @@
 project(clipper-minimol)
 
 add_library(clipper-minimol STATIC
-        ../../checkout/clipper/clipper/minimol/container_minimol.cpp
-        ../../checkout/clipper/clipper/minimol/minimol.cpp
-        ../../checkout/clipper/clipper/minimol/minimol_data.cpp
-        ../../checkout/clipper/clipper/minimol/minimol_io.cpp
-        ../../checkout/clipper/clipper/minimol/minimol_seq.cpp
-        ../../checkout/clipper/clipper/minimol/minimol_utils.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/container_minimol.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_data.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_io.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_seq.cpp
+        ${clipper-dependencies_SOURCE_DIR}/clipper/minimol/minimol_utils.cpp
 )
 
-target_include_directories(clipper-minimol PRIVATE ../../checkout/mmdb2/ ../../checkout/clipper ../../checkout/fftw-2.1.5/fftw ../../checkout/fftw-2.1.5/rfftw)
+#target_include_directories(clipper-minimol PRIVATE ../../checkout/mmdb2/ ../../checkout/clipper ../../checkout/fftw-2.1.5/fftw ../../checkout/fftw-2.1.5/rfftw)
+
+target_include_directories(clipper-minimol PRIVATE
+        ${mmdb2-dependencies_SOURCE_DIR}
+        ${clipper-dependencies_SOURCE_DIR}/clipper
+        ${fftw-dependencies_SOURCE_DIR}
+)
 
 set(clipper-minimol_HEADERS
         ${CMAKE_SOURCE_DIR}/checkout/clipper//clipper/minimol/minimol_data.h
