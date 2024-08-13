@@ -1,13 +1,18 @@
 project(clipper-mmdb)
 
 add_library(clipper-mmdb STATIC 
-${WRK_DIR}/checkout/clipper/clipper/mmdb/clipper_mmdb.cpp
+${clipper-dependencies_SOURCE_DIR}/clipper/mmdb/clipper_mmdb.cpp
 )
 
-target_include_directories(clipper-mmdb PRIVATE ${WRK_DIR}/checkout/mmdb2/ ${WRK_DIR}/checkout/clipper ${WRK_DIR}/fftw ${WRK_DIR}/rfftw)
+#target_include_directories(clipper-mmdb PRIVATE ${WRK_DIR}/checkout/mmdb2/ ${WRK_DIR}/checkout/clipper ${WRK_DIR}/fftw ${WRK_DIR}/rfftw)
 
+target_include_directories(clipper-mmdb PRIVATE
+        ${mmdb2-dependencies_SOURCE_DIR}
+        ${clipper-dependencies_SOURCE_DIR}/clipper
+        ${fftw-dependencies_SOURCE_DIR}
+)
 set(clipper-mmdb_HEADERS
-${WRK_DIR}/checkout/clipper//clipper/mmdb/clipper_mmdb.h
+        ${clipper-dependencies_SOURCE_DIR}/clipper/mmdb/clipper_mmdb.h
 )
 
 target_compile_options(clipper-mmdb PUBLIC "-DFFTW_ENABLE_FLOAT")

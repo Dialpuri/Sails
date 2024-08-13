@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 message(STATUS "Compiling with C++ standard: ${CMAKE_CXX_STANDARD}")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(gemmi_src ${WRK_DIR}/checkout/gemmi)
+set(gemmi_src ${gemmi-dependencies_SOURCE_DIR})
 
 find_package(ZLIB)
 if (ZLIB_FOUND)
