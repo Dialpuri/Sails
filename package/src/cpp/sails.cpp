@@ -2,7 +2,7 @@
 // Created by Jordan Dialpuri on 06/07/2024.
 //
 
-#include "../include/sails-density.h"
+#include "../include/density/sails-density.h"
 #include "../include/sails-json.h"
 #include "../include/sails-sequence.h"
 #include "../include/sails-glycan.h"
@@ -11,6 +11,8 @@
 #include "../include/sails-cif.h"
 #include "../include/sails-telemetry.h"
 #include "../include/snfg/sails-snfg.h"
+#include <src/include/sails-gemmi-bindings.h>
+#include <src/include/sails-solvent.h>
 
 #include "gemmi/model.hpp" // for Structure
 #include "gemmi/mmread.hpp" // for read_structure
@@ -18,8 +20,7 @@
 
 #include <chrono>
 #include <iostream>
-#include <src/include/sails-gemmi-bindings.h>
-#include <src/include/sails-solvent.h>
+
 
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {

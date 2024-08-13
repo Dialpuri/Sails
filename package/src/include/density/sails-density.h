@@ -5,6 +5,8 @@
 #ifndef SAILS_SAILS_DENSITY_H
 #define SAILS_SAILS_DENSITY_H
 
+
+
 #include <clipper/clipper.h>
 #include <gemmi/mtz.hpp>
 #include <gemmi/grid.hpp>

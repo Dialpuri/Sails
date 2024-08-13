@@ -2,13 +2,11 @@
 // Created by Jordan Dialpuri on 07/07/2024.
 //
 
-#include "../include/sails-density.h"
-
+#include "../../include/density/sails-density.h"
+#include "../../include/sails-refine.h"
 #include <clipper/contrib/edcalc.h>
 #include <clipper/contrib/sfweight.h>
 #include <clipper/minimol/minimol.h>
-
-#include "../include/sails-refine.h"
 
 
 Sails::Density::Density(const std::string &mtz_path) {

@@ -5,7 +5,7 @@
 #ifndef SAILS_REFINE_H
 #define SAILS_REFINE_H
 
-#include "sails-density.h"
+#include "density/sails-density.h"
 
 #include "../third-party/nelder-mead.h"
 
