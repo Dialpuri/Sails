@@ -110,12 +110,16 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-glycan.cpp
         ${WRK_DIR}/src/cpp/sails-linkage.cpp
         ${WRK_DIR}/src/cpp/sails-utils.cpp
-        ${WRK_DIR}/src/cpp/sails-density.cpp
         ${WRK_DIR}/src/cpp/sails-refine.cpp
         ${WRK_DIR}/src/cpp/sails-cif.cpp
         ${WRK_DIR}/src/cpp/sails-dot.cpp
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
         ${WRK_DIR}/src/cpp/sails-solvent.cpp
+
+        # Density
+        ${WRK_DIR}/src/cpp/density/sails-density.cpp
+        ${WRK_DIR}/src/cpp/density/sails-xtal-density.cpp
+        ${WRK_DIR}/src/cpp/density/sails-em-density.cpp
 
         # SNFG
         ${WRK_DIR}/src/cpp/snfg/sails-snfg.cpp
