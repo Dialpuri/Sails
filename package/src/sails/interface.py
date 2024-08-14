@@ -21,6 +21,19 @@ def read_sf_cif(mtz: Path):
     return cif2mtz.convert_block_to_mtz(rblocks[0])
 
 
+def get_sails_map(map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str):
+    if isinstance(map, gemmi.Ccp4Map):
+        sails_grid = extract_gemmi_grid(map.grid)
+    elif isinstance(map, gemmi.FloatGrid):
+        sails_grid = extract_gemmi_grid(map)
+    elif isinstance(map, Path) or isinstance(map, str):
+        grid = gemmi.read_ccp4_map(str(map))
+        sails_grid = extract_gemmi_grid(grid.grid)
+    else:
+        raise RuntimeError("Unknown object passed to second argument of n_glycosylate function, allowed types are"
+                       "gemmi.Mtz, Path, and str")
+    return sails_grid
+
 def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt: str):
     """
     :param mtz: Path to an MTZ file, an instance of gemmi.Mtz, or a string representing the path to an MTZ file.
@@ -239,3 +252,9 @@ def extract_sails_mtz(mtz: sails.MTZ) -> gemmi.Mtz:
     new_mtz.ensure_asu()
     new_mtz.update_reso()
     return new_mtz
+
+
+def extract_gemmi_grid(grid: gemmi.FloatGrid) -> sails.Grid:
+    sails_grid = sails.Grid()
+    sails_grid.set_data(grid.array)
+    return sails_grid
