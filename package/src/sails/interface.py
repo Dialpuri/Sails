@@ -257,4 +257,12 @@ def extract_sails_mtz(mtz: sails.MTZ) -> gemmi.Mtz:
 def extract_gemmi_grid(grid: gemmi.FloatGrid) -> sails.Grid:
     sails_grid = sails.Grid()
     sails_grid.set_data(grid.array)
+    sails_grid.nu = grid.nu
+    sails_grid.nv = grid.nv
+    sails_grid.nw = grid.nw
+    sails_grid.set_spacegroup(grid.spacegroup.hm)
+    cell = sails.Cell(grid.unit_cell.a, grid.unit_cell.b, grid.unit_cell.c, grid.unit_cell.alpha, grid.unit_cell.beta, grid.unit_cell.gamma)
+    sails_grid.set_cell(cell)
+    axis_order = sails.AxisOrder(value=grid.axis_order.value)
+    sails_grid.set_axis_order(axis_order)
     return sails_grid

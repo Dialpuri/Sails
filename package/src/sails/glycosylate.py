@@ -8,8 +8,7 @@ from pathlib import Path
 from typing import Tuple, List
 
 import gemmi
-from sails import (interface, n_glycosylate_from_objects, c_glycosylate_from_objects, o_mannosylate_from_objects,
-                   __version__)
+from sails import (interface, n_glycosylate, c_glycosylate, o_mannosylate, __version__)
 
 
 class Type(enum.IntEnum):
@@ -30,13 +29,13 @@ class Type(enum.IntEnum):
 
 def map_type_to_function(type: Type):
     if type == Type.n_glycosylate:
-        return n_glycosylate_from_objects
+        return n_glycosylate
 
     if type == Type.c_glycosylate:
-        return c_glycosylate_from_objects
+        return c_glycosylate
 
     if type == Type.o_mannosylate:
-        return o_mannosylate_from_objects
+        return o_mannosylate
 
     raise TypeError("Type not found")
 
@@ -68,18 +67,16 @@ def glycosylate_xtal(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | P
             json.loads(result.log), result.snfgs)
 
 
-def glycosylate_em(structure: gemmi.Structure | Path | str, mtz: gemmi.Mtz | Path | str, cycles: int, f: str, sigf: str,
-                     fwt: str, phwt: str, type: Type = Type.n_glycosylate, verbose: bool = False) -> Tuple[
-    gemmi.Structure, gemmi.Mtz, dict, dict]:
+def glycosylate_em(structure: gemmi.Structure | Path | str, map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str, cycles: int,
+                   type: Type = Type.n_glycosylate, verbose: bool = False) -> Tuple[gemmi.Structure, dict, dict]:
     sails_structure = interface.get_sails_structure(structure)
-    sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
+    sails_grid = interface.get_sails_map(map)
     resource = importlib.resources.files('sails').joinpath("data")
 
     func = map_type_to_function(type)
-    result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
+    result = func(sails_structure, sails_grid, cycles, str(resource), verbose)
 
-    return (interface.extract_sails_structure(result.structure), interface.extract_sails_mtz(result.mtz),
-            json.loads(result.log), result.snfgs)
+    return interface.extract_sails_structure(result.structure), json.loads(result.log), result.snfgs
 
 
 def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
@@ -145,8 +142,10 @@ def xray(args):
 
 
 def em(args):
-    ...
+    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    structure, log, snfgs = glycosylate_em(args.modelin, args.mapin, cycles, args.type, args.v)
 
+    print(structure, log, snfgs)
 
 def run_cli():
     t0 = time.time()
