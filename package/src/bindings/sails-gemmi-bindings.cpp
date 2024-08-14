@@ -3,6 +3,7 @@
 //
 
 #include "../include/sails-gemmi-bindings.h"
+#include "gemmi/mtz.hpp"
 
 #include <src/include/sails-utils.h>
 
@@ -55,18 +56,18 @@ gemmi::Mtz Sails::form_gemmi_mtz(MTZ& mtz) {
     return new_mtz;
 }
 
-Sails::MTZ Sails::form_sails_mtz(gemmi::Mtz& mtz, const std::string &f_label, const std::string &sigf_label) {
+Sails::MTZ Sails::form_sails_mtz(const gemmi::Mtz &mtz, const std::string &f_label, const std::string &sigf_label) {
     gemmi::Mtz::Column h = mtz.get_column_with_label("H");
     gemmi::Mtz::Column k = mtz.get_column_with_label("K");
     gemmi::Mtz::Column l = mtz.get_column_with_label("L");
     gemmi::Mtz::Column f = mtz.get_column_with_label(f_label);
     gemmi::Mtz::Column sigf = mtz.get_column_with_label(sigf_label);
 
-    gemmi::Mtz::Column* fwt = mtz.column_with_label("FWT");
-    gemmi::Mtz::Column* phwt = mtz.column_with_label("PHWT");
+    const gemmi::Mtz::Column* fwt = mtz.column_with_label("FWT");
+    const gemmi::Mtz::Column* phwt = mtz.column_with_label("PHWT");
 
-    gemmi::Mtz::Column* delfwt = mtz.column_with_label("DELFWT");
-    gemmi::Mtz::Column* phdelwt = mtz.column_with_label("PHDELWT");
+    const gemmi::Mtz::Column* delfwt = mtz.column_with_label("DELFWT");
+    const gemmi::Mtz::Column* phdelwt = mtz.column_with_label("PHDELWT");
 
     if (h.size() != f.size()) {
         std::cout << h.size() << " " << k.size() << " " << l.size() << " " << f.size() << " " << sigf.size() << std::endl;

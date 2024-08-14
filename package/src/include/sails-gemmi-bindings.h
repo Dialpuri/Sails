@@ -11,6 +11,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/mtz.hpp>
 #include <gemmi/unitcell.hpp>
+#include "gemmi/mtz.hpp"
 
 namespace Sails {
 
@@ -139,7 +140,7 @@ namespace Sails {
      * @param sigf_label The SIGF column name , defaults to "SIGF"
      * @return The Sails MTZ object formed from the gemmi::Mtz object
      */
-    MTZ form_sails_mtz(gemmi::Mtz& mtz, const std::string &f_label="F", const std::string &sigf_label = "SIGF");
+    MTZ form_sails_mtz(const gemmi::Mtz &mtz, const std::string &f_label="F", const std::string &sigf_label = "SIGF");
 
 
     /**
