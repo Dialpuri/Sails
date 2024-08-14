@@ -3,6 +3,8 @@
 //
 
 #include "../include/density/sails-density.h"
+#include "../include/density/sails-xtal-density.h"
+#include "../include/density/sails-em-density.h"
 #include "../include/sails-json.h"
 #include "../include/sails-sequence.h"
 #include "../include/sails-glycan.h"
@@ -17,6 +19,7 @@
 #include "gemmi/model.hpp" // for Structure
 #include "gemmi/mmread.hpp" // for read_structure
 #include "gemmi/resinfo.hpp" // for find_tabulated_residue
+#include "gemmi/ccp4.hpp" // for find_tabulated_residue
 
 #include <chrono>
 #include <iostream>
@@ -114,13 +117,12 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
     Sails::Topology topology = {&structure, residue_database};
     Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
 
-    Sails::Density density = Sails::Density(mtz);
-    density.load_hkl("FP", "SIGFP");
+    auto density = Sails::XtalDensity(mtz);
     density.recalculate_map(structure);
     density.calculate_po_pc_map(original_structure);
 
-    structure.cell = density.m_mtz.cell;
-    structure.spacegroup_hm = density.m_mtz.spacegroup_name;
+    structure.cell = density.get_mtz()->cell;
+    structure.spacegroup_hm = density.get_mtz()->spacegroup_name;
 
     Sails::Model model = {&structure, linkage_database, residue_database};
     model.set_special_monomer_dir(resource_dir);
@@ -177,7 +179,7 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
 
-    Sails::MTZ output_mtz = Sails::form_sails_mtz(density.m_mtz, "FP", "SIGFP");
+    Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
     Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();
@@ -188,6 +190,90 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
         snfgs
     };
 }
+
+Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structure, gemmi::Grid<>& grid, int cycles,
+                        std::string &resource_dir, bool strict, bool verbose) {
+
+
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    gemmi::Structure original_structure = structure;
+
+    Sails::Topology topology = {&structure, residue_database};
+    Sails::SNFG snfg = Sails::SNFG(&structure, &residue_database);
+
+    auto density = Sails::EMDensity(grid);
+
+    structure.cell = density.get_mtz()->cell;
+    structure.spacegroup_hm = density.get_mtz()->spacegroup_name;
+
+    Sails::Model model = {&structure, linkage_database, residue_database};
+    model.set_special_monomer_dir(resource_dir);
+
+    Sails::Telemetry telemetry = Sails::Telemetry("");
+
+    for (int i = 1; i <= cycles; i++) {
+        if (!verbose) std::cout << "\rCycle #" << i;
+        std::cout << std::flush;
+        if (verbose) std::cout << "\rCycle #" << i << std::endl;
+
+        for (auto &glycosite: glycosites) {
+            Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+            // if (glycan.empty()) { continue; }
+
+            // find terminal sugars
+            Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
+
+            std::set<Sails::Glycosite> differences = new_glycan - glycan;
+            telemetry << differences;
+
+            topology.set_structure(model.get_structure());
+        }
+
+        // remove erroneous sugars
+        for (auto &glycosite: glycosites) {
+            Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+            if (glycan.empty()) { continue; }
+
+            // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
+            Sails::Glycan old_glycan = glycan;
+            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose);
+
+            topology.set_structure(&structure); // need to update neighbor search after removing n residues
+            Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+
+            std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
+            telemetry >> differences;
+
+            std::string snfg_string = snfg.create_snfg(new_glycan, glycosite);
+            std::string glycosite_key = Sails::Utils::format_residue_from_site(glycosite, &structure);
+            telemetry.save_snfg(i, glycosite_key, snfg_string);
+        }
+
+        telemetry.save_state(i);
+    }
+
+    std::cout << std::endl;
+
+    // add links and write files
+    std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
+
+    Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
+    std::string log_string = telemetry.format_log(&structure, &density, false).value();
+
+    Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();
+    return {
+            *model.get_structure(),
+            output_mtz,
+            log_string,
+            snfgs
+    };
+}
+
+// XRAY FUNCTIONS
 
 Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
                             bool verbose) {
@@ -206,8 +292,33 @@ Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     Sails::SolventAccessibility sa = Sails::SolventAccessibility(&structure);
     Sails::SolventAccessibility::SolventAccessibilityMap sa_map = sa.calculate_solvent_accessibility();
     auto glycosites = Sails::find_o_mannosylation_sites(structure, sa_map);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
 }
+
+// EM FUNCTIONS
+
+Sails::Output n_glycosylate(gemmi::Structure &structure, gemmi::Grid<>& grid, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    auto glycosites = Sails::find_n_glycosylation_sites(structure);
+    return run_em_cycle(glycosites, structure, grid, cycles, resource_dir, false, verbose);
+}
+
+Sails::Output c_glycosylate(gemmi::Structure &structure, gemmi::Grid<>& grid, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    auto glycosites = Sails::find_c_glycosylation_sites(structure);
+    return run_em_cycle(glycosites, structure, grid, cycles, resource_dir, false, verbose);
+}
+
+Sails::Output o_mannosylate(gemmi::Structure &structure, gemmi::Grid<>& grid, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    Sails::SolventAccessibility sa = Sails::SolventAccessibility(&structure);
+    Sails::SolventAccessibility::SolventAccessibilityMap sa_map = sa.calculate_solvent_accessibility();
+    auto glycosites = Sails::find_o_mannosylation_sites(structure, sa_map);
+    return run_em_cycle(glycosites, structure, grid, cycles, resource_dir, true, verbose);
+}
+
+
+//SNFG FUNCTIONS
 
 std::string get_snfg(std::string chain, int seqid, gemmi::Structure& structure, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
@@ -255,19 +366,19 @@ std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, st
 }
 
 void test() {
-    const std::string path = "testing/test_data/4ax7/4AX7_deglycosylated.cif";
-    const std::string mtz_path = "testing/test_data/4ax7/4AX7.mtz";
-    gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
-    auto smtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
-    gemmi::Structure structure = gemmi::read_structure_file(path);
-
-    std::string data_file = "package/src/sails/data/data.json";
-    Sails::JSONLoader loader = {data_file};
-    Sails::ResidueDatabase residue_database = loader.load_residue_database();
-
-    Sails::Density density = Sails::Density(mtz);
-    density.load_hkl("FP", "SIGFP");
-    density.recalculate_map(structure);
+//    const std::string path = "testing/test_data/4ax7/4AX7_deglycosylated.cif";
+//    const std::string mtz_path = "testing/test_data/4ax7/4AX7.mtz";
+//    gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
+//    auto smtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
+//    gemmi::Structure structure = gemmi::read_structure_file(path);
+//
+//    std::string data_file = "package/src/sails/data/data.json";
+//    Sails::JSONLoader loader = {data_file};
+//    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+//
+//    Sails::Density density = Sails::Density(mtz);
+//    density.load_hkl("FP", "SIGFP");
+//    density.recalculate_map(structure);
 
 
 //    auto o = find_o_mannosylation_sites(structure, sa_map);
@@ -279,22 +390,15 @@ void test() {
 
 // testbed
 int main() {
-    const std::string path = "testing/test_data/5fji/5fji.cif";
-    const std::string mtz_path = "testing/test_data/5fji/5fji.mtz";
+    const std::string path = "testing/em/7lze/7lze.cif";
+    const std::string mtz_path = "testing/em/7lze/emd_23605.map";
 
     gemmi::Structure structure = gemmi::read_structure_file(path);
-    gemmi::Mtz mtz = gemmi::read_mtz_file(mtz_path);
-    Sails::MTZ sails_mtz = Sails::form_sails_mtz(mtz, "FP", "SIGFP");
-    std::string data_file = "package/src/sails/data/data.json";
-    Sails::JSONLoader loader = {data_file};
-    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    gemmi::Ccp4<float> map;
+    map.read_ccp4_file(mtz_path);
 
-    auto snfg = Sails::SNFG(&structure, &residue_database);
-    Sails::Topology topology = {&structure, residue_database};
+    std::string data_file = "package/src/sails/data/";
     auto glycosites = Sails::find_n_glycosylation_sites(structure);
 
-    for (auto &site: glycosites) {
-        auto glycan = topology.find_glycan_topology(site);
-        snfg.create_snfg(glycan, site);
-    }
+    run_em_cycle(glycosites, structure, map.grid, 1, data_file,  false, true);
 }
