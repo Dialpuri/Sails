@@ -89,6 +89,7 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${clipper-dependencies_SOURCE_DIR}
         ${gemmi-dependencies_SOURCE_DIR}/include
+        ${mmdb2-dependencies_SOURCE_DIR}
 )
 
 link_directories(
