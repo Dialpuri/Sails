@@ -230,7 +230,7 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
             std::set<Sails::Glycosite> differences = new_glycan - glycan;
             telemetry << differences;
 
-            topology.set_structure(model.get_structure());
+            topology.set_structure(&structure);
         }
 
         // remove erroneous sugars
@@ -261,13 +261,11 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
 
-    Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
     Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();
     return {
             *model.get_structure(),
-            output_mtz,
             log_string,
             snfgs
     };
