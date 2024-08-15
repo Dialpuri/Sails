@@ -265,4 +265,5 @@ def extract_gemmi_grid(grid: gemmi.FloatGrid) -> sails.Grid:
     sails_grid.set_cell(cell)
     axis_order = sails.AxisOrder(value=grid.axis_order.value)
     sails_grid.set_axis_order(axis_order)
+    sails_grid.set_spacing(*grid.spacing)
     return sails_grid

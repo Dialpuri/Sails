@@ -144,20 +144,20 @@ def xray(args):
 def em(args):
     cycles = args.cycles if args.type == Type.n_glycosylate else 1
     structure, log, snfgs = glycosylate_em(args.modelin, args.mapin, cycles, args.type, args.v)
-
-    print(structure, log, snfgs)
+    structure.make_mmcif_block().write_file(args.modelout)
+    save_log(log, args)
 
 def run_cli():
     t0 = time.time()
     args = parse_args()
 
-    print(args)
     if args.mode == 'xray':
         xray(args)
     elif args.mode == 'em':
         em(args)
     else:
         raise RuntimeError("Unknown mode")
+
     t1 = time.time()
     print(f"Sails - Time Taken = {(t1 - t0)} seconds")
 
