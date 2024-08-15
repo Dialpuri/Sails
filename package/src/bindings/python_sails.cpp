@@ -152,7 +152,7 @@ NB_MODULE(sails_module, m) {
     nb::class_<gemmi::Grid<float>>(m, "Grid")
                         .def(nb::init<>())
                         .def("set_data",  [](gemmi::Grid<float>& grid, nb::ndarray<>& arr) {
-                            grid.data = {(float*)arr.data(), (float*)arr.data()+arr.size()};
+                            grid.data = {static_cast<float *>(arr.data()), static_cast<float *>(arr.data())+arr.size()};
                         })
                         .def_rw("nu", &gemmi::Grid<>::nu)
                         .def_rw("nv", &gemmi::Grid<>::nv)
@@ -162,15 +162,15 @@ NB_MODULE(sails_module, m) {
                             grid.spacegroup = gemmi::find_spacegroup_by_name(spacegroup);
                         })
                         .def("set_cell", [](gemmi::Grid<float>& grid, Sails::Cell& cell) {
-                            grid.unit_cell.a = cell.a;
-                            grid.unit_cell.b = cell.b;
-                            grid.unit_cell.c = cell.c;
-                            grid.unit_cell.alpha = cell.alpha;
-                            grid.unit_cell.beta = cell.beta;
-                            grid.unit_cell.gamma = cell.gamma;
+                            grid.set_unit_cell(cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma);
                         })
                         .def("set_axis_order", [](gemmi::Grid<float>& grid, gemmi::AxisOrder axis_order) {
                             grid.axis_order = axis_order;
+                        })
+                        .def("set_spacing", [](gemmi::Grid<float>& grid, double xspacing, double yspacing, double zspacing) {
+                            grid.spacing[0] = xspacing;
+                            grid.spacing[1] = yspacing;
+                            grid.spacing[2] = zspacing;
                         })
 
                         ;
