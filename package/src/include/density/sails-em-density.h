@@ -48,7 +48,7 @@ namespace Sails {
         /**
          * Fc maps for residues in standard positions - used for fast RSCC calculations
          */
-        std::unordered_map <std::string, gemmi::Grid<>> calculated_maps;
+        std::unordered_map <std::string, gemmi::Grid<>> calculated_maps{};
 
     };
 }
