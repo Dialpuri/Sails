@@ -31,16 +31,46 @@ float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
                                  }) / (residue.atoms.size());
 }
 
-gemmi::Grid<> Sails::Density::calculate_density_for_box(gemmi::Residue &residue) const {
+gemmi::Grid<> Sails::Density::calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const {
+
     gemmi::DensityCalculator<gemmi::IT92<float>, float> density_calculator;
-    density_calculator.grid.copy_metadata_from(*get_work_grid());
-    density_calculator.d_min = get_resolution();
+
+    gemmi::Position size = box.get_size();
+    gemmi::UnitCell dummy_cell = {size.x, size.y, size.z, 90, 90, 90};
+    density_calculator.grid.unit_cell = dummy_cell;
+    density_calculator.grid.nu = size.x;
+    density_calculator.grid.nv = size.y;
+    density_calculator.grid.nw = size.z;
+    density_calculator.grid.spacegroup = get_work_grid()->spacegroup;
+    density_calculator.grid.axis_order = get_work_grid()->axis_order;
+
+    density_calculator.d_min = 1;
     density_calculator.initialize_grid();
     for (auto &atom: residue.atoms) {
         density_calculator.add_atom_density_to_grid(atom);
     }
     density_calculator.grid.symmetrize_sum();
     return density_calculator.grid;
+}
+
+gemmi::Grid<> Sails::Density::calculate_density_for_grid(gemmi::Residue &residue) const {
+
+    gemmi::DensityCalculator<gemmi::C4322<float>, float> density_calculator;
+
+    density_calculator.grid.copy_metadata_from(*get_work_grid());
+    density_calculator.grid.spacing[0] = get_work_grid()->spacing[0];
+    density_calculator.grid.spacing[1] = get_work_grid()->spacing[1];
+    density_calculator.grid.spacing[2] = get_work_grid()->spacing[2];
+
+    density_calculator.d_min = get_resolution();
+    density_calculator.rate = 1;
+    density_calculator.initialize_grid();
+    for (auto &atom: residue.atoms) {
+        density_calculator.add_atom_density_to_grid(atom);
+    }
+    density_calculator.grid.symmetrize_sum();
+    auto x =  density_calculator.grid;
+    return std::move(x);
 }
 
 float Sails::Density::calculate_rscc(std::vector<float> obs_values, std::vector<float> calc_values) {
@@ -84,7 +114,8 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     }
     box.add_margin(1);
 
-    gemmi::Grid<> calc = calculate_density_for_box(residue);
+    // gemmi::Grid<> calc = calculate_density_for_box(residue, box);
+    gemmi::Grid<> calc = calculate_density_for_grid(residue);
 
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
@@ -117,7 +148,7 @@ float Sails::Density::rscc_score(SuperpositionResult &result) {
 
     auto calculated_maps = get_calculated_maps();
     if (calculated_maps->find(residue.name) == calculated_maps->end()) {
-        gemmi::Grid<> reference = calculate_density_for_box(result.reference_residue);
+        gemmi::Grid<> reference = calculate_density_for_grid(result.reference_residue);
         calculated_maps->operator[](residue.name) = std::move(reference);
     }
     gemmi::Grid<> *calculated = &calculated_maps->operator[](residue.name);
@@ -151,7 +182,7 @@ float Sails::Density::rsr_score(gemmi::Residue &residue) {
         box.extend(atom.pos);
     }
 
-    gemmi::Grid<> calc_grid = calculate_density_for_box(residue);
+    gemmi::Grid<> calc_grid = calculate_density_for_box(residue, box);
 
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
@@ -188,7 +219,7 @@ float Sails::Density::rsr_score(SuperpositionResult &result) {
     // calculate map if not found
     auto calculated_maps = get_calculated_maps();
     if (calculated_maps->find(residue.name) == calculated_maps->end()) {
-        gemmi::Grid<> reference = calculate_density_for_box(result.reference_residue);
+        gemmi::Grid<> reference = calculate_density_for_grid(result.reference_residue);
         calculated_maps->operator[](residue.name) = std::move(reference);
     }
     gemmi::Grid<> *calculated = &calculated_maps->operator[](residue.name);
