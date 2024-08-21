@@ -27,11 +27,6 @@ jobs:
           clang --version
           clang++ --version
 
-      - name: Get sources
-        run: |
-          ./get_sources
-        working-directory: ./package
-
       - name: Install NucleoFind
         run: pip install -v .
         working-directory: ./package

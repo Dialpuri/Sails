@@ -23,11 +23,6 @@ jobs:
           export CC=$(which clang)
           export CXX=$(which clang++)
 
-      - name: Get sources
-        run: |
-          ./get_sources
-        working-directory: ./package
-
       - name: Install Sails
         run: pip install -v .
         working-directory: ./package
