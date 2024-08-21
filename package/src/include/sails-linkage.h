@@ -9,7 +9,7 @@
 #include "sails-utils.h"
 #include "sails-topology.h"
 #include "sails-vector.h"
-#include "sails-density.h"
+#include "density/sails-density.h"
 #include "sails-cif.h"
 
 #include <string>

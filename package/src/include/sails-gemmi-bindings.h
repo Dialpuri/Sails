@@ -11,6 +11,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/mtz.hpp>
 #include <gemmi/unitcell.hpp>
+#include "gemmi/mtz.hpp"
 
 namespace Sails {
 
@@ -86,6 +87,7 @@ namespace Sails {
      * It also provides a method to convert the Cell object to a gemmi::UnitCell object.
      */
     struct Cell {
+        Cell() = default;
         explicit Cell(const gemmi::UnitCell& cell):
                     a(cell.a), b(cell.b), c(cell.c), alpha(cell.alpha), beta(cell.beta), gamma(cell.gamma) {}
 
@@ -106,6 +108,7 @@ namespace Sails {
      * unit cell parameters, and a string representing the space group.
      */
     struct MTZ {
+        MTZ() = default;
         MTZ(std::vector<Reflection>& reflections, Cell& cell, std::string& spacegroup):
             reflections(reflections), cell(cell), spacegroup(spacegroup) {}
 
@@ -139,7 +142,7 @@ namespace Sails {
      * @param sigf_label The SIGF column name , defaults to "SIGF"
      * @return The Sails MTZ object formed from the gemmi::Mtz object
      */
-    MTZ form_sails_mtz(gemmi::Mtz& mtz, const std::string &f_label="F", const std::string &sigf_label = "SIGF");
+    MTZ form_sails_mtz(const gemmi::Mtz &mtz, const std::string &f_label="F", const std::string &sigf_label = "SIGF");
 
 
     /**
@@ -152,8 +155,11 @@ namespace Sails {
         Output(gemmi::Structure& structure, MTZ& mtz, std::string log, std::map<int, std::map<std::string, std::string>>& snfgs):
         structure(structure), mtz(mtz), log(std::move(log)), snfgs(snfgs){};
 
+        Output(gemmi::Structure& structure, std::string log, std::map<int, std::map<std::string, std::string>>& snfgs):
+            structure(structure), log(std::move(log)), snfgs(snfgs){};
+
         gemmi::Structure structure ;
-        MTZ mtz;
+        MTZ mtz{};
         std::string log;
         std::map<int, std::map<std::string, std::string>> snfgs;
     };

@@ -11,7 +11,7 @@
 
 #include "sails-model.h"
 #include "sails-utils.h"
-#include "sails-density.h"
+#include "density/sails-density.h"
 
 namespace Sails {
 

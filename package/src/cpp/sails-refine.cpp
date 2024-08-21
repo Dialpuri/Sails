@@ -23,6 +23,17 @@ double Sails::TorsionAngleRefiner::calculate_penalty(double angle, double angle_
     return penalty;
 }
 
+double Sails::TorsionAngleRefiner::calculate_penalty_factor() const {
+    switch (m_density->get_score_method()) {
+        case atomwise:
+            return 1e-3;
+        case rscc:
+            return 1e-5;
+        default:
+            return 0;
+    }
+}
+
 double Sails::TorsionAngleRefiner::score_function(std::vector<double> &all_angles) {
     std::vector<double> angles = {all_angles[0], all_angles[1], all_angles[2]};
     std::vector<double> torsions = {all_angles[3], all_angles[4], all_angles[5]};
@@ -33,12 +44,13 @@ double Sails::TorsionAngleRefiner::score_function(std::vector<double> &all_angle
     gemmi::transform_pos_and_adp(residue, superpose_result);
     SuperpositionResult result = {residue, superpose_result, m_reference_residue};
 
-    double score = m_density->atomwise_score(residue);
+    const double score = m_density->score_result(result);
 
     double penalty = 0;
+    double penalty_factor = calculate_penalty_factor();
     for (int i = 0; i < 3; i++) {
-        penalty += calculate_penalty(angles[i], m_angle_mean[i], m_angle_range[i], 1e-3);
-        penalty += calculate_penalty(torsions[i], m_torsion_mean[i], m_torsion_range[i], 1e-3);
+        penalty += calculate_penalty(angles[i], m_angle_mean[i], m_angle_range[i], penalty_factor);
+        penalty += calculate_penalty(torsions[i], m_torsion_mean[i], m_torsion_range[i], penalty_factor);
     }
 
     return penalty-score;

@@ -145,9 +145,57 @@ NB_MODULE(sails_module, m) {
                         .def("get_all_dotfiles", &Sails::Dot::get_all_dotfiles)
                         .def("get_dotfile", &Sails::Dot::get_dotfile);
 
-    m.def("n_glycosylate_from_objects", &n_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
-    m.def("c_glycosylate_from_objects", &c_glycosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
-    m.def("o_mannosylate_from_objects", &o_mannosylate, "structure"_a, "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+        nb::enum_<gemmi::AxisOrder>(m, "AxisOrder")
+                .value("XYZ", gemmi::AxisOrder::XYZ)
+                .value("ZYX", gemmi::AxisOrder::ZYX);
+
+    nb::class_<gemmi::Grid<float>>(m, "Grid")
+                        .def(nb::init<>())
+                        .def("set_data",  [](gemmi::Grid<float>& grid, nb::ndarray<>& arr) {
+                            grid.data = {static_cast<float *>(arr.data()), static_cast<float *>(arr.data())+arr.size()};
+                        })
+                        .def_rw("nu", &gemmi::Grid<>::nu)
+                        .def_rw("nv", &gemmi::Grid<>::nv)
+                        .def_rw("nw", &gemmi::Grid<>::nw)
+                        .def_rw("cell", &gemmi::Grid<>::unit_cell)
+                        .def("set_spacegroup", [](gemmi::Grid<float>& grid, std::string& spacegroup) {
+                            grid.spacegroup = gemmi::find_spacegroup_by_name(spacegroup);
+                        })
+                        .def("set_cell", [](gemmi::Grid<float>& grid, Sails::Cell& cell) {
+                            grid.set_unit_cell(cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma);
+                        })
+                        .def("set_axis_order", [](gemmi::Grid<float>& grid, gemmi::AxisOrder axis_order) {
+                            grid.axis_order = axis_order;
+                        })
+                        .def("set_spacing", [](gemmi::Grid<float>& grid, double xspacing, double yspacing, double zspacing) {
+                            grid.spacing[0] = xspacing;
+                            grid.spacing[1] = yspacing;
+                            grid.spacing[2] = zspacing;
+                        })
+
+                        ;
+
+
+    m.def("n_glycosylate",
+          nb::overload_cast<gemmi::Structure &, Sails::MTZ &, int, std::string &, bool>(&n_glycosylate), "structure"_a,
+          "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+    m.def("c_glycosylate",
+          nb::overload_cast<gemmi::Structure &, Sails::MTZ &, int, std::string &, bool>(&c_glycosylate), "structure"_a,
+          "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+    m.def("o_mannosylate",
+          nb::overload_cast<gemmi::Structure &, Sails::MTZ &, int, std::string &, bool>(&o_mannosylate), "structure"_a,
+          "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("n_glycosylate",
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&n_glycosylate),
+          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+    m.def("c_glycosylate",
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&c_glycosylate),
+          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+    m.def("o_mannosylate",
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&o_mannosylate),
+          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
 
     m.def("test_snfg", &test);
 

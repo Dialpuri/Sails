@@ -33,14 +33,14 @@ jobs:
         working-directory: ./package
 
       - name: Install NucleoFind
-        run: pip install .
+        run: pip install -v .
         working-directory: ./package
 
       - name: Install pytest
         run: pip install pytest
 
       - name: Run tests
-        run : pytest tests
+        run : pytest tests -v -s
         working-directory: ./package
 
   debug:

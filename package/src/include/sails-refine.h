@@ -5,7 +5,7 @@
 #ifndef SAILS_REFINE_H
 #define SAILS_REFINE_H
 
-#include "sails-density.h"
+#include "density/sails-density.h"
 
 #include "../third-party/nelder-mead.h"
 
@@ -90,15 +90,56 @@ namespace Sails {
         */
         static double calculate_penalty(double angle, double angle_mean, double angle_stddev, double penalty_factor);
 
+        /**
+         * Calculates the penalty factor after looking at the scoring method in the m_density object.
+         *
+         * @return A double representing the penalty factor for the given density method.
+         */
+        [[nodiscard]] double calculate_penalty_factor() const;
+
+        /**
+         * The length of a linkage bond
+         */
         double m_length;
+
+        /**
+         * Allowed angle range for alpha, beta and gamma linkage angles.
+         */
         std::vector<double> m_angle_range;
+
+        /**
+         * Allowed angle range for phi, psi and omega linkage torsions.
+         */
         std::vector<double> m_torsion_range;
+
+        /**
+         * Angle mean for alpha, beta and gamma linkage angles.
+         */
         std::vector<double> m_angle_mean;
+
+        /**
+         * Torsion angle mean range for phi, psi and omega linkage torsions.
+         */
         std::vector<double> m_torsion_mean;
 
+        /**
+         * List of pointers to all the atoms in the linkage to be refined
+         */
         std::vector<gemmi::Atom *> m_all_atoms;
+
+        /**
+         * List of pointers to reference atoms in the linkage to be refined
+         */
         std::vector<gemmi::Atom> m_reference_atoms;
+
+        /**
+         * Density object used for scoring to any derived density method (Xtal or EM)
+         */
         Density* m_density;
+
+        /**
+         * The reference residue used for superpositons
+         */
         gemmi::Residue m_reference_residue;
     };
 };

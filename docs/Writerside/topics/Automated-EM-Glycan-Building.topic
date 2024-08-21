@@ -3,7 +3,7 @@
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
-       title="Automated Glycan Building" id="Automated-Glycan-Building" help-id="Automated Glycan Building">
+       title="Automated Glycan Building in Electron Microscopy" id="Automated-EM-Glycan-Building" help-id="Automated Glycan Building">
 
     <link-summary>
         Master command line projects with Sails: explore options, uses, and file formats like PDB, mmCIF, CIF.
@@ -20,46 +20,41 @@
         <p>Syntax:</p>
 
         <code-block lang="shell">
-            sails [OPTIONS]
+            sails em [OPTIONS]
         </code-block>
 
-        <p>Simple Example:</p>
+        <p>Example:</p>
 
         <code-block lang="shell">
-            sails -pdbin ABCD.cif -mtzin ABCD.mtz -cycles 1 -colin-fo FP,SIGFP
+            sails em -modelin ABCD.cif -mapin ABCD.mtz -cycles 5
         </code-block>
 
-        <p>Advanced Example:</p>
-        Attempt to build O-mannoses into ABCD.cif with structure factors.
-        <code-block lang="shell">
-            sails -pdbin ABCD.cif -mtzin ABCD-sf.cif.gz -type o-mannosylate -cycles 1 -colin-fo F,SIGF
-        </code-block>
     </chapter>
 
     <chapter title="Options" id="options">
         <p>Describe what each option is used for:</p>
 
         <deflist type="medium">
-            <def title="-pdbin">
+            <def title="-modelin">
                 Path to input model file.
                 <p>Formats accepted: PDB, mmCIF, CIF</p>
                 <b>Required</b>
             </def>
-            <def title="-mtzin">
-                Path to input MTZ or SF CIF file (may be gzipped).
+            <def title="-mapin">
+                Path to input map (may be gzipped).
+                <p>Formats accepted: ccp4, map, mrc</p>
                 <p><b>Required</b></p>
             </def>
-            <def title="-pdbout">
+            <def title="-modelout">
                 Path to output CIF file.
                 <p>Default: <code>sails-model-out.cif</code></p>
-            </def>
-            <def title="-mtzout">
-                Path to output MTZ file.
-                <p>Default: <code>sails-refln-out.mtz</code></p>
             </def>
             <def title="-logout">
                 Path to output MTZ file.
                 <p>Default: <code>sails-log.json</code></p>
+            </def>
+            <def title="-snfgout">
+                Path to output SNFG directory.
             </def>
             <def title="-cycles">
                 Number of internal cycles to run.
@@ -74,15 +69,6 @@
                     <li><code>o-mannosylate</code></li>
                 </list>
                 <p>Default: <code>n-glycosylate</code></p>
-            </def>
-            <def title="-colin-fo">
-                Comma separated SF observations and associated uncertainty.
-                <p>Default: <code>FP,SIGFP</code></p>
-            </def>
-            <def title="-colin-fwt">
-                Comma separated SF weight and associated phase.
-                <p>If supplied, Sails will not recalculate the map prior to the first cycle.</p>
-                <b>Advanced</b>
             </def>
             <def title="-v">
                Verbose output
