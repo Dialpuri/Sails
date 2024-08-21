@@ -22,8 +22,8 @@ def cglycan(data_base_path):
     return s, m, 1, "FP", "SIGFP", "", "", sails.Type.c_glycosylate
 
 
-def test_cglycosylation(cglycan):
-    s, m, l, snfgs = sails.glycosylate(*cglycan)
+def test_xtal_cglycosylation(cglycan):
+    s, m, l, snfgs = sails.glycosylate_xtal(*cglycan)
     assert s
     assert m
     assert l
