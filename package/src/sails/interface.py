@@ -6,11 +6,10 @@ import sails
 import numpy as np
 
 
-def read_sf_cif(mtz: Path):
+def read_sf_cif(mtz: Path) -> gemmi.Mtz:
     """
     :param mtz: Path to the CIF file containing structure factor data.
     :return: MTZ file containing the converted structure factor data.
-
     """
     doc = gemmi.cif.read(str(mtz))
     rblocks = gemmi.as_refln_blocks(doc)
@@ -20,7 +19,11 @@ def read_sf_cif(mtz: Path):
     return cif2mtz.convert_block_to_mtz(rblocks[0])
 
 
-def get_sails_map(map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str):
+def get_sails_map(map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str) -> sails.Grid:
+    """
+    :param map: The input map, which can be of type gemmi.Ccp4Map, gemmi.FloatGrid, Path or str.
+    :return: The Sails map extracted from the input.
+    """
     if isinstance(map, gemmi.Ccp4Map):
         sails_grid = extract_gemmi_grid(map.grid)
     elif isinstance(map, gemmi.FloatGrid):
@@ -36,7 +39,9 @@ def get_sails_map(map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str):
     return sails_grid
 
 
-def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt: str):
+def get_sails_mtz(
+    mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt: str
+) -> sails.MTZ:
     """
     :param mtz: Path to an MTZ file, an instance of gemmi.Mtz, or a string representing the path to an MTZ file.
     :param f: Column name of the F values in the MTZ file.
@@ -81,7 +86,7 @@ def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt
     return sails_mtz
 
 
-def get_sails_structure(structure):
+def get_sails_structure(structure) -> sails.Structure:
     """
     Retrieves the Sails structure from the provided input.
 
@@ -104,7 +109,7 @@ def get_sails_structure(structure):
     return sails_structure
 
 
-def extract_gemmi_structure(structure: gemmi.Structure):
+def extract_gemmi_structure(structure: gemmi.Structure) -> sails.Structure:
     os = sails.Structure()
     os.set_cell(
         sails.Cell(
