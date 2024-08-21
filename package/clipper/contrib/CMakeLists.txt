@@ -1,6 +1,6 @@
 project(clipper-contrib)
 
-add_library(clipper-contrib STATIC 
+add_library(clipper-contrib STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/contrib/convolution_search.cpp
 ${clipper-dependencies_SOURCE_DIR}/clipper/contrib/edcalc.cpp
 ${clipper-dependencies_SOURCE_DIR}/clipper/contrib/fffear.cpp

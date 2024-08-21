@@ -1,6 +1,6 @@
 project(clipper-cns)
 
-add_library(clipper-cns STATIC 
+add_library(clipper-cns STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_hkl_io.cpp
 ${clipper-dependencies_SOURCE_DIR}/clipper/cns/cns_map_io.cpp
 )

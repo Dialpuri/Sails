@@ -23,11 +23,6 @@ jobs:
           export CC=$(which clang)
           export CXX=$(which clang++)
 
-      - name: Get sources
-        run: |
-          ./get_sources
-        working-directory: ./package
-
       - name: Install Sails
         run: pip install -v .
         working-directory: ./package
@@ -52,12 +47,12 @@ jobs:
 
     - name: Move to correct directory
       run: |
-        mv package/* . 
+        mv package/* .
         ./get_sources
 
     - name: Install Clang
       run: sudo apt-get install -y clang
-        
+
     - name: Set environment variables for Clang
       run: |
         export CC=$(which clang)

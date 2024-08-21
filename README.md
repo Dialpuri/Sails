@@ -1,4 +1,4 @@
-# Sails <img src="https://github.com/user-attachments/assets/ebbe9660-5ad7-4ed4-aae9-b104031bf82b" alt="logo" width="150"/> 
+# Sails <img src="https://github.com/user-attachments/assets/ebbe9660-5ad7-4ed4-aae9-b104031bf82b" alt="logo" width="150"/>
 [![PyPI version](https://badge.fury.io/py/pysails.svg)](https://badge.fury.io/py/pysails)
 ![GitHub Issues](https://img.shields.io/github/issues-raw/Dialpuri/Sails)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/Sails)

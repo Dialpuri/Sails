@@ -1,6 +1,6 @@
 # Contributing
 
-Contributions are welcome, please open a pull request with any changes and add Dialpuri as a reviewer. 
+Contributions are welcome, please open a pull request with any changes and add Dialpuri as a reviewer.
 
 ## Development
 
@@ -12,7 +12,7 @@ With CLion, to get proper intellisense, load the CMake Project with this additio
 
     -Dnanobind_DIR=.venv/lib/python3.10/site-packages/nanobind/cmake
 
-    
+
 [//]: # (## Testing)
 
 [//]: # (Any changes must pass the tests defined in `package/tests`. Test can be ran using `pytest` with: )

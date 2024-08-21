@@ -74,7 +74,7 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
                 double distance = (donor_atom.pos - near_atom->pos).length();
 
                 // std::cout << "nearby atom name = " << near_atom.name << " with distance " << distance << std::endl;
-                
+
                 if (distance < min_distance) {
                     min_atom = atom;
                     min_distance = distance;

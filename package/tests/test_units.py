@@ -1,11 +1,13 @@
 import sails
 
+
 def test_pair():
     p = sails.Pair(1, 2)
     assert p.value1 == 1
     assert p.value2 == 2
     p.value1 = 3
     assert p.value1 == 3
+
 
 def test_hkl():
     r = sails.HKL(1, 2, 3)
@@ -14,6 +16,7 @@ def test_hkl():
     assert r.l == 3
     r.h = 10
     assert r.h == 10
+
 
 def test_reflection():
     i = sails.HKL(1, 2, 3)
@@ -41,4 +44,3 @@ def test_reflection():
     assert r.fwt_phwt.value2 == fwt.value2
     assert r.delfwt_phdelwt.value1 == delfwt.value1
     assert r.delfwt_phdelwt.value2 == delfwt.value2
-

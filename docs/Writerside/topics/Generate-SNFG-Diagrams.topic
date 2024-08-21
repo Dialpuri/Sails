@@ -32,7 +32,7 @@
             sails-snfg -model built.cif --all -snfgout snfgs
         </code-block>
     </chapter>
-    
+
 
     <chapter title="Options" id="options">
         <p>Describe what each option is used for:</p>

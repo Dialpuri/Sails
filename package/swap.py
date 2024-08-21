@@ -1,6 +1,7 @@
 import os
 import tempfile
 
+
 def swap_files():
     file1 = "_pyproject.toml"
     file2 = "pyproject.toml"
@@ -8,8 +9,7 @@ def swap_files():
     file3 = "setup.py"
     file4 = "_setup.py"
 
-
-# Check if both files exist
+    # Check if both files exist
     if not os.path.isfile(file1) or not os.path.isfile(file2):
         return
 
@@ -25,7 +25,7 @@ def swap_files():
         if os.path.exists(file3):
             os.rename(file3, file4)
         else:
-            os.rename(file4, file4)
+            os.rename(file4, file3)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -33,6 +33,7 @@ def swap_files():
         # Ensure that the temporary file is removed in case of failure
         if os.path.exists(temp_name):
             os.remove(temp_name)
+
 
 if __name__ == "__main__":
     swap_files()

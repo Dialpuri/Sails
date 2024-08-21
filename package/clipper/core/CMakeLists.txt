@@ -1,6 +1,6 @@
 project(clipper-core)
 
-add_library(clipper-core STATIC 
+add_library(clipper-core STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/core/atomsf.cpp
 ${clipper-dependencies_SOURCE_DIR}/clipper/core/cell.cpp
 ${clipper-dependencies_SOURCE_DIR}/clipper/core/clipper_instance.cpp
@@ -117,7 +117,7 @@ ${clipper-dependencies_SOURCE_DIR}//clipper/cif/cif_data_io.h
 ${clipper-dependencies_SOURCE_DIR}//clipper/phs/phs_io.h
 )
 
-install(FILES 
+install(FILES
 ${clipper-headers_HEADERS}
 DESTINATION include/clipper
 )

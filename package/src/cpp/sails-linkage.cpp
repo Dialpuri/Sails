@@ -367,4 +367,3 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, De
     Topology topology = {structure, residue_database};
     return topology.find_glycan_topology(glycan.glycosite);
 }
-

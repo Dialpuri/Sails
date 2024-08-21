@@ -1,6 +1,6 @@
 project(clipper-cif)
 
-add_library(clipper-cif STATIC 
+add_library(clipper-cif STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/cif/cif_data_io.cpp
 )
 

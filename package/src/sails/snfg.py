@@ -7,7 +7,6 @@ from pathlib import Path
 
 
 def main(args):
-
     if args.all and args.chain:
         logging.warning("--all and -chain were both specified, ignoring chain")
 
@@ -23,6 +22,7 @@ def main(args):
         return
 
     logging.warning("No valid parameters were specified, no SNFGs have been generated")
+
 
 def create_all_snfgs(args):
     """
@@ -45,7 +45,7 @@ def create_all_snfgs(args):
         create_all_snfgs(args)
     """
     sails_structure = interface.get_sails_structure(args.model)
-    resource = importlib.resources.files('sails').joinpath("data")
+    resource = importlib.resources.files("sails").joinpath("data")
 
     supplied_output_path = Path(args.snfgout)
     output_dir = supplied_output_path
@@ -55,7 +55,8 @@ def create_all_snfgs(args):
         output_dir = supplied_output_path.parent / "sails-snfgs"
         if output_dir.exists() and not next(output_dir.iterdir(), None):
             logging.fatal(
-                "Tried to create a directory called snfgs, but one already exists. Please supply an output directory.")
+                "Tried to create a directory called snfgs, but one already exists. Please supply an output directory."
+            )
             return
 
         os.makedirs(output_dir, exist_ok=False)
@@ -84,7 +85,7 @@ def create_single_snfg(args):
     snfg. It then opens the output file in write mode and writes the snfg content to the file.
     """
     sails_structure = interface.get_sails_structure(args.model)
-    resource = importlib.resources.files('sails').joinpath("data")
+    resource = importlib.resources.files("sails").joinpath("data")
 
     supplied_output_path = Path(args.snfgout)
     output_dir = supplied_output_path

@@ -1,6 +1,6 @@
 project(clipper-gemmi)
 
-add_library(clipper-gemmi STATIC 
+add_library(clipper-gemmi STATIC
 ${WRK_DIR}/checkout/clipper/clipper/gemmi/clipper_gemmi.cpp)
 
 target_include_directories(clipper-gemmi PRIVATE

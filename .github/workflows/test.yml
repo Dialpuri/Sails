@@ -24,13 +24,8 @@ jobs:
           export CXX=$(which clang++)
           echo $CC
           echo $CXX
-          clang --version 
+          clang --version
           clang++ --version
-
-      - name: Get sources
-        run: |
-          ./get_sources
-        working-directory: ./package
 
       - name: Install NucleoFind
         run: pip install -v .
