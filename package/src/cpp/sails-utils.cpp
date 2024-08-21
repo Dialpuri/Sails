@@ -121,4 +121,3 @@ bool Sails::Utils::file_exists(const std::string &path) {
     f.close();
     return good;
 }
-

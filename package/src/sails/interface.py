@@ -1,10 +1,9 @@
 import logging
-from typing import List, Tuple
+from typing import Tuple
 from pathlib import Path
 import gemmi
 import sails
 import numpy as np
-
 
 
 def read_sf_cif(mtz: Path):
@@ -30,9 +29,12 @@ def get_sails_map(map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str):
         grid = gemmi.read_ccp4_map(str(map))
         sails_grid = extract_gemmi_grid(grid.grid)
     else:
-        raise RuntimeError("Unknown object passed to second argument of n_glycosylate function, allowed types are"
-                       "gemmi.Mtz, Path, and str")
+        raise RuntimeError(
+            "Unknown object passed to second argument of n_glycosylate function, allowed types are"
+            "gemmi.Mtz, Path, and str"
+        )
     return sails_grid
+
 
 def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt: str):
     """
@@ -72,8 +74,10 @@ def get_sails_mtz(mtz: gemmi.Mtz | Path | str, f: str, sigf: str, fwt: str, phwt
             m = gemmi.read_mtz_file(str(mtz))
         sails_mtz = extract_gemmi_mtz(mtz=m, column_names=[f, sigf, fwt, phwt])
     else:
-        raise RuntimeError("Unknown object passed to second argument of n_glycosylate function, allowed types are"
-                           "gemmi.Mtz, Path, and str")
+        raise RuntimeError(
+            "Unknown object passed to second argument of n_glycosylate function, allowed types are"
+            "gemmi.Mtz, Path, and str"
+        )
     return sails_mtz
 
 
@@ -93,16 +97,25 @@ def get_sails_structure(structure):
         s = gemmi.read_structure(str(structure))
         sails_structure = extract_gemmi_structure(structure=s)
     else:
-        raise RuntimeError("Unknown object passed to first argument of n_glycosylate function, allowed types are"
-                           "gemmi.Structure, Path, and str")
+        raise RuntimeError(
+            "Unknown object passed to first argument of n_glycosylate function, allowed types are"
+            "gemmi.Structure, Path, and str"
+        )
     return sails_structure
 
 
 def extract_gemmi_structure(structure: gemmi.Structure):
     os = sails.Structure()
     os.set_cell(
-        sails.Cell(structure.cell.a, structure.cell.b, structure.cell.c, structure.cell.alpha, structure.cell.beta,
-                   structure.cell.gamma))
+        sails.Cell(
+            structure.cell.a,
+            structure.cell.b,
+            structure.cell.c,
+            structure.cell.alpha,
+            structure.cell.beta,
+            structure.cell.gamma,
+        )
+    )
     om = sails.Model()
     om.name = structure[0].name
     for chain in structure[0]:
@@ -183,16 +196,24 @@ def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
 
     # Find another suitable pair of F,SIGF values if they are not presented
     mtz_labels = mtz.column_labels()
-    for name in column_names[:2]: # only for F and SIGF columns
+    for name in column_names[:2]:  # only for F and SIGF columns
         if name not in mtz_labels:
             alternate_labels = find_alternate_column_labels(mtz)
             if alternate_labels:
-                logging.warning(f"Sails has located two columns of type F and Q ({','.join(alternate_labels)}), check they are "
-                                f"correct. Sails will ignore any map coefficient columns.")
+                logging.warning(
+                    f"Sails has located two columns of type F and Q ({','.join(alternate_labels)}), check they are "
+                    f"correct. Sails will ignore any map coefficient columns."
+                )
 
-                column_names = [*alternate_labels, None, None] # added None as FWT and PHWT columns
+                column_names = [
+                    *alternate_labels,
+                    None,
+                    None,
+                ]  # added None as FWT and PHWT columns
                 break
-            raise RuntimeError("Could not find suitable column labels in MTZ to continue. Sails requires F and SIGF.")
+            raise RuntimeError(
+                "Could not find suitable column labels in MTZ to continue. Sails requires F and SIGF."
+            )
 
     f, sigf, fwt, phwt = column_names
 
@@ -218,7 +239,14 @@ def extract_gemmi_mtz(mtz: gemmi.Mtz, column_names=None) -> sails.MTZ:
 
         data.append(reflection)
 
-    cell = sails.Cell(mtz.cell.a, mtz.cell.b, mtz.cell.c, mtz.cell.alpha, mtz.cell.beta, mtz.cell.gamma)
+    cell = sails.Cell(
+        mtz.cell.a,
+        mtz.cell.b,
+        mtz.cell.c,
+        mtz.cell.alpha,
+        mtz.cell.beta,
+        mtz.cell.gamma,
+    )
     return sails.MTZ(data, cell, mtz.spacegroup.hm)
 
 
@@ -240,14 +268,22 @@ def extract_sails_mtz(mtz: sails.MTZ) -> gemmi.Mtz:
     new_mtz = gemmi.Mtz(with_base=True)
     new_mtz.spacegroup = gemmi.SpaceGroup(mtz.spacegroup)
     new_mtz.set_cell_for_all(
-        gemmi.UnitCell(mtz.cell.a, mtz.cell.b, mtz.cell.c, mtz.cell.alpha, mtz.cell.beta, mtz.cell.gamma))
-    new_mtz.add_dataset('sails')
-    new_mtz.add_column('FP', 'F')
-    new_mtz.add_column('SIGFP', 'Q')
-    new_mtz.add_column('FWT', 'F')
-    new_mtz.add_column('PHWT', 'P')
-    new_mtz.add_column('DELFWT', 'F')
-    new_mtz.add_column('PHDELWT', 'P')
+        gemmi.UnitCell(
+            mtz.cell.a,
+            mtz.cell.b,
+            mtz.cell.c,
+            mtz.cell.alpha,
+            mtz.cell.beta,
+            mtz.cell.gamma,
+        )
+    )
+    new_mtz.add_dataset("sails")
+    new_mtz.add_column("FP", "F")
+    new_mtz.add_column("SIGFP", "Q")
+    new_mtz.add_column("FWT", "F")
+    new_mtz.add_column("PHWT", "P")
+    new_mtz.add_column("DELFWT", "F")
+    new_mtz.add_column("PHDELWT", "P")
     new_mtz.set_data(np.array(mtz_data))
     new_mtz.ensure_asu()
     new_mtz.update_reso()
@@ -261,7 +297,14 @@ def extract_gemmi_grid(grid: gemmi.FloatGrid) -> sails.Grid:
     sails_grid.nv = grid.nv
     sails_grid.nw = grid.nw
     sails_grid.set_spacegroup(grid.spacegroup.hm)
-    cell = sails.Cell(grid.unit_cell.a, grid.unit_cell.b, grid.unit_cell.c, grid.unit_cell.alpha, grid.unit_cell.beta, grid.unit_cell.gamma)
+    cell = sails.Cell(
+        grid.unit_cell.a,
+        grid.unit_cell.b,
+        grid.unit_cell.c,
+        grid.unit_cell.alpha,
+        grid.unit_cell.beta,
+        grid.unit_cell.gamma,
+    )
     sails_grid.set_cell(cell)
     axis_order = sails.AxisOrder(value=grid.axis_order.value)
     sails_grid.set_axis_order(axis_order)

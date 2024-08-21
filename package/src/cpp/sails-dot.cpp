@@ -67,4 +67,3 @@ std::string Sails::Dot::get_format(const Glycosite &site) {
     s += "style=filled label=\"" + label + "\"]";
     return s;
 }
-

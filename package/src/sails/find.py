@@ -18,16 +18,20 @@ def find_n_glycosylation_sites(structure: gemmi.Structure):
     sites = []
     for mi, m in enumerate(structure):
         for ci, c in enumerate(m):
-            if len(c) < 3: continue
+            if len(c) < 3:
+                continue
             for ri in range(len(c) - 2):
                 first = gemmi.find_tabulated_residue(c[ri].name).one_letter_code
-                if first != "N": continue
+                if first != "N":
+                    continue
 
                 third = gemmi.find_tabulated_residue(c[ri + 2].name).one_letter_code
-                if third != "S" and third != "T": continue
+                if third != "S" and third != "T":
+                    continue
 
                 second = gemmi.find_tabulated_residue(c[ri + 1].name).one_letter_code
-                if second == "P": continue
+                if second == "P":
+                    continue
 
                 sites.append((mi, ci, ri))
     return sites
@@ -47,13 +51,16 @@ def find_c_glycosylation_sites(structure: gemmi.Structure):
     sites = []
     for mi, m in enumerate(structure):
         for ci, c in enumerate(m):
-            if len(c) < 4: continue
+            if len(c) < 4:
+                continue
             for ri in range(len(c) - 3):
                 first = gemmi.find_tabulated_residue(c[ri].name).one_letter_code
-                if first != "W": continue
+                if first != "W":
+                    continue
 
                 fourth = gemmi.find_tabulated_residue(c[ri + 3].name).one_letter_code
-                if fourth != "W": continue
+                if fourth != "W":
+                    continue
 
                 sites.append((mi, ci, ri))
                 sites.append((mi, ci, ri + 3))
@@ -61,7 +68,9 @@ def find_c_glycosylation_sites(structure: gemmi.Structure):
     return sites
 
 
-def format_sites(sites: List[Tuple[int, int, int]], structure: gemmi.Structure) -> List[dict]:
+def format_sites(
+    sites: List[Tuple[int, int, int]], structure: gemmi.Structure
+) -> List[dict]:
     """Format the given sites data.
 
     :param sites: A list of tuples representing the site data.
@@ -73,8 +82,14 @@ def format_sites(sites: List[Tuple[int, int, int]], structure: gemmi.Structure) 
         mi, ci, ri = site
         c = structure[mi][ci]
         r = c[ri]
-        entry = {"chainId": c.name, "residueSeqId": r.seqid.__str__(), "residueName": r.name, "modelIndex": mi,
-            "chainIndex": ci, "residueIndex": ri}
+        entry = {
+            "chainId": c.name,
+            "residueSeqId": r.seqid.__str__(),
+            "residueName": r.name,
+            "modelIndex": mi,
+            "chainIndex": ci,
+            "residueIndex": ri,
+        }
         d.append(entry)
     return d
 
@@ -87,8 +102,16 @@ def run():
     :return: None
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("-model", required=True, type=str, help="Path to a model in PDB or CIF format")
-    parser.add_argument("-logout", required=False, default="sites.json", type=str, help="Path to output file")
+    parser.add_argument(
+        "-model", required=True, type=str, help="Path to a model in PDB or CIF format"
+    )
+    parser.add_argument(
+        "-logout",
+        required=False,
+        default="sites.json",
+        type=str,
+        help="Path to output file",
+    )
 
     args = parser.parse_args()
 
@@ -101,11 +124,11 @@ def run():
 
     n_glycosylation_sites = find_n_glycosylation_sites(structure)
     if n_glycosylation_sites:
-        data['n-glycosylation'] = format_sites(n_glycosylation_sites, structure)
+        data["n-glycosylation"] = format_sites(n_glycosylation_sites, structure)
 
     c_glycosylation_sites = find_c_glycosylation_sites(structure)
     if c_glycosylation_sites:
-        data['c-glycosylation'] = format_sites(c_glycosylation_sites, structure)
+        data["c-glycosylation"] = format_sites(c_glycosylation_sites, structure)
 
     with open(args.logout, "w") as f:
         json.dump(data, f, indent=4)

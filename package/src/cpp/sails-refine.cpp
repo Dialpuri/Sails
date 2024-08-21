@@ -91,4 +91,3 @@ Sails::SuperpositionResult Sails::TorsionAngleRefiner::refine() {
 
     return result;
 }
-

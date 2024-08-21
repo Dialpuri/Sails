@@ -9,13 +9,15 @@ import functools
 
 # Adapted from Paul Bond's Completeness Script in ModelCraft
 
+
 def load_data_file(filename):
     with open(filename) as f:
         data = json.load(f)
 
-    if not data: raise ValueError("Empty JSON file")
-    residue_data = data['residues']
-    residue_data = {value['name']: value for value in residue_data}
+    if not data:
+        raise ValueError("Empty JSON file")
+    residue_data = data["residues"]
+    residue_data = {value["name"]: value for value in residue_data}
     return residue_data
 
 
@@ -47,7 +49,7 @@ class Statistics:
 
 
 def main(args):
-    resource = importlib.resources.files('sails').joinpath("data")
+    resource = importlib.resources.files("sails").joinpath("data")
     data_file_path = resource / "data.json"
     data = load_data_file(data_file_path)
     structure = gemmi.read_structure(args.model)
@@ -78,9 +80,12 @@ def main(args):
 
 
 def compare(model_path: str, reference_path: str, radius: float):
-    namespace = SimpleNamespace(model=model_path, reference=reference_path, radius=radius)
+    namespace = SimpleNamespace(
+        model=model_path, reference=reference_path, radius=radius
+    )
     stats = main(namespace)
     return stats
+
 
 def run():
     parser = argparse.ArgumentParser()

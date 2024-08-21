@@ -1,12 +1,8 @@
 import subprocess
 import argparse
-import os
 import urllib.request
 
 from pathlib import Path
-import subprocess
-import argparse
-import urllib.request
 
 
 def main(args):
@@ -32,8 +28,17 @@ def main(args):
         subprocess.run(["gemmi", "cif2mtz", str(sf_path), str(mtz_path)])
 
     if not deglyco_cif_path.exists():
-        subprocess.run(["python", "/Users/dialpuri/Development/sails/package/scripts/deglycosylate_models.py",
-                        "-pdbin", str(cif_path), "-pdbout", str(deglyco_cif_path), "-rm-glycan"])
+        subprocess.run(
+            [
+                "python",
+                "/Users/dialpuri/Development/sails/package/scripts/deglycosylate_models.py",
+                "-pdbin",
+                str(cif_path),
+                "-pdbout",
+                str(deglyco_cif_path),
+                "-rm-glycan",
+            ]
+        )
 
     output = pdb_lower / "output"
     output.mkdir(parents=True, exist_ok=True)
@@ -43,11 +48,33 @@ def main(args):
 
     rerun = True
     if not pdb_out.exists() or not mtz_out.exists() or rerun:
-        subprocess.run(["sails", "-pdbin", str(deglyco_cif_path), "-mtzin", str(mtz_path),
-                        "-pdbout", str(pdb_out), "-mtzout", str(mtz_out), "-cycles", "6"])
+        subprocess.run(
+            [
+                "sails",
+                "-pdbin",
+                str(deglyco_cif_path),
+                "-mtzin",
+                str(mtz_path),
+                "-pdbout",
+                str(pdb_out),
+                "-mtzout",
+                str(mtz_out),
+                "-cycles",
+                "6",
+            ]
+        )
 
-    subprocess.run(["python", "/Users/dialpuri/Development/sails/package/scripts/compare_structures.py", "-model",
-                    pdb_out, "-reference", cif_path])
+    subprocess.run(
+        [
+            "python",
+            "/Users/dialpuri/Development/sails/package/scripts/compare_structures.py",
+            "-model",
+            pdb_out,
+            "-reference",
+            cif_path,
+        ]
+    )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

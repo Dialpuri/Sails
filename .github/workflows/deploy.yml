@@ -5,7 +5,7 @@ on:
   release:
     types:
       - published
-    paths: 
+    paths:
       - ../docs
 
 
@@ -24,7 +24,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
           instance: ${{ env.INSTANCE }}
           artifact: ${{ env.ARTIFACT }}
           docker-version: ${{ env.DOCKER_VERSION }}
-        
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -86,12 +86,12 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: dir
-      
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1

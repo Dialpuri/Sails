@@ -24,7 +24,7 @@ jobs:
           export CXX=$(which clang++)
           echo $CC
           echo $CXX
-          clang --version 
+          clang --version
           clang++ --version
 
       - name: Get sources

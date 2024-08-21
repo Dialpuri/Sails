@@ -304,4 +304,3 @@ float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
 float Sails::Density::score_position(const gemmi::Position &pos) const {
     return get_work_grid()->interpolate_value(pos);
 }
-
