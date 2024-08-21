@@ -117,9 +117,8 @@ def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
         return fo_labels + [None, None]
 
     if "," not in fwt_columns:
-        ...
         raise RuntimeError(
-            f'Supplied colin-fwt must be in form FWT,PHWT. Sails received {fo_columns}'
+            f"Supplied colin-fwt must be in form FWT,PHWT. Sails received {fo_columns}"
         )
 
     fwt_labels = [c for c in fwt_columns.split(",") if c]
