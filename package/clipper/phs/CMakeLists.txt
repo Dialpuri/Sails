@@ -1,6 +1,6 @@
 project(clipper-phs)
 
-add_library(clipper-phs STATIC 
+add_library(clipper-phs STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/phs/phs_io.cpp
 )
 

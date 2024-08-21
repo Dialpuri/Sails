@@ -1,6 +1,6 @@
 project(clipper-mmdb)
 
-add_library(clipper-mmdb STATIC 
+add_library(clipper-mmdb STATIC
 ${clipper-dependencies_SOURCE_DIR}/clipper/mmdb/clipper_mmdb.cpp
 )
 

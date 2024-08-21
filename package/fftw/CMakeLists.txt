@@ -1,6 +1,6 @@
 project(fftw)
 
-add_library(fftw STATIC 
+add_library(fftw STATIC
 ${fftw-dependencies_SOURCE_DIR}//fftw/config.c
 ${fftw-dependencies_SOURCE_DIR}//fftw/executor.c
 ${fftw-dependencies_SOURCE_DIR}//fftw/fftwf77.c

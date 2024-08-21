@@ -14,7 +14,7 @@
         Discover how to utilize the command line in your projects with Sails. Learn about various options, their uses,
         and standard file formats such as PDB, mmCIF, and CIF.
     </web-summary>
-    
+
 
     <chapter title="Command" id="command">
         <p>Syntax:</p>

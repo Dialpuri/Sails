@@ -1,6 +1,6 @@
 project(rfftw)
 
-add_library(rfftw STATIC 
+add_library(rfftw STATIC
 ${fftw-dependencies_SOURCE_DIR}//rfftw/fcr_1.c
 ${fftw-dependencies_SOURCE_DIR}//rfftw/fcr_10.c
 ${fftw-dependencies_SOURCE_DIR}//rfftw/fcr_11.c

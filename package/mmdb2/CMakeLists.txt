@@ -1,7 +1,7 @@
 project(mmdb2)
 cmake_minimum_required(VERSION 3.13)
 
-add_library(mmdb2 STATIC 
+add_library(mmdb2 STATIC
 ${mmdb2-dependencies_SOURCE_DIR}/mmdb2/hybrid_36.cpp
 ${mmdb2-dependencies_SOURCE_DIR}/mmdb2/mmdb_atom.cpp
 ${mmdb2-dependencies_SOURCE_DIR}/mmdb2/mmdb_bondmngr.cpp
