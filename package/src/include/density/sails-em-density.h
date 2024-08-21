@@ -5,10 +5,9 @@
 #include "sails-density.h"
 
 namespace Sails {
-
     class EMDensity : public Density {
     public:
-        explicit EMDensity(gemmi::Grid<>& grid);
+        explicit EMDensity(gemmi::Grid<> &grid);
 
         [[nodiscard]] const gemmi::Mtz *get_mtz() const override { return &m_mtz; }
 
@@ -20,7 +19,9 @@ namespace Sails {
 
         [[nodiscard]] const double get_resolution() const override { return 2.0; }
 
-        [[nodiscard]] std::unordered_map <std::string, gemmi::Grid<>> *get_calculated_maps() override {
+        [[nodiscard]] const DensityScoreMethod get_score_method() const override { return score_method; }
+
+        [[nodiscard]] std::unordered_map<std::string, gemmi::Grid<> > *get_calculated_maps() override {
             return &calculated_maps;
         }
 
@@ -48,7 +49,13 @@ namespace Sails {
         /**
          * Fc maps for residues in standard positions - used for fast RSCC calculations
          */
-        std::unordered_map <std::string, gemmi::Grid<>> calculated_maps{};
+        std::unordered_map<std::string, gemmi::Grid<> > calculated_maps{};
 
+        /**
+        * @brief Density score method.
+        *
+        * The DensityScoreMethod class is used to represent the score method for scoring residues to density
+        */
+        DensityScoreMethod score_method = rscc;
     };
 }

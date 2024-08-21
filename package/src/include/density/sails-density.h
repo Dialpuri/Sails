@@ -44,6 +44,7 @@ namespace Sails {
 
         [[nodiscard]] virtual std::unordered_map<std::string, gemmi::Grid<>>* get_calculated_maps()  = 0;
 
+		[[nodiscard]] virtual const DensityScoreMethod get_score_method() const = 0;
 
         /**
          * @brief Scores a residue based on the specified density score method.
@@ -56,6 +57,19 @@ namespace Sails {
          * @return The score of the residue based on the specified density score method.
          */
         double score_residue(gemmi::Residue &residue, const DensityScoreMethod &method = atomwise);
+
+	    /**
+         * @brief Scores a SuperpositionResult based on the specified density score method.
+         *
+         * This method takes a SuperpositionResult object and scores it based on the specified density score method.
+         *
+         * @param result The SuperpositionResult object to be scored.
+         * @param method The density score method to be used. Default value is atomwise.
+         *
+         * @return The score of the residue based on the specified density score method.
+         */
+        double score_result(SuperpositionResult &result);
+
 
         /**
 		 * @brief Calculates the atomwise score for a given residue.
@@ -139,6 +153,7 @@ namespace Sails {
          *   values.
          *
          * @param result The SuperpositionResult object for which the RSCC score needs to be calculated.
+         * @param spacing
          *
          * @return The RSCC score for the given superposition result.
          */

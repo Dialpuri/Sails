@@ -22,6 +22,8 @@ namespace Sails {
 
         [[nodiscard]] const double get_resolution() const override { return 2.0; }
 
+        [[nodiscard]] const DensityScoreMethod get_score_method() const override { return score_method;}
+
         [[nodiscard]] std::unordered_map <std::string, gemmi::Grid<>> *get_calculated_maps() override {
             return &calculated_maps;
         }
@@ -113,6 +115,13 @@ namespace Sails {
          * MTZ Object
          */
         gemmi::Mtz m_mtz;
+
+        /**
+         * @brief Density score method.
+         *
+         * The DensityScoreMethod class is used to represent the score method for scoring residues to density
+         */
+        DensityScoreMethod score_method = atomwise;
 
         /**
          * Fc maps for residues in standard positions - used for fast RSCC calculations
