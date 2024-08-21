@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Automated Glycan Building in Electron Microscopy" id="Automated-EM-Glycan-Building" help-id="Automated Glycan Building">
+
+    <link-summary>
+        Master command line projects with Sails: explore options, uses, and file formats like PDB, mmCIF, CIF.
+    </link-summary>
+
+
+    <web-summary>
+        Discover how to utilize the command line in your projects with Sails. Learn about various options, their uses,
+        and standard file formats such as PDB, mmCIF, and CIF.
+    </web-summary>
+    
+
+    <chapter title="Command" id="command">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails em [OPTIONS]
+        </code-block>
+
+        <p>Example:</p>
+
+        <code-block lang="shell">
+            sails em -modelin ABCD.cif -mapin ABCD.mtz -cycles 5
+        </code-block>
+
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-modelin">
+                Path to input model file.
+                <p>Formats accepted: PDB, mmCIF, CIF</p>
+                <b>Required</b>
+            </def>
+            <def title="-mapin">
+                Path to input map (may be gzipped).
+                <p>Formats accepted: ccp4, map, mrc</p>
+                <p><b>Required</b></p>
+            </def>
+            <def title="-modelout">
+                Path to output CIF file.
+                <p>Default: <code>sails-model-out.cif</code></p>
+            </def>
+            <def title="-logout">
+                Path to output MTZ file.
+                <p>Default: <code>sails-log.json</code></p>
+            </def>
+            <def title="-snfgout">
+                Path to output SNFG directory.
+            </def>
+            <def title="-cycles">
+                Number of internal cycles to run.
+                <p>Default: <code>2</code></p>
+            </def>
+            <def title="-type">
+                Type of glycosylation
+                <p>Options: </p>
+                <list>
+                    <li><code>n-glycosylate</code></li>
+                    <li><code>c-glycosylate</code></li>
+                    <li><code>o-mannosylate</code></li>
+                </list>
+                <p>Default: <code>n-glycosylate</code></p>
+            </def>
+            <def title="-v">
+               Verbose output
+           </def>
+           <def title="-h">
+               Displays help.
+          </def>
+            <def title="--version">
+                Displays version.
+            </def>
+        </deflist>
+    </chapter>
+</topic>
