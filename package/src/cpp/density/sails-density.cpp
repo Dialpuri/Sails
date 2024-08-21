@@ -24,6 +24,21 @@ double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScore
     }
 }
 
+double Sails::Density::score_result(SuperpositionResult& result) {
+    switch (get_score_method()) {
+        case atomwise:
+            return atomwise_score(result.new_residue);
+        case rscc:
+            return rscc_score(result);
+        case rsr:
+            return rsr_score(result);
+        case dds:
+            return difference_density_score(result.new_residue);
+        default:
+            return -1;
+    }
+}
+
 float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
     return std::transform_reduce(residue.atoms.begin(), residue.atoms.end(), 0.0f, std::plus<>(),
                                  [&](const gemmi::Atom &current_atom) {
@@ -63,7 +78,6 @@ gemmi::Grid<> Sails::Density::calculate_density_for_grid(gemmi::Residue &residue
     density_calculator.grid.spacing[2] = get_work_grid()->spacing[2];
 
     density_calculator.d_min = get_resolution();
-    density_calculator.rate = 1;
     density_calculator.initialize_grid();
     for (auto &atom: residue.atoms) {
         density_calculator.add_atom_density_to_grid(atom);
@@ -117,6 +131,15 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     // gemmi::Grid<> calc = calculate_density_for_box(residue, box);
     gemmi::Grid<> calc = calculate_density_for_grid(residue);
 
+    // gemmi::Ccp4<> m;
+    // m.grid = calc;
+    // m.update_ccp4_header();
+    // m.write_ccp4_map("calc.map");
+    //
+    // std::vector rs = {residue};
+    // Utils::save_residues_to_file(rs, "res.pdb");
+
+
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
 
@@ -161,7 +184,7 @@ float Sails::Density::rscc_score(SuperpositionResult &result) {
 
     gemmi::Residue r1, r2, r3;
 
-    constexpr double step_size = 0.5;
+    constexpr double step_size = 1;
     for (double x = min.x; x <= max.x; x += step_size) {
         for (double y = min.y; y <= max.y; y += step_size) {
             for (double z = min.z; z <= max.z; z += step_size) {
