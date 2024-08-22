@@ -36,7 +36,7 @@ or fix with
 
     ruff format
 
-## Pre-Commit  Hooks
+### Pre-Commit  Hooks
 It is easy to forget to run formatting checks so it may be a good idea to utilise pre-commit hooks to do so, you can do that in the following way
 
     pip install pre-commit
@@ -45,11 +45,10 @@ It is easy to forget to run formatting checks so it may be a good idea to utilis
 Following these commands, when items in the `package` directory change and you commit them, the `ruff` formatter will run
 and fix any errors, you can then commit the new changes as you would normally.
 
-[//]: # (## Testing)
+## Testing
 
-[//]: # (Any changes must pass the tests defined in `package/tests`. Test can be ran using `pytest` with: )
+Any changes must pass the tests defined in `package/tests`. Test can be ran using `pytest` with:
 
-[//]: # ()
-[//]: # (    pytest package/tests --unit --runslow -v)
+    pytest package/tests
 
-[//]: # ()
+Please ensure all tests pass.
