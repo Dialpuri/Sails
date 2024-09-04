@@ -103,7 +103,7 @@ def run():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-model", required=True, type=str, help="Path to a model in PDB or CIF format"
+        "-modelin", required=True, type=str, help="Path to a model in PDB or CIF format"
     )
     parser.add_argument(
         "-logout",
@@ -115,11 +115,11 @@ def run():
 
     args = parser.parse_args()
 
-    pdb_path = Path(args.pdbin)
+    pdb_path = Path(args.modelin)
     if not pdb_path.exists():
-        raise FileNotFoundError("Could not find specificed file")
+        raise FileNotFoundError("Could not find specified file")
 
-    structure = gemmi.read_structure(args.pdbin)
+    structure = gemmi.read_structure(args.modelin)
     data = defaultdict(list)
 
     n_glycosylation_sites = find_n_glycosylation_sites(structure)

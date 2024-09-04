@@ -147,7 +147,8 @@ NB_MODULE(sails_module, m) {
 
         nb::enum_<gemmi::AxisOrder>(m, "AxisOrder")
                 .value("XYZ", gemmi::AxisOrder::XYZ)
-                .value("ZYX", gemmi::AxisOrder::ZYX);
+                .value("ZYX", gemmi::AxisOrder::ZYX)
+                .value("Unknown", gemmi::AxisOrder::Unknown);
 
     nb::class_<gemmi::Grid<float>>(m, "Grid")
                         .def(nb::init<>())

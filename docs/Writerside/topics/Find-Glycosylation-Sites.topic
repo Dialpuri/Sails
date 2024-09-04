@@ -29,7 +29,7 @@
         <p>Describe what each option is used for:</p>
 
         <deflist type="medium">
-            <def title="-model">
+            <def title="-modelin">
                 Path to a model that requires comparison to a reference.
                 <p>Formats accepted: CIF or PDB</p>
                 <b>Required</b>
