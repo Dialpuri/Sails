@@ -33,7 +33,7 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
 
 
     ResidueDatabase database;
-    auto residues = m_doc["residues"];
+    auto residues = m_doc[residue_key];
     for (auto value: residues) {
         std::string name = std::string(value[name_key].get_string().value());
 
