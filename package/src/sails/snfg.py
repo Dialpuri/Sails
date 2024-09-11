@@ -90,7 +90,7 @@ def create_single_snfg(args):
     supplied_output_path = Path(args.snfgout)
     output_dir = supplied_output_path
 
-    if supplied_output_path.exists():
+    if supplied_output_path.exists() and not args.overwrite:
         logging.fatal(f"Output path already exists {supplied_output_path}. Exiting.")
         return
 
@@ -115,6 +115,9 @@ def parse_args():
     parser.add_argument("-chain", type=str, required=False)
     parser.add_argument("-seqid", type=int, required=False)
     parser.add_argument("--all", action=argparse.BooleanOptionalAction, required=False)
+    parser.add_argument(
+        "--overwrite", action=argparse.BooleanOptionalAction, required=False
+    )
 
     return parser.parse_args()
 
