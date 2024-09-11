@@ -7,6 +7,7 @@
             "preferredDepths": [
                 2
             ],
+            "anomer": "α",
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -28,6 +29,7 @@
                 6,
                 7
             ],
+            "anomer": "α",
             "donorSets": [
                 {
                     "atom3": "O2",
@@ -64,6 +66,7 @@
             "preferredDepths": [
                 1
             ],
+            "anomer": "α",
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -81,6 +84,7 @@
             "preferredDepths": [
                 3
             ],
+            "anomer": "β",
             "donorSets": [
                 {
                     "atom3": "O6",
@@ -112,6 +116,7 @@
                 1,
                 2
             ],
+            "anomer": "β",
             "donorSets": [
                 {
                     "atom1": "C5",
@@ -148,6 +153,7 @@
             "preferredDepths": [
                 0
             ],
+            "anomer": "",
             "donorSets": [
                 {
                     "atom1": "CB",
@@ -165,6 +171,7 @@
             "preferredDepths": [
                 0
             ],
+            "anomer": "",
             "donorSets": [
                 {
                     "atom1": "CD2",
@@ -182,6 +189,7 @@
             "preferredDepths": [
                 0
             ],
+            "anomer": "",
             "donorSets": [
                 {
                     "atom1": "CA",
@@ -199,6 +207,7 @@
             "preferredDepths": [
                 0
             ],
+            "anomer": "",
             "donorSets": [
                 {
                     "atom1": "CA",

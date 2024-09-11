@@ -46,6 +46,24 @@ Sails::SVGStringObject Sails::SNFG::create_donor_labels(SNFGNode *parent, SNFGNo
     return create_svg_text(xt, yt, donor_number);
 }
 
+Sails::SVGStringObject Sails::SNFG::create_anomer_labels(SNFGNode* parent, SNFGNode* node, Linkage* linkage) {
+    int dx = node->x - parent->x;
+    int dy = node->y - parent->y;
+
+    double ratio = 0.7;
+
+    int xbuffer = dy > 0 ? 10: 5;
+    int ybuffer = dy == 0 ? 20: 19;
+    ybuffer += dy > 0 ? (dy*0.2) : 0;
+    double xt = parent->x + (ratio*dx) + xbuffer;
+    double yt = parent->y + (ratio*dy) + ybuffer;
+
+    gemmi::Residue* acceptor_residue_ptr = Utils::get_residue_ptr_from_glycosite(node->sugar->site, m_structure);
+    std::string acceptor_name = acceptor_residue_ptr->name;
+    std::string donor_number = {m_database->operator[](acceptor_name).anomer};
+    return create_svg_text(xt, yt, donor_number);
+}
+
 void Sails::SNFG::printTree(SNFGNode *root, Sails::SNFGNode *node, int level) {
     if (node == nullptr) return;
 
@@ -277,6 +295,8 @@ void Sails::SNFG::create_svg(std::vector<SVGStringObject> &snfg_objects, SNFGNod
     if (linkage != nullptr) {
         node->linkage = linkage;
         snfg_objects.emplace_back(create_donor_labels(parent, node, linkage));
+        snfg_objects.emplace_back(create_anomer_labels(parent, node, linkage));
+
     }
 
     // get shape

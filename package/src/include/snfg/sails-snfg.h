@@ -603,6 +603,26 @@ namespace Sails {
   [[nodiscard]] SVGStringObject create_donor_labels(SNFGNode * parent, SNFGNode * node, Linkage * linkage);
 
 
+     /**
+      * @brief Create anomer labels for a given SNFG node.
+      *
+      * The create_anomer_labels method is used to create anomer labels for a given SNFG (Symbol Nomenclature For Glycans) node.
+      * Anomer labels describe whether the accepting sugar is in the alpha or beta anomer
+      *
+      * This method takes three parameters: parent, node, and linkage.
+      *
+      * @param parent A pointer to the parent SNFG node.
+      * @param node A pointer to the SNFG node for which donor labels need to be created.
+      * @param linkage A pointer to the Linkage object that represents the linkage information.
+      *
+      * @note The parent parameter should not be null, and the node and linkage parameters can be null if there is no corresponding
+      * linkage information available.
+      *
+      * @see SNFGNode, Linkage
+      */
+     [[nodiscard]] SVGStringObject create_anomer_labels(SNFGNode * parent, SNFGNode * node, Linkage * linkage);
+
+
  private:
   /**
    * @brief Pointer to a gemmi::Structure object

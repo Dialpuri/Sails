@@ -29,6 +29,7 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
     const char *snfg_shape_key = "snfgShape";
     const char *snfg_colour_key = "snfgColour";
     const char *preferred_depth_key = "preferredDepths";
+    const char *anomer_key = "anomer";
 
 
     ResidueDatabase database;
@@ -47,7 +48,9 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
             preferred_depths.emplace_back(static_cast<int>(a.get_int64()));
         }
 
-        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths};
+        std::string anomer = std::string(value[anomer_key].get_string().value());
+
+        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer};
         database.insert({name, data});
     }
 
