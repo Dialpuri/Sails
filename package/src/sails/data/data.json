@@ -9,6 +9,7 @@
             ],
             "anomer": "α",
             "wurcsCode": "a1221m-1a_1-5",
+            "special": true,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -32,6 +33,7 @@
             ],
             "anomer": "α",
             "wurcsCode": "a1122h-1a_1-5",
+            "special": false,
             "donorSets": [
                 {
                     "atom3": "O2",
@@ -70,6 +72,7 @@
             ],
             "anomer": "α",
             "wurcsCode": "a1122h-1a_1-5",
+            "special": false,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -89,6 +92,7 @@
             ],
             "anomer": "β",
             "wurcsCode": "a1122h-1b_1-5",
+            "special": false,
             "donorSets": [
                 {
                     "atom3": "O6",
@@ -122,6 +126,7 @@
             ],
             "anomer": "β",
             "wurcsCode": "a2122h-1b_1-5_2*NCC/3=O",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "C5",
@@ -160,6 +165,7 @@
             ],
             "anomer": "",
             "wurcsCode": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CB",
@@ -179,6 +185,7 @@
             ],
             "anomer": "",
             "wurcsCode": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CD2",
@@ -198,6 +205,7 @@
             ],
             "anomer": "",
             "wurcsCode": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CA",
@@ -217,6 +225,7 @@
             ],
             "anomer": "",
             "wurcsCode": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CA",
