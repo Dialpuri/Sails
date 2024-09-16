@@ -2,8 +2,8 @@
     "residues": [
         {
             "name": "FUC",
-            "snfgShape": "circle",
-            "snfgColour": "green",
+            "snfgShape": "triangle",
+            "snfgColour": "red",
             "preferredDepths": [
                 2
             ],
