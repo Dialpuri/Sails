@@ -51,6 +51,9 @@ namespace Sails {
      * @param donors A vector of donor atom sets.
      * @param snfg_shape The shape of the SNFG symbol e.g. square.
      * @param snfg_colour The colour of the SNFG symbol e.g. blue.
+     * @param preferred_depths A vector of preferred depths for the sugar, e.g. NAG prefers 1 and 2.
+     * @param anomer The anomeric designation (alpha or beta)
+     * @param special Whether the residue needs special treatment in the SNFG
      */
     struct ResidueData {
         ResidueData() = default;
@@ -62,7 +65,8 @@ namespace Sails {
             snfg_shape(std::move(snfg_shape)),
             snfg_colour(std::move(snfg_colour)),
             preferred_depths(preferred_depths),
-            anomer(anomer) {
+            anomer(anomer),
+            special(special) {
 
             if (!wurcs.empty()) {wurcs_code = wurcs;}
 
@@ -83,6 +87,7 @@ namespace Sails {
         std::string snfg_colour;
         std::vector<int> preferred_depths;
         std::string anomer;
+        bool special;
         std::optional<std::string> wurcs_code = std::nullopt;
     };
 
