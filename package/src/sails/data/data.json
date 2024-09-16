@@ -8,6 +8,7 @@
                 2
             ],
             "anomer": "α",
+            "special": true,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -30,6 +31,7 @@
                 7
             ],
             "anomer": "α",
+            "special": false,
             "donorSets": [
                 {
                     "atom3": "O2",
@@ -67,6 +69,7 @@
                 1
             ],
             "anomer": "α",
+            "special": false,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -85,6 +88,7 @@
                 3
             ],
             "anomer": "β",
+            "special": false,
             "donorSets": [
                 {
                     "atom3": "O6",
@@ -117,6 +121,7 @@
                 2
             ],
             "anomer": "β",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "C5",
@@ -154,6 +159,7 @@
                 0
             ],
             "anomer": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CB",
@@ -172,6 +178,7 @@
                 0
             ],
             "anomer": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CD2",
@@ -190,6 +197,7 @@
                 0
             ],
             "anomer": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CA",
@@ -208,6 +216,7 @@
                 0
             ],
             "anomer": "",
+            "special": false,
             "donorSets": [
                 {
                     "atom1": "CA",
