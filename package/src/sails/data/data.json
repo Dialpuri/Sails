@@ -21,7 +21,7 @@
         {
             "name": "MAN",
             "snfgShape": "circle",
-            "snfgColour": "green",
+            "snfgColour": "#00a651",
             "preferredDepths": [
                 1,
                 4,
@@ -62,7 +62,7 @@
         {
             "name": "AMAN",
             "snfgShape": "circle",
-            "snfgColour": "green",
+            "snfgColour": "#00a651",
             "preferredDepths": [
                 1
             ],
@@ -80,7 +80,7 @@
         {
             "name": "BMA",
             "snfgShape": "circle",
-            "snfgColour": "green",
+            "snfgColour": "#00a651",
             "preferredDepths": [
                 3
             ],
@@ -111,7 +111,7 @@
         {
             "name": "NAG",
             "snfgShape": "square",
-            "snfgColour": "blue",
+            "snfgColour": "#0090bc",
             "preferredDepths": [
                 1,
                 2
