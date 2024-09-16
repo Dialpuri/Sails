@@ -130,6 +130,7 @@ add_library(
         ${WRK_DIR}/src/cpp/snfg/shapes/circle.cpp
         ${WRK_DIR}/src/cpp/snfg/shapes/square.cpp
         ${WRK_DIR}/src/cpp/snfg/shapes/rectangle.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/triangle.cpp
 
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
