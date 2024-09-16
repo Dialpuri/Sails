@@ -72,6 +72,12 @@ namespace Sails {
   */
   std::string snfg_shape;
 
+  /**
+  @brief
+  Whether the current node is special
+  */
+  bool special;
+
 
   /**
   @brief Pointer to the linkage which describes the bond between the previous node and this node. Used to draw text
@@ -489,6 +495,14 @@ namespace Sails {
    */
   void order_svg(std::vector<Sails::SVGStringObject> &objects);
 
+
+  /**
+   * @brief Position the special nodes into the SNFG scheme
+   *
+   * @param nodes A vector of any special nodes
+   */
+  void position_special_nodes(std::vector<std::unique_ptr<SNFGNode>> &nodes);
+
   /**
    * @brief Prints the tree structure starting from the given root node.
    *
@@ -513,8 +527,9 @@ namespace Sails {
    * @param root The root node of the SNFG node system.
    * @param sugar The sugar element used to form the node system.
    * @param glycan The glycans used to form the node system.
+   * @param special_nodes
    */
-  void form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan);
+  void form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan, std::vector<std::unique_ptr<SNFGNode>> &special_nodes);
 
   /**
    * @brief Creates the SVG header for an SVG document.
