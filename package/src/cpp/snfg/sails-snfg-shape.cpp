@@ -3,6 +3,7 @@
 //
 
 #include "../../include/snfg/sails-snfg-shape.h"
+#include "../../include/snfg/shapes/diamond.h"
 #include "../../include/snfg/shapes/circle.h"
 #include "../../include/snfg/shapes/rectangle.h"
 #include "../../include/snfg/shapes/square.h"
@@ -48,6 +49,8 @@ std::unique_ptr<Sails::SNFGShapeBase> Sails::get_svg_shape(SNFGNode *node) {
         return std::make_unique<Square>(node);
     if (node->snfg_shape == "triangle")
         return std::make_unique<Triangle>(node);
+    if (node->snfg_shape == "diamond")
+        return std::make_unique<Diamond>(node);
     if (node->snfg_shape == "rectangle")
         return std::make_unique<Rectangle>(node);
 
