@@ -1,6 +1,51 @@
 {
     "residues": [
         {
+            "name": "SIA",
+            "snfgShape": "diamond",
+            "snfgColour": "purple",
+            "preferredDepths": [
+                7
+            ],
+            "anomer": "α",
+            "special": false,
+            "donorSets": [],
+            "acceptorSets": [
+                {
+                    "atom1": "C2",
+                    "atom2": "C3",
+                    "atom3": "C4",
+                    "identifier": 2
+                }
+            ]
+        },
+        {
+            "name": "GAL",
+            "snfgShape": "circle",
+            "snfgColour": "yellow",
+            "preferredDepths": [
+                6
+            ],
+            "anomer": "β",
+            "special": false,
+            "donorSets": [
+                {
+                    "atom3": "O6",
+                    "atom2": "C6",
+                    "atom1": "C5",
+                    "identifier": 6
+                }
+            ],
+            "acceptorSets": [
+                {
+                    "atom1": "C1",
+                    "atom2": "O5",
+                    "atom3": "C5",
+                    "identifier": 1
+                }
+            ]
+        },
+        {
             "name": "FUC",
             "snfgShape": "triangle",
             "snfgColour": "red",
@@ -46,6 +91,12 @@
                     "atom2": "C3",
                     "atom1": "C4",
                     "identifier": 3
+                },
+                {
+                    "atom3": "O4",
+                    "atom2": "C4",
+                    "atom1": "C5",
+                    "identifier": 4
                 },
                 {
                     "atom3": "O6",
