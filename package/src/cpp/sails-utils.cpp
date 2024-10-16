@@ -74,6 +74,9 @@ void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, c
     gemmi::Structure structure;
     gemmi::Model model = gemmi::Model("A");
     gemmi::Chain chain = gemmi::Chain("A");
+    for (int i = 0; i < residues.size(); i++) {
+        residues[i].seqid = {i+1, ' '};
+    }
     chain.append_residues(std::move(residues));
     model.chains = {chain};
     structure.models = {model};
