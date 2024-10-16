@@ -141,22 +141,6 @@ namespace Sails {
                           const Sugar *terminal_sugar);
 
   /**
-   * Performs the translation of a residue based on the given linkage data.
-   *
-   * The donor atoms of the input residue are used to calculate a superposition of a given new monomer. A new
-   * monomer is loaded and transformed to the correct position and returned.
-   *
-   * @param residue The residue to calculate the translation for.
-   * @param data The linkage data containing donor and acceptor information.
-   * @param density The constructed density object for accessing experimental data.
-   * @param refine Boolean to run real space simplex refinement on the residue.
-   * @return Optionally, the translated residue.
-   * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
-   */
-  std::optional<Sails::SuperpositionResult> add_residue(
-   gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
-
-  /**
    * Finds favoured additions based on a terminal sugar and a list of possible additions.
    * A favoured addition is one where the depth of the new residue matches one of the preferred depths in the
    * residue database for that residue name.
@@ -191,21 +175,6 @@ namespace Sails {
    */
   [[nodiscard]] double calculate_clash_score(const SuperpositionResult &result) const;
 
-
-  /**
-   * @brief Removes the leaving atom from the given residue objects.
-   *
-   * The leaving atom is identified by the acceptor number in the linkage data.
-   * The leaving atom is represented as "O" followed by the acceptor number.
-   * The leaving atom is removed from both the new_monomer and reference_library_monomer residue objects.
-   *
-   * @param data The linkage data that contains the acceptor number.
-   * @param reference_library_monomer The reference library monomer residue object.
-   * @param new_monomer The new monomer residue object.
-   */
-  static void remove_leaving_atom(LinkageData &data, gemmi::Residue &reference_library_monomer,
-                                  gemmi::Residue &new_monomer);
-
   /**
    * @brief Move the positions of acceptor atoms based on given parameters.
    *
@@ -220,35 +189,6 @@ namespace Sails {
    */
   static void move_acceptor_atomic_positions(std::vector<gemmi::Atom *> &atoms, double length,
                                              std::vector<double> &angles, std::vector<double> &torsions);
-
-  /**
-   * @brief Applies a superposition transformation to a set of atoms.
-   *
-   * This method calculates the superposition transformation between a set of atoms and a set of reference atoms,
-   * specified by their positions. The transformation consists of a translation and rotation applied to the set of atoms,
-   * such that they align as closely as possible with the reference atoms.
-   *
-   * @param atoms The set of atoms to be transformed.
-   * @param reference_atoms The set of reference atoms used for the superposition calculation.
-   * @param length The length parameter used in the superposition calculation.
-   * @param angles The angles parameter used in the superposition calculation.
-   * @param torsions The torsions parameter used in the superposition calculation.
-   * @return The calculated transformation representing the superposition.
-   */
-  static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom *> &atoms,
-                                          std::vector<gemmi::Atom> &reference_atoms, double length,
-                                          std::vector<double> &angles, std::vector<
-                                           double> &torsions);
-
-  /**
-     * Retrieves the monomer with the given name from the monomer library.
-     *
-     * @param monomer The name of the monomer to retrieve.
-     * @param remove_h
-     * @return An optional value that contains the monomer, or an empty optional if the monomer does not exist.
-     */
-  std::optional<gemmi::Residue> get_monomer(const std::string &monomer, bool remove_h);
-
 
   /**
    * @brief Rotates the exocyclic atoms of a residue and finds the best position based on density scoring.
@@ -319,10 +259,74 @@ namespace Sails {
    */
   void print_successful_log(Density &density, std::optional<SuperpositionResult> opt_result);
 
- private:
-  gemmi::Structure *structure{};
+ protected:
+
+  /**
+     * Retrieves the monomer with the given name from the monomer library.
+     *
+     * @param monomer The name of the monomer to retrieve.
+     * @param remove_h
+     * @return An optional value that contains the monomer, or an empty optional if the monomer does not exist.
+     */
+  std::optional<gemmi::Residue> get_monomer(const std::string &monomer, bool remove_h);
+
+
+  /**
+   * Performs the translation of a residue based on the given linkage data.
+   *
+   * The donor atoms of the input residue are used to calculate a superposition of a given new monomer. A new
+   * monomer is loaded and transformed to the correct position and returned.
+   *
+   * @param residue The residue to calculate the translation for.
+   * @param data The linkage data containing donor and acceptor information.
+   * @param density The constructed density object for accessing experimental data.
+   * @param refine Boolean to run real space simplex refinement on the residue.
+   * @return Optionally, the translated residue.
+   * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
+   */
+  std::optional<Sails::SuperpositionResult> add_residue(
+   gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
+
+  /**
+  * @brief Applies a superposition transformation to a set of atoms.
+  *
+  * This method calculates the superposition transformation between a set of atoms and a set of reference atoms,
+  * specified by their positions. The transformation consists of a translation and rotation applied to the set of atoms,
+  * such that they align as closely as possible with the reference atoms.
+  *
+  * @param atoms The set of atoms to be transformed.
+  * @param reference_atoms The set of reference atoms used for the superposition calculation.
+  * @param length The length parameter used in the superposition calculation.
+  * @param angles The angles parameter used in the superposition calculation.
+  * @param torsions The torsions parameter used in the superposition calculation.
+  * @return The calculated transformation representing the superposition.
+  */
+  static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom *> &atoms,
+                                          std::vector<gemmi::Atom> &reference_atoms, double length,
+                                          std::vector<double> &angles, std::vector<
+                                           double> &torsions);
+
+
+  /**
+   * @brief Removes the leaving atom from the given residue objects.
+   *
+   * The leaving atom is identified by the acceptor number in the linkage data.
+   * The leaving atom is represented as "O" followed by the acceptor number.
+   * The leaving atom is removed from both the new_monomer and reference_library_monomer residue objects.
+   *
+   * @param data The linkage data that contains the acceptor number.
+   * @param reference_library_monomer The reference library monomer residue object.
+   * @param new_monomer The new monomer residue object.
+   */
+  static void remove_leaving_atom(LinkageData &data, gemmi::Residue &reference_library_monomer,
+                                  gemmi::Residue &new_monomer);
+
+
   LinkageDatabase linkage_database;
   ResidueDatabase residue_database;
+
+ private:
+  gemmi::Structure *structure{};
   std::string monomer_library_path;
   std::string special_monomer_path;
   std::map<std::string, gemmi::Residue> monomers;
