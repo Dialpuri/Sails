@@ -129,6 +129,7 @@ add_library(
         ${WRK_DIR}/src/cpp/snfg/shapes/square.cpp
         ${WRK_DIR}/src/cpp/snfg/shapes/rectangle.cpp
         ${WRK_DIR}/src/cpp/snfg/shapes/triangle.cpp
+        ${WRK_DIR}/src/cpp/snfg/shapes/diamond.cpp
 
         # Bindings
         ${WRK_DIR}/src/bindings/sails-gemmi-bindings.cpp
@@ -247,7 +248,7 @@ endif()
 
 #if (SKBUILD)
     # Try to import all Python components potentially needed by nanobind
-    find_package(Python 3.8
+    find_package(Python 3.10
             REQUIRED COMPONENTS Interpreter Development.Module
             OPTIONAL_COMPONENTS Development.SABIModule)
 
