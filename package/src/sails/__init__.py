@@ -22,6 +22,7 @@ from .sails_module import (
     get_all_snfgs,
     Grid,
     AxisOrder,
+    get_conformations,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -71,4 +72,5 @@ __all__ = [
     "get_sails_structure",
     "get_sails_mtz",
     "get_sails_map",
+    "get_conformations",
 ]
