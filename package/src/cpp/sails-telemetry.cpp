@@ -37,6 +37,7 @@ Sails::TelemetryLog Sails::Telemetry::calculate_log(gemmi::Structure *structure,
     for (const auto &[cycle, sites]: states) {
         for (const auto &site: sites) {
             gemmi::Residue residue = Utils::get_residue_from_glycosite(site, structure);
+            if (residue.atoms.empty()) {continue;}
             const double rscc_score = density->score_residue(residue, rscc);
             const double rsr_score = density->score_residue(residue, rsr);
             const double dds_score = density->score_residue(residue, dds);
