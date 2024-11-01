@@ -11,9 +11,10 @@ set(gemmi_src ${gemmi-dependencies_SOURCE_DIR})
 find_package(ZLIB)
 if (ZLIB_FOUND)
     include_directories("${ZLIB_INCLUDE_DIR}")
-    message(STATUS "The build will use zlib code from emscripten")
+else()
+    message(STATUS "The build will use zlib code from third_party/zlib.")
+    include_directories("${gemmi_src}/third_party/zlib")
 endif()
-
 include_directories("${gemmi_src}/include"
         "${gemmi_src}/third_party")
 
