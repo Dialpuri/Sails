@@ -51,29 +51,33 @@ def main(args):
         subprocess.run(
             [
                 "sails",
-                "-pdbin",
+                "xray",
+                "-modelin",
                 str(deglyco_cif_path),
                 "-mtzin",
                 str(mtz_path),
-                "-pdbout",
+                "-modelout",
                 str(pdb_out),
                 "-mtzout",
                 str(mtz_out),
+                "-type",
+                "n_glycosylate",
                 "-cycles",
-                "6",
+                "3",
+                "-v",
             ]
         )
 
-    subprocess.run(
-        [
-            "python",
-            "/Users/dialpuri/Development/sails/package/scripts/compare_structures.py",
-            "-model",
-            pdb_out,
-            "-reference",
-            cif_path,
-        ]
-    )
+    # subprocess.run(
+    #     [
+    #         "python",
+    #         "/Users/dialpuri/Development/sails/package/scripts/compare_structures.py",
+    #         "-model",
+    #         pdb_out,
+    #         "-reference",
+    #         cif_path,
+    #     ]
+    # )
 
 
 if __name__ == "__main__":
