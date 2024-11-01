@@ -20,7 +20,7 @@ def format_residue(chain: gemmi.Chain, residue: gemmi.Residue):
 
 
 def main(args):
-    data = load_data_file("package/data/data.json")
+    data = load_data_file("package/src/sails/data/data.json")
     structure = gemmi.read_structure(args.model)
     reference = gemmi.read_structure(args.reference)
 
