@@ -35,13 +35,19 @@ Sails::SVGStringObject Sails::SNFG::create_donor_labels(SNFGNode *parent, SNFGNo
     int dy = node->y - parent->y;
 
     double ratio = 0.3;
-
-    int xbuffer = -10;
-    int ybuffer = dy == 0 ? 20: 19;
-    ybuffer += dy > 0 ? (dy*0.2) : 0;
-    double xt = parent->x + (ratio*dx) + xbuffer;
-    double yt = parent->y + (ratio*dy) + ybuffer;
-
+    double xt = parent->x;
+    double yt = parent->y;
+    if (dx != 0) {
+        int xbuffer = -10;
+        int ybuffer = dy == 0 ? 20: 19;
+        ybuffer += dy > 0 ? (dy*0.2) : 0;
+        xt += (ratio*dx) + xbuffer;
+        yt += (ratio*dy) + ybuffer;
+    }
+    else {
+        yt += (ratio*dy) + 20;
+        xt += 10;
+    }
     std::string donor_number = {linkage->donor_atom[linkage->donor_atom.size()-1]};
     return create_svg_text(xt, yt, donor_number);
 }
@@ -52,11 +58,20 @@ Sails::SVGStringObject Sails::SNFG::create_anomer_labels(SNFGNode* parent, SNFGN
 
     double ratio = 0.7;
 
-    int xbuffer = dy > 0 ? 10: 5;
-    int ybuffer = dy == 0 ? 20: 19;
-    ybuffer += dy > 0 ? (dy*0.2) : 0;
-    double xt = parent->x + (ratio*dx) + xbuffer;
-    double yt = parent->y + (ratio*dy) + ybuffer;
+    double xt = parent->x;
+    double yt = parent->y;
+    if (dx != 0) {
+        int xbuffer = dy > 0 ? 10: 5;
+        int ybuffer = dy == 0 ? 20: 19;
+        ybuffer += dy > 0 ? (dy*0.2) : 0;
+        xt += (ratio*dx) + xbuffer;
+        yt += (ratio*dy) + ybuffer;
+    }
+    else {
+        yt += (ratio*dy) + 10;
+        xt += 10;
+    }
+
 
     gemmi::Residue* acceptor_residue_ptr = Utils::get_residue_ptr_from_glycosite(node->sugar->site, m_structure);
     std::string acceptor_name = acceptor_residue_ptr->name;
@@ -254,10 +269,11 @@ void Sails::SNFG::assign_snfg_types(Sugar *child, SNFGNode *new_child) {
         const ResidueData *instance = &m_database->operator[](residue_ptr->name);
         new_child->snfg_colour = instance->snfg_colour;
         new_child->snfg_shape = instance->snfg_shape;
+        new_child->special = instance->special;
     }
 }
 
-void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan) {
+void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &glycan, std::vector<std::unique_ptr<SNFGNode>> &special_nodes) {
     int pos = 0;
 
     root->residue = Utils::get_residue_ptr_from_glycosite(root->sugar->site, m_structure);
@@ -275,15 +291,21 @@ void Sails::SNFG::form_snfg_node_system(SNFGNode *root, Sugar *sugar, Glycan &gl
     });
 
     for (auto &child: adjacency_list) {
-        std::unique_ptr<SNFGNode> new_child = std::make_unique<SNFGNode>(child);
+        auto new_child = std::make_unique<SNFGNode>(child);
         new_child->parent_position = pos;
         new_child->parent = root;
 
         assign_snfg_types(child, new_child.get());
 
-        root->children.push_back(std::move(new_child));
-
-        form_snfg_node_system(root->children.back().get(), child, glycan);
+        if (!new_child->special) {
+            root->children.push_back(std::move(new_child));
+        } else {
+            new_child->residue = Utils::get_residue_ptr_from_glycosite(new_child->sugar->site, m_structure);
+            new_child->chain = Utils::get_chain_ptr_from_glycosite(new_child->sugar->site, m_structure);
+            special_nodes.push_back(std::move(new_child));
+            continue;
+        }
+        form_snfg_node_system(root->children.back().get(), child, glycan, special_nodes);
         pos++;
     }
 }
@@ -318,14 +340,24 @@ void Sails::SNFG::order_svg(std::vector<Sails::SVGStringObject> &objects) {
               });
 }
 
+void Sails::SNFG::position_special_nodes(std::vector<std::unique_ptr<SNFGNode>>& nodes) {
+    if (nodes.empty()) return;
+    for (auto &child: nodes) {
+        child->x = child->parent->x;
+        child->y = child->parent->y + node_size;
+        child->parent->children.emplace_back(std::move(child));
+    }
+}
+
 
 std::string Sails::SNFG::create_snfg(Glycan &glycan, Glycosite &base_residue) {
     auto base_sugar = glycan.sugars[base_residue].get();
 
     auto root = std::make_unique<SNFGNode>(base_sugar);
-    form_snfg_node_system(root.get(), base_sugar, glycan);
-
+    std::vector<std::unique_ptr<SNFGNode>> special_nodes;
+    form_snfg_node_system(root.get(), base_sugar, glycan, special_nodes);
     calculate_node_positions(root.get());
+    position_special_nodes(special_nodes);
 
     std::vector<Sails::SVGStringObject> objects;
     create_svg(objects, root.get(), root.get());

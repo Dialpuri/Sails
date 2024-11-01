@@ -3,9 +3,11 @@
 //
 
 #include "../../include/snfg/sails-snfg-shape.h"
+#include "../../include/snfg/shapes/diamond.h"
 #include "../../include/snfg/shapes/circle.h"
 #include "../../include/snfg/shapes/rectangle.h"
 #include "../../include/snfg/shapes/square.h"
+#include "../../include/snfg/shapes/triangle.h"
 
 std::string Sails::SNFGShapeBase::kwargs_to_string(std::map<std::string, std::string> kwargs) {
     std::stringstream object;
@@ -42,9 +44,14 @@ Sails::SVGStringObject Sails::SNFGShapeBase::draw() const {
 
 std::unique_ptr<Sails::SNFGShapeBase> Sails::get_svg_shape(SNFGNode *node) {
     if (node->snfg_shape == "circle")
-        return std::make_unique<Sails::Circle>(node);
+        return std::make_unique<Circle>(node);
     if (node->snfg_shape == "square")
         return std::make_unique<Square>(node);
+    if (node->snfg_shape == "triangle")
+        return std::make_unique<Triangle>(node);
+    if (node->snfg_shape == "diamond")
+        return std::make_unique<Diamond>(node);
     if (node->snfg_shape == "rectangle")
         return std::make_unique<Rectangle>(node);
+
 }
