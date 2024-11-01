@@ -365,14 +365,15 @@ std::map<std::string, std::string> get_all_snfgs(gemmi::Structure &structure, st
 }
 
 void get_conformations(const std::string &residue_1, const std::string &residue_2, int donor_number,
-                       int acceptor_number, const std::string &resource_dir, int step) {
+                       int acceptor_number, const std::string &resource_dir, int step, int lower_bound, int upper_bound,
+                       const std::string& output_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
     Sails::Conformer conformer = {residue_database, linkage_database};
-    conformer.get_all_conformers(residue_1, residue_2, donor_number, acceptor_number, step);
+    conformer.get_all_conformers(residue_1, residue_2, donor_number, acceptor_number, step, lower_bound, upper_bound, output_dir);
 }
 
 // void test() {

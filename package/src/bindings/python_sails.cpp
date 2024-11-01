@@ -196,9 +196,9 @@ NB_MODULE(sails_module, m) {
           "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("get_conformations", &get_conformations, "residue_1"_a, "residue_2"_a, "donor_number"_a, "acceptor_number"_a,
-          "resource_dir"_a, "step"_a);
+          "resource_dir"_a, "step"_a, "lower_bound"_a, "upper_bound"_a, "output_dir"_a);
 
-    m.def("test_snfg", &test);
+    // m.def("test_snfg", &test);
 
     m.def("get_snfg", &get_snfg, "chain"_a, "seqid"_a, "structure"_a, "resource_dir"_a);
     m.def("get_all_snfgs", &get_all_snfgs, "structure"_a, "resource_dir"_a);

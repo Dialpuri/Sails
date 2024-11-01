@@ -17,11 +17,13 @@ namespace Sails {
         }
 
         void superimpose(const std::string &residue_1_name, const std::string &residue_2_name,
-                         int donor_number, int acceptor_number, double phi, double psi);
+                         int donor_number, int acceptor_number, double phi, double psi, const std::string& base_output);
 
 
-        void get_all_conformers(const std::string &residue_1_name, const std::string &residue_2_name, int donor_number,
-                                int acceptor_number, int step);
+        void get_all_conformers(const std::string &residue_1_name, const std::string &residue_2_name,
+                                          int donor_number, int acceptor_number,
+                                          int step, int lower_bound, int upper_bound,
+                                          const std::string& base_output);
 
         void remove_leaving_atoms(Sails::LinkageData &data, gemmi::Residue &reference_library_monomer,
                                        gemmi::Residue &new_monomer);
