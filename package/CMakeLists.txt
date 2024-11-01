@@ -2,38 +2,14 @@ cmake_minimum_required(VERSION 3.15...3.26)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 project(sails LANGUAGES CXX)
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 #set(CMAKE_C_COMPILER "gcc")
 #set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if (NOT SKBUILD)
-    message(WARNING "\
-  This CMake file is meant to be executed using 'scikit-build'. Running
-  it directly will almost certainly not produce the desired result. If
-  you are a user trying to install this package, please use the command
-  below, which will install all necessary build dependencies, compile
-  the package in an isolated environment, and then install it.
-  =====================================================================
-   $ pip install .
-  =====================================================================
-  If you are a software developer, and this is your own package, then
-  it is usually much more efficient to install the build dependencies
-  in your environment once and use the following command that avoids
-  a costly creation of a new virtual environment at every compilation:
-  =====================================================================
-   $ pip install nanobind scikit-build-core[pyproject]
-   $ pip install --no-build-isolation -ve -Ceditable.rebuild=true .
-  =====================================================================
-  You may optionally add -Ceditable.rebuild=true to auto-rebuild when
-  the package is imported. Otherwise, you need to re-run the above
-  after editing C++ files.")
-endif ()
-
-find_package(ZLIB REQUIRED)
-#set(CMAKE_BUILD_TYPE Debug)
+#find_package(ZLIB REQUIRED)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -246,7 +222,7 @@ if (TESTING)
 endif()
 
 
-#if (SKBUILD)
+if (SKBUILD)
     # Try to import all Python components potentially needed by nanobind
     find_package(Python 3.10
             REQUIRED COMPONENTS Interpreter Development.Module
@@ -319,4 +295,31 @@ endif()
     )
 
     install(TARGETS sails_module LIBRARY DESTINATION sails)
-#endif ()
+endif ()
+
+if (CMAKE_C_PLATFORM_ID STREQUAL "emscripten")
+    set_target_properties( sails_lib
+            PROPERTIES
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/wasm"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/wasm"
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/wasm"
+    )
+
+    set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/wasm)
+    add_executable(sails_module ${WRK_DIR}/src/bindings/js_sails.cpp)
+    set_target_properties (sails_module  PROPERTIES OUTPUT_NAME sails )
+    set_target_properties(sails_module PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/wasm)
+
+    target_link_options(sails_module PRIVATE
+#                --preload-file data/linkage_torsions@/
+                -sDEMANGLE_SUPPORT=0 -sEXIT_RUNTIME=1 -sASSERTIONS=2 -fexceptions
+                -sALLOW_MEMORY_GROWTH=1 --bind -sFORCE_FILESYSTEM=1 -sMODULARIZE=1
+                -sEXPORT_NAME=sails_module -sEXPORTED_RUNTIME_METHODS=['FS']
+                -sMODULARIZE=1 -sEXPORT_ES6=1 )
+
+    set_target_properties(sails_module PROPERTIES COMPILE_FLAGS "-s ENVIRONMENT='web'")
+#    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sails.wasm
+#                  ${CMAKE_CURRENT_BINARY_DIR}/sails.js
+#            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/wasm)
+
+endif ()
