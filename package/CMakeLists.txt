@@ -9,7 +9,10 @@ project(sails LANGUAGES CXX)
 #set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-#find_package(ZLIB REQUIRED)
+if (SKBUILD)
+    find_package(ZLIB REQUIRED)
+endif ()
+
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -318,8 +321,6 @@ if (CMAKE_C_PLATFORM_ID STREQUAL "emscripten")
                 -sMODULARIZE=1 -sEXPORT_ES6=1 )
 
     set_target_properties(sails_module PROPERTIES COMPILE_FLAGS "-s ENVIRONMENT='web'")
-#    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sails.wasm
-#                  ${CMAKE_CURRENT_BINARY_DIR}/sails.js
-#            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/wasm)
+
 
 endif ()
