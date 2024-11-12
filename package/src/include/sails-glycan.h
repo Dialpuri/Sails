@@ -136,6 +136,7 @@ namespace Sails {
             }
 
             sugar_counts = other.sugar_counts;
+            sugar_order = other.sugar_order;
         }
 
         Glycan(gemmi::Structure *structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
@@ -209,12 +210,18 @@ namespace Sails {
          * @return A vector of strings of unique sugars.
          */
         [[nodiscard]] std::vector<std::string> get_unique_sugar_names() const {
-            std::vector<std::string> unique_sugars;
-            unique_sugars.reserve(sugar_counts.size());
-            for (auto& [k, v]: sugar_counts) {
-                unique_sugars.emplace_back(k);
+            std::vector<std::string> names;
+            std::set<std::string> unique_sugar_names;
+            for (auto& site: sugar_order) {
+                std::string name = Utils::get_residue_ptr_from_glycosite(site, m_structure)->name;
+
+                if (unique_sugar_names.find(name) == unique_sugar_names.end()) {
+                    names.emplace_back(name);
+                    unique_sugar_names.insert(name);
+                }
             }
-            return unique_sugars;
+
+            return names;
         }
 
         /**
@@ -304,6 +311,7 @@ namespace Sails {
             } else {
                 sugar_counts[residue_ptr->name] = sugar_counts[residue_ptr->name] + 1;
             }
+            sugar_order.emplace_back(residue);
         }
 
         /**
@@ -333,6 +341,11 @@ namespace Sails {
             } else {
                 sugar_counts[residue_ptr->name] = sugar_counts[residue_ptr->name] - 1;
             }
+
+            sugar_order.erase(
+                std::remove_if(sugar_order.begin(), sugar_order.end(), [&sugar](const Glycosite &s) {
+                return s == sugar->site;
+            }), sugar_order.end());
 
             Sugar *linked_donor = nullptr;
             // remove from adjacency list
@@ -519,6 +532,11 @@ namespace Sails {
          * Sugar counts (e.g. {NAG: 1,BMA: 2})
          */
         std::map<std::string, int> sugar_counts;
+
+        /**
+        * Sugar order (e.g. {NAG, NAG, BMA, MAN, MAN})
+        */
+        std::vector<Glycosite> sugar_order;
 
     };
 }
