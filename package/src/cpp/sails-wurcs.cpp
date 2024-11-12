@@ -34,6 +34,7 @@ std::string Sails::WURCS::get_unique_residue_list(Sails::Glycan *glycan, Sails::
 
     std::stringstream unique_residues;
     for (auto& sugar: unique_sugars) {
+        std::cout << sugar << std::endl;
         if (residue_database.find(sugar) == residue_database.end()) {
             unique_residues << "[" << sugar << "]";
             continue;
