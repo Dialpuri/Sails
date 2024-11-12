@@ -225,6 +225,29 @@ namespace Sails {
         }
 
         /**
+         * @brief Returns the order of the sugars sites.
+         *
+         * @return A vector of Glycosites in order
+         */
+        [[nodiscard]] std::vector<Sails::Glycosite> get_sugar_site_order() const {
+            return sugar_order;
+        }
+
+        /**
+         * @brief Returns the order of the sugars.
+         *
+         * @return A vector of names of sugars in order e.g. NAG,NAG,BMA,MAN
+         */
+        [[nodiscard]] std::vector<std::string> get_sugar_name_order() const {
+            std::vector<std::string> names;
+            names.reserve(sugar_order.size());
+            for (const auto &sugar: sugar_order) {
+                names.emplace_back(Utils::get_residue_ptr_from_glycosite(sugar, m_structure)->name);
+            }
+            return names;
+        }
+
+        /**
          * @brief Returns the number of unique sugars.
          *
          * @return The number of unique sugars

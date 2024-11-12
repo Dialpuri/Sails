@@ -11,7 +11,7 @@ std::string Sails::WURCS::generate_wurcs(Sails::Glycan *glycan, Sails::ResidueDa
     wurcs << get_wurcs_header() << get_section_delimiter();
     wurcs << get_unit_count(glycan) << get_section_delimiter();
     wurcs << get_unique_residue_list(glycan, residue_database) << get_section_delimiter();
-
+    wurcs << get_residue_order(glycan, residue_database) << get_section_delimiter();
     return wurcs.str();
 }
 
@@ -46,4 +46,37 @@ std::string Sails::WURCS::get_unique_residue_list(Sails::Glycan *glycan, Sails::
     }
 
     return unique_residues.str();
+}
+
+std::string Sails::WURCS::get_residue_order(Sails::Glycan *glycan, Sails::ResidueDatabase &residue_database) {
+
+    std::vector<std::string> sugar_order = glycan->get_sugar_name_order();
+    std::vector<std::string> unique_sugars = glycan->get_unique_sugar_names();
+    std::map<std::string, int> sugar_indices;
+
+    for (int i = 0; i < unique_sugars.size(); i++) {
+        std::optional<std::string> wurcs = residue_database[unique_sugars[i]].wurcs_code;
+        if (!wurcs.has_value()) {continue;}
+        sugar_indices[unique_sugars[i]] = i;
+    }
+
+    std::vector<int> order ;
+    for (const auto& name: sugar_order) {
+        if (sugar_indices.find(name) == sugar_indices.end()) {
+            continue;
+        }
+        int index = sugar_indices[name];
+        order.emplace_back(index);
+    }
+
+    std::stringstream residue_order;
+    for (int i = 0; i < order.size(); i++) {
+        residue_order << order[i];
+
+        if (i != order.size() - 1) {
+            residue_order << "-";
+        }
+    }
+
+    return residue_order.str();
 }
