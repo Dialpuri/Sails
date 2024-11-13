@@ -269,6 +269,33 @@ namespace Sails {
         }
 
         /**
+         * @brief Returns internal adjacency list.
+         *
+         * @return A map of sugar ptrs to a set of linked sugar ptrs.
+         */
+        [[nodiscard]] const std::map<Sugar*, std::set<Sugar*>>* get_adjacency_list() const {
+            return &adjacency_list;
+        }
+
+        /**
+         * @brief Returns the linkages in this glycan.
+         *
+         * @return A ptr to a vector of of linkages.
+         */
+        [[nodiscard]] const std::vector<Linkage>* get_linkage_list() const {
+            return &linkage_list;
+        }
+
+        /**
+         * @brief Returns the sugars in this glycan.
+         *
+         * @return A ptr to a all sugars in this glycan.
+         */
+        [[nodiscard]] const std::map<Glycosite, std::unique_ptr<Sugar>>* get_sugars() const {
+            return &sugars;
+        }
+
+        /**
          * @brief Adds linkage between two sugars.
          *
          * This function creates a linkage between two sugars by the seqId. Sugars must have been added with add_sugar

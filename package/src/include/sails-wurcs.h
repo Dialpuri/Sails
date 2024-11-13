@@ -24,9 +24,13 @@ namespace Sails {
 
         static std::string get_residue_order(Sails::Glycan* glycan, Sails::ResidueDatabase& residue_database);
 
+        static std::string get_link_list(Sails::Glycan* glycan, Sails::ResidueDatabase& residue_database);
+
         static std::string get_wurcs_header() {return "WURCS=2.0";}
 
         static std::string get_section_delimiter() {return "/";}
+
+        static std::vector<int> calculate_residue_order(const Glycan *glycan, ResidueDatabase &residue_database);
     };
 
 }
