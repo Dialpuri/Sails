@@ -188,5 +188,7 @@ Sails::JSONLoader::extract_atom_set(simdjson::simdjson_result<simdjson::ondemand
         atom_sets.emplace_back(atom_set);
     }
 
-    return atom_sets;
-}
+    std::sort(atom_sets.begin(), atom_sets.end(), [](const Sails::AtomSet &a, const Sails::AtomSet &b) {
+        return a.identifier < b.identifier;
+    });
+    return atom_sets;}
