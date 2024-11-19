@@ -30,7 +30,7 @@ namespace Sails {
 
         static std::string get_section_delimiter() {return "/";}
 
-        static std::vector<int> calculate_residue_order(const Glycan *glycan, ResidueDatabase &residue_database);
+        static std::vector<int> calculate_residue_order(Glycan *glycan, ResidueDatabase &residue_database);
     };
 
 }

@@ -12,7 +12,7 @@ std::string Sails::WURCS::generate_wurcs(Sails::Glycan *glycan, Sails::ResidueDa
     wurcs << get_unit_count(glycan) << get_section_delimiter();
     wurcs << get_unique_residue_list(glycan, residue_database) << get_section_delimiter();
     wurcs << get_residue_order(glycan, residue_database) << get_section_delimiter();
-    wurcs << get_link_list(glycan, residue_database) << get_section_delimiter();
+    wurcs << get_link_list(glycan, residue_database);
     return wurcs.str();
 }
 
@@ -67,15 +67,16 @@ std::string Sails::WURCS::get_residue_order(Sails::Glycan *glycan, Sails::Residu
 std::string Sails::WURCS::get_link_list(Sails::Glycan *glycan, Sails::ResidueDatabase &residue_database) {
 
     std::vector<int> order = calculate_residue_order(glycan, residue_database);
-    auto sugar_sites = glycan->get_sugar_site_order();
+    auto sugar_sites = glycan->get_sugar_site_dfs_order();
     auto sugar_names = glycan->get_sugar_name_order();
 
     auto sugars = glycan->get_sugars();
     auto adjacency_list = glycan->get_adjacency_list();
 
-    char alphabet[] = "abcdefghijklmnopqrstuvxyz";
+    char alphabet[] = "abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::map<Glycosite, char> site_map;
     int alphabet_count = 0;
+
     for (int i = 0; i < sugar_sites.size(); i++) {
         if (residue_database.find(sugar_names[i]) == residue_database.end()) {
             continue;
@@ -97,6 +98,7 @@ std::string Sails::WURCS::get_link_list(Sails::Glycan *glycan, Sails::ResidueDat
 
         std::set<Sugar*> linked_sugars = adjacency_list->at(sugar_ptr);
 
+        std::map<int, Linkage*> linkages;
         for (auto& linked_sugar: linked_sugars) {
             Linkage* linkage = sugar_ptr->find_linkage(sugar_ptr, linked_sugar);
 
@@ -108,8 +110,13 @@ std::string Sails::WURCS::get_link_list(Sails::Glycan *glycan, Sails::ResidueDat
                 continue;
             }
 
+            int linkage_donor_number = linkage->donor_atom.back() - '0';
+            linkages[linkage_donor_number] = linkage;
+        }
+
+        for (auto& [number, linkage]: linkages) {
             std::stringstream linkage_string;
-            linkage_string << site_map.at(linkage->donor_sugar->site) << linkage->donor_atom.back();
+            linkage_string << site_map.at(linkage->donor_sugar->site) << number;
             linkage_string << "-";
             linkage_string << site_map.at(linkage->acceptor_sugar->site) << linkage->acceptor_atom.back();
             linkage_order.emplace_back(linkage_string.str());
@@ -128,8 +135,8 @@ std::string Sails::WURCS::get_link_list(Sails::Glycan *glycan, Sails::ResidueDat
 }
 
 std::vector<int>
-Sails::WURCS::calculate_residue_order(const Sails::Glycan *glycan, Sails::ResidueDatabase &residue_database) {
-    std::vector<std::string> sugar_order = glycan->get_sugar_name_order();
+Sails::WURCS::calculate_residue_order(Sails::Glycan *glycan, Sails::ResidueDatabase &residue_database) {
+    std::vector<std::string> sugar_order = glycan->get_sugar_name_dfs_order();
     std::vector<std::string> unique_sugars = glycan->get_unique_sugar_names();
     std::map<std::string, int> sugar_indices;
 
