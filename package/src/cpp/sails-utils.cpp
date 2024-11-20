@@ -121,3 +121,13 @@ bool Sails::Utils::file_exists(const std::string &path) {
     f.close();
     return good;
 }
+
+std::vector<std::string> Sails::Utils::split(const std::string &string, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream token_stream(string);
+    while (std::getline(token_stream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
