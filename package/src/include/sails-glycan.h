@@ -647,8 +647,14 @@ namespace Sails {
         */
         std::vector<Glycosite> sugar_order;
 
-
     };
+
+    struct PseudoGlycan: Glycan {
+        PseudoGlycan(gemmi::Structure *structure, ResidueDatabase &database, Glycosite &glycosite)
+            : Glycan(structure, database, glycosite) {
+        }
+    };
+
 }
 
 #endif //SAILS_SAILS_GLYCAN_H
