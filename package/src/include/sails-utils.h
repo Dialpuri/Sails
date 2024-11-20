@@ -80,7 +80,7 @@ namespace Sails::Utils {
   *
   * @return The formatted key for the site.
   */
- std::string format_site_key(const Glycosite& glycosite);
+ std::string format_site_key(const Glycosite &glycosite);
 
  /**
    * @brief Formats the key of the residue for a given glycosite.
@@ -92,7 +92,7 @@ namespace Sails::Utils {
    *
    * @return The formatted key for the site.
    */
- std::string format_residue_from_site(const Glycosite& glycosite, gemmi::Structure *structure);
+ std::string format_residue_from_site(const Glycosite &glycosite, gemmi::Structure *structure);
 
 
  /**
@@ -106,7 +106,7 @@ namespace Sails::Utils {
   *
   * @return The gemmi::Chain object from the specified glycosute.
   */
- gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
+ gemmi::Chain get_chain_from_glycosite(const Glycosite &site, const gemmi::Structure *structure);
 
  /**
   * @brief Retrieves the gemmi::Residue corresponding to a given Glycosite.
@@ -119,7 +119,7 @@ namespace Sails::Utils {
   *
   * @return The gemmi::Residue from the specified glycosite.
   */
- gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
+ gemmi::Residue get_residue_from_glycosite(const Glycosite &site, const gemmi::Structure *structure);
 
  /**
  * @brief Retrieves the gemmi::Residue pointer corresponding to a given Glycosite.
@@ -132,7 +132,7 @@ namespace Sails::Utils {
  *
  * @return The gemmi::Residue pointer from the specified glycosite.
  */
- gemmi::Residue* get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure* structure);
+ gemmi::Residue *get_residue_ptr_from_glycosite(const Glycosite &site, gemmi::Structure *structure);
 
  /**
  * @brief Retrieves the gemmi::Chain pointer corresponding to a given Glycosite.
@@ -145,7 +145,7 @@ namespace Sails::Utils {
  *
  * @return The gemmi::Chain pointer from the specified glycosite.
  */
- gemmi::Chain* get_chain_ptr_from_glycosite(const Glycosite &site, gemmi::Structure* structure);
+ gemmi::Chain *get_chain_ptr_from_glycosite(const Glycosite &site, gemmi::Structure *structure);
 
  /**
   * @brief Retrieves the gemmi::Atom from the specified glycosite.
@@ -159,7 +159,7 @@ namespace Sails::Utils {
   * @return The gemmi::Atom from the specified glycosite.
   * @throws std::runtime_error if the site has not been initialised from a Mark.
   */
- gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure* structure);
+ gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure *structure);
 
  /**
   * @brief Converts the given LinkageData object into an ID string.
@@ -209,7 +209,7 @@ namespace Sails::Utils {
   * @param structure The gemmi::Structure object to be saved.
   * @param path The path of the file where the structure should be saved.
   */
- void save_structure_to_file(const gemmi::Structure& structure, const std::string& path);
+ void save_structure_to_file(const gemmi::Structure &structure, const std::string &path);
 
 
  /**
@@ -221,7 +221,7 @@ namespace Sails::Utils {
   * @param input The string to increment.
   * @return The incremented string.
   */
- std::string get_next_string(const std::string& input);
+ std::string get_next_string(const std::string &input);
 
  /**
   * @brief Checks if a file exists at the specified path.
@@ -232,7 +232,17 @@ namespace Sails::Utils {
   *
   * @return true if the file exists, false otherwise.
   */
- bool file_exists(const std::string& path);
+ bool file_exists(const std::string &path);
+
+ /**
+  * @brief Splits a string by delimiter
+  *
+  * @param string The string to split
+  * @param delimiter The delimiter to split at
+  *
+  * @return a vector of strings split by the delimiter
+  */
+ std::vector<std::string> split(const std::string &string, char delimiter);
 
 } // namespace Sails::Utils
 
