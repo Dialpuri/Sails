@@ -3,6 +3,9 @@
 //
 
 #include "../include/sails-wurcs.h"
+#include "../include/sails-linkage.h"
+
+// WURCS WRITING
 
 std::string Sails::WURCS::generate_wurcs(Sails::Glycan *glycan, Sails::ResidueDatabase& residue_database) {
 
@@ -14,10 +17,6 @@ std::string Sails::WURCS::generate_wurcs(Sails::Glycan *glycan, Sails::ResidueDa
     wurcs << get_residue_order(glycan, residue_database) << get_section_delimiter();
     wurcs << get_link_list(glycan, residue_database);
     return wurcs.str();
-}
-
-Sails::Glycan Sails::WURCS::generate_psuedo_glycan(const std::string &wurcs, gemmi::Structure *structure) {
-    return Sails::Glycan();
 }
 
 std::string Sails::WURCS::get_unit_count(Sails::Glycan *glycan) {
@@ -156,4 +155,135 @@ Sails::WURCS::calculate_residue_order(Sails::Glycan *glycan, Sails::ResidueDatab
         order.emplace_back(index);
     }
     return order;
+}
+
+std::vector<std::string> Sails::WURCS::extract_wurcs_unique_residues(const std::string &wurcs) {
+    std::regex regex(R"(\[\S*\])");
+    std::vector<std::string> results;
+    auto matches_begin = std::sregex_iterator(wurcs.begin(), wurcs.end(), regex);
+    auto matches_end = std::sregex_iterator();
+
+    for (auto it = matches_begin; it != matches_end; ++it) {
+        results.push_back(it->str());
+    }
+
+    if (results.empty() || results.size() > 1) {throw std::runtime_error("Error in WURCS Unique Residue List");}
+
+    std::vector<std::string> order = Utils::split(results[0], ']');
+    for (auto & i : order) {
+        i.erase(0, 1);
+    }
+
+    return order;
+}
+
+std::vector<int> Sails::WURCS::extract_wurcs_residue_order(const std::string &wurcs) {
+    std::regex regex("/[0-9-]*/");
+    std::vector<std::string> results;
+    auto matches_begin = std::sregex_iterator(wurcs.begin(), wurcs.end(), regex);
+    auto matches_end = std::sregex_iterator();
+
+    for (auto it = matches_begin; it != matches_end; ++it) {
+        results.push_back(it->str());
+    }
+
+    if (results.empty() || results.size() > 1) {throw std::runtime_error("Error in WURCS Residue Order");}
+
+    std::string order_string = results[0];
+    order_string = order_string.substr(1, order_string.size() - 2);
+
+    std::vector<std::string> order = Utils::split(order_string, '-');
+    std::vector<int> residue_order;
+    for (auto & it : order) {
+        residue_order.emplace_back(atoi(it.c_str()));
+    }
+    return residue_order;
+}
+
+std::vector<std::string> Sails::WURCS::extract_wurcs_linkage_order(const std::string &wurcs) {
+    std::regex regex("[a-z]{1}[0-9]{1}-{1}[a-z]{1}[0-9]");
+    std::vector<std::string> results;
+    auto matches_begin = std::sregex_iterator(wurcs.begin(), wurcs.end(), regex);
+    auto matches_end = std::sregex_iterator();
+
+    for (auto it = matches_begin; it != matches_end; ++it) {
+        results.push_back(it->str());
+    }
+
+    return results;
+}
+
+
+// WURCS PARSING
+//WURCS=2.0/3,7,6/[a2122h-1b_1-5_2*NCC/3=O][a1122h-1b_1-5][a1122h-1a_1-5]/1-1-2-3-3-3-3/a4-b1_b4-c1_c3-d1_c6-e1_e3-f1_f2-g1
+Sails::Glycan Sails::WURCS::generate_pseudo_glycan(const std::string &wurcs, gemmi::Structure *structure, Sails::LinkageDatabase &linkage_database, Sails::ResidueDatabase &residue_database) {
+
+
+    std::vector<std::string> unique_residues = extract_wurcs_unique_residues(wurcs);
+    std::vector<int> residue_order = extract_wurcs_residue_order(wurcs);
+    std::vector<std::string> linkage_order = extract_wurcs_linkage_order(wurcs);
+
+    std::vector<std::string> unique_residue_names;
+    for (auto& wurcs_residue_id: unique_residues) {
+        std::optional<std::string> key = get_key(residue_database, [&](const ResidueData& data){return data.wurcs_code == wurcs_residue_id;});
+        if (!key.has_value()) { throw std::runtime_error("Cannot create psuedo-glycan, an unknown residue was found."); }
+        unique_residue_names.emplace_back(key.value());
+    }
+
+    std::vector<std::string> residue_name_order;
+    residue_name_order.reserve(residue_order.size());
+    for (auto& order: residue_order) {
+        residue_name_order.emplace_back(unique_residue_names[order-1]);
+    }
+
+    gemmi::Structure pseudo_structure;
+    gemmi::Model pseudo_model;
+    gemmi::Chain chain = gemmi::Chain("A");
+    std::vector<Glycosite> glycosites;
+
+    for (int i = 0; i < residue_name_order.size(); i++) {
+        gemmi::Residue residue;
+        residue.seqid = gemmi::SeqId(std::to_string(i));
+        residue.name = residue_name_order[i];
+        chain.residues.emplace_back(residue);
+        glycosites.emplace_back(0, 0, i);
+    }
+    pseudo_model.chains.emplace_back(chain);
+    pseudo_structure.models.emplace_back(pseudo_model);
+
+    PseudoGlycan pseudo_glycan = {&pseudo_structure, residue_database, glycosites[0]};
+
+    for (int i = 0; i < residue_name_order.size(); i++) {
+        pseudo_glycan.add_sugar("", i, glycosites[i]);
+    }
+
+    for (const auto & i : linkage_order) {
+        std::vector<std::string> split_linkage = Utils::split(i, '-');
+        const std::string& donor_linkage = split_linkage[0];
+        const std::string& acceptor_linkage = split_linkage[1];
+
+        int donor_sugar = donor_linkage[0] - 'a';
+        std::string donor_atom = "C";
+        donor_atom += donor_linkage[1];
+        int acceptor_sugar = acceptor_linkage[0] - 'a';
+        std::string acceptor_atom  = "C";
+        acceptor_atom += acceptor_linkage[1];
+
+        pseudo_glycan.add_linkage(glycosites[donor_sugar], glycosites[acceptor_sugar], donor_atom, acceptor_atom);
+    }
+
+    Sails::Model model = {&pseudo_structure, linkage_database, residue_database};
+    model.create_pseudo_glycan(pseudo_glycan);
+
+    return Sails::Glycan();
+}
+
+template<typename key, typename value, typename Predicate>
+std::optional<key> Sails::WURCS::get_key(const std::map<key, value> &map, Predicate predicate) {
+    for (const auto& [k, v] : map) {
+        if (predicate(v)) {
+            return k;
+        }
+    }
+    return std::nullopt;
 }
