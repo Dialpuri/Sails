@@ -16,8 +16,8 @@ namespace Sails {
         static std::string generate_wurcs(Glycan *glycan, ResidueDatabase &residue_database);
 
         static Glycan generate_pseudo_glycan(const std::string &wurcs, gemmi::Structure *structure,
-                                             LinkageDatabase &linkage_database,
-                                             ResidueDatabase &residue_database);
+                                             Glycosite &glycosite,
+                                             LinkageDatabase &linkage_database, ResidueDatabase &residue_database);
 
     private:
         static std::string get_unit_count(Sails::Glycan *glycan);
@@ -41,6 +41,17 @@ namespace Sails {
         static std::vector<int> extract_wurcs_residue_order(const std::string &wurcs);
 
         static std::vector<std::string> extract_wurcs_linkage_order(const std::string &wurcs);
+
+        static std::vector<std::string> form_residue_name_order(ResidueDatabase &residue_database,
+                                                               std::vector<std::string> unique_residues,
+                                                               std::vector<int> residue_order);
+
+        static gemmi::Structure generate_pseudo_structure(
+        );
+
+        static void add_linkage_to_pseudo_glycan(std::vector<Sails::Glycosite> &glycosites,
+                                                 Sails::PseudoGlycan &pseudo_glycan,
+                                                 const std::string &linkage_string);
 
         /**
          * @brief Get key from map using predicate, used to query a linkage or residue database
