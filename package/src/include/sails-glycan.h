@@ -375,19 +375,19 @@ namespace Sails {
          *
          * @param atom The type of atom in the sugar molecule.
          * @param seqId The sequence ID of the sugar molecule.
-         * @param residue The glycosite of the sugar molecule.
+         * @param site The glycosite of the sugar molecule.
          */
-        void add_sugar(const std::string &atom, int seqId, Glycosite &residue) {
-            if (sugars.find(residue) != sugars.end()) {
+        void add_sugar(const std::string &atom, int seqId, Glycosite &site) {
+            if (sugars.find(site) != sugars.end()) {
                 // this sugar was already added, don't overwrite
                 return;
             }
-            sugars[residue] = std::make_unique<Sugar>(atom, seqId, residue);
-            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(residue, m_structure);
+            sugars[site] = std::make_unique<Sugar>(atom, seqId, site);
+            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(site, m_structure);
 
             if (sugar_order.empty()) {
-                root_glycosite = residue;
-                root_sugar = sugars[residue].get();
+                root_glycosite = site;
+                root_sugar = sugars[site].get();
             }
 
             if (sugar_counts.find(residue_ptr->name) == sugar_counts.end()) {
@@ -395,7 +395,7 @@ namespace Sails {
             } else {
                 sugar_counts[residue_ptr->name] = sugar_counts[residue_ptr->name] + 1;
             }
-            sugar_order.emplace_back(residue);
+            sugar_order.emplace_back(site);
         }
 
         /**
