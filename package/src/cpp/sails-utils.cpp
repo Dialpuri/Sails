@@ -65,6 +65,15 @@ gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const g
     return structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
 }
 
+std::optional<gemmi::Chain*> Sails::Utils::get_last_chain(gemmi::Structure *structure) {
+    if (structure->models[0].chains.empty()) { return std::nullopt; }
+    return &structure->models[0].chains[structure->models[0].chains.size()-1];
+}
+
+int Sails::Utils::get_last_chain_index(gemmi::Structure* structure) {
+    return structure->models[0].chains.empty() ? 0: structure->models[0].chains.size()-1;
+}
+
 std::string Sails::Utils::linkage_to_id(const Sails::LinkageData &data) {
     return data.donor + "-" + std::to_string(data.donor_number) + "," + std::to_string(data.acceptor_number) + "-" +
            data.acceptor;
@@ -74,14 +83,16 @@ void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, c
     gemmi::Structure structure;
     gemmi::Model model = gemmi::Model("A");
     gemmi::Chain chain = gemmi::Chain("A");
-    chain.append_residues(std::move(residues));
+    for (auto& residue : residues) {
+        chain.residues.push_back(residue);
+    }
     model.chains = {chain};
     structure.models = {model};
 
-    std::ofstream file;
-    file.open(path);
-    gemmi::write_pdb(structure, file);
-    file.close();
+    std::ofstream of;
+    of.open(path);
+    write_cif_to_stream(of, make_mmcif_document(structure));
+    of.close();
 }
 
 void Sails::Utils::save_grid_to_file(const gemmi::Grid<> &grid, const std::string &path) {
