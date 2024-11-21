@@ -364,27 +364,102 @@ std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, st
     return snfg_map;
 }
 
-//sails-wurcs -modelin ../testing/test_data/5fji/5FJI.cif -chain A -res 61
-//
-//DESIRED:
-//WURCS=2.0/3,7,6/[a2122h-1b_1-5_2*NCC/3=O][a1122h-1b_1-5][a1122h-1a_1-5]/1-1-2-3-3-3-3/a4-b1_b4-c1_c3-d1_c6-e1_e3-f1_f2-g1
-gemmi::Structure wurcs(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
+
+std::map<std::string, std::string> find_wurcs(gemmi::Structure& structure, std::string& chain, int seqid, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
     Sails::Topology topology = {&structure, residue_database};
 
     std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
     if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
     Sails::Glycosite glycosite = potential_glycosite.value();
-
     Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+    std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+    std::string key = Sails::Utils::format_residue_from_site(glycosite, &structure);
+    std::map<std::string, std::string> wurcs_map = {{key, generated_wurcs}};
 
-    std::cout << Sails::WURCS::generate_wurcs(&glycan, residue_database) << std::endl;
+    return wurcs_map;
+}
+
+std::map<std::string, std::string> find_all_wurcs(gemmi::Structure& structure, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    Sails::Topology topology = {&structure, residue_database};
+
+    std::map<std::string, std::string> wurcs_map;
+
+    Sails::Glycosites n_glycosites = Sails::find_n_glycosylation_sites(structure);
+    for (auto& site: n_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        wurcs_map[key] = generated_wurcs;
+    }
+
+    Sails::Glycosites c_glycosites = Sails::find_c_glycosylation_sites(structure);
+    for (auto& site: c_glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(site);
+        if (glycan.empty()) continue;
+        std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+        std::string key = Sails::Utils::format_residue_from_site(site, &structure);
+        wurcs_map[key] = generated_wurcs;
+    }
+
+    //
+    // if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    // Sails::Glycosite glycosite = potential_glycosite.value();
+    // Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+    // std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+
+    return wurcs_map;
+}
+
+gemmi::Structure model_wurcs(gemmi::Structure& structure, std::string& wurcs, std::string& chain, int seqid, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+    if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    Sails::Glycosite glycosite = potential_glycosite.value();
+
+    Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
 
     return structure;
 }
+
+
+// gemmi::Structure wurcs(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
+//     std::string data_file = resource_dir + "/data.json";
+//     Sails::JSONLoader loader = {data_file};
+//     Sails::ResidueDatabase residue_database = loader.load_residue_database();
+//     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+//
+//     // Sails::Topology topology = {&structure, residue_database};
+//     //
+//     std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+//     if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+//     Sails::Glycosite glycosite = potential_glycosite.value();
+//     //
+//     // Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+//     //
+//     // std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+//
+//     // std::cout << "GENERATED WURCS: " << generated_wurcs << std::endl;
+//     // std::string wurcs = "WURCS=2.0/3,6,5/[a2122h-1b_1-5_2*NCC/3=O][a1122h-1b_1-5][a1122h-1a_1-5]/1-1-2/a4-b1_b4-c1";
+//     std::string wurcs = "WURCS=2.0/3,6,5/[a2122h-1b_1-5_2*NCC/3=O][a1122h-1b_1-5][a1122h-1a_1-5]/1-1-2-3-3-3/a4-b1_b4-c1_c3-d1_d2-e1_e2-f1";
+//     Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
+//
+//     return structure;
+// }
 
 void test() {
 //    const std::string path = "testing/test_data/4ax7/4AX7_deglycosylated.cif";
