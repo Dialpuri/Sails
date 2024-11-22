@@ -452,6 +452,17 @@ gemmi::Structure model_wurcs(gemmi::Structure& structure, std::string& wurcs, st
 //     return structure;
 // }
 
+gemmi::Structure morph(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+
+
+    return structure;
+}
+
+
 void test() {
 //    const std::string path = "testing/test_data/4ax7/4AX7_deglycosylated.cif";
 //    const std::string mtz_path = "testing/test_data/4ax7/4AX7.mtz";
