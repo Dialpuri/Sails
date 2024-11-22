@@ -15,6 +15,7 @@
 #include <string>
 #include <optional>
 #include <filesystem>
+#include <stack>
 
 #include <gemmi/cif.hpp>             // for cif::read_file
 #include <gemmi/modify.hpp>
@@ -126,6 +127,12 @@ namespace Sails {
    */
   void set_special_monomer_dir(const std::string& dir) { special_monomer_path=dir; }
 
+  /**
+   * @brief Creates a default glycan chain using a psuedo_glycan
+   *
+   */
+  void create_pseudo_glycan(PseudoGlycan& pseudo_glycan);
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -141,7 +148,7 @@ namespace Sails {
                           const Sugar *terminal_sugar);
 
   /**
-   * Performs the translation of a residue based on the given linkage data.
+   * Performs the translation of a residue based on the given linkage data using density.
    *
    * The donor atoms of the input residue are used to calculate a superposition of a given new monomer. A new
    * monomer is loaded and transformed to the correct position and returned.
@@ -155,6 +162,20 @@ namespace Sails {
    */
   std::optional<Sails::SuperpositionResult> add_residue(
    gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
+
+  /**
+   * Performs the translation of a residue based on the given linkage data without density.
+   *
+   * The donor atoms of the input residue are used to calculate a superposition of a given new monomer. A new
+   * monomer is loaded and transformed to the correct position and returned.
+   *
+   * @param residue The residue to calculate the translation for.
+   * @param data The linkage data containing donor and acceptor information.
+   * @return Optionally, the translated residue.
+   * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
+   */
+  std::optional<Sails::SuperpositionResult> add_residue(
+   gemmi::Residue *residue, LinkageData &data);
 
   /**
    * Finds favoured additions based on a terminal sugar and a list of possible additions.
@@ -218,8 +239,24 @@ namespace Sails {
    * @param angles The vector of angles used for calculating the new positions.
    * @param torsions The vector of torsions used for calculating the new positions.
    */
-  static void move_acceptor_atomic_positions(std::vector<gemmi::Atom *> &atoms, double length,
+  template <typename T>
+  static void move_acceptor_atomic_positions(std::vector<T> &atoms, double length,
                                              std::vector<double> &angles, std::vector<double> &torsions);
+
+  // /**
+  //  * @brief Move the positions of acceptor atoms based on given parameters.
+  //  *
+  //  * This method calculates a new position for each acceptor atom in the provided vector
+  //  * of atoms, based on the length, angles, and torsions given. The new position is then
+  //  * assigned to the next atom in the vector.
+  //  *
+  //  * @param atoms The vector of atoms representing the acceptor atoms.
+  //  * @param length The length parameter used for calculating the new positions.
+  //  * @param angles The vector of angles used for calculating the new positions.
+  //  * @param torsions The vector of torsions used for calculating the new positions.
+  //  */
+  // static void move_acceptor_atomic_positions(std::vector<gemmi::Atom> &atoms, double length,
+  //                                            std::vector<double> &angles, std::vector<double> &torsions);
 
   /**
    * @brief Applies a superposition transformation to a set of atoms.
@@ -235,7 +272,8 @@ namespace Sails {
    * @param torsions The torsions parameter used in the superposition calculation.
    * @return The calculated transformation representing the superposition.
    */
-  static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom *> &atoms,
+  template <typename T>
+  static gemmi::Transform superpose_atoms(std::vector<T> &atoms,
                                           std::vector<gemmi::Atom> &reference_atoms, double length,
                                           std::vector<double> &angles, std::vector<
                                            double> &torsions);

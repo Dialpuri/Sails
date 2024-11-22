@@ -8,6 +8,7 @@
                 7
             ],
             "anomer": "α",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [],
             "acceptorSets": [
@@ -27,6 +28,7 @@
                 6
             ],
             "anomer": "β",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {
@@ -53,6 +55,7 @@
                 2
             ],
             "anomer": "α",
+            "wurcsCode": "a1221m-1a_1-5",
             "special": true,
             "donorSets": [],
             "acceptorSets": [
@@ -76,6 +79,7 @@
                 7
             ],
             "anomer": "α",
+            "wurcsCode": "a1122h-1a_1-5",
             "special": false,
             "donorSets": [
                 {
@@ -120,6 +124,7 @@
                 1
             ],
             "anomer": "α",
+            "wurcsCode": "a1122h-1a_1-5",
             "special": false,
             "donorSets": [],
             "acceptorSets": [
@@ -139,6 +144,7 @@
                 3
             ],
             "anomer": "β",
+            "wurcsCode": "a1122h-1b_1-5",
             "special": false,
             "donorSets": [
                 {
@@ -172,6 +178,7 @@
                 2
             ],
             "anomer": "β",
+            "wurcsCode": "a2122h-1b_1-5_2*NCC/3=O",
             "special": false,
             "donorSets": [
                 {
@@ -210,6 +217,7 @@
                 0
             ],
             "anomer": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {
@@ -229,6 +237,7 @@
                 0
             ],
             "anomer": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {
@@ -248,6 +257,7 @@
                 0
             ],
             "anomer": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {
@@ -267,6 +277,7 @@
                 0
             ],
             "anomer": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {

@@ -22,6 +22,9 @@ from .sails_module import (
     get_all_snfgs,
     Grid,
     AxisOrder,
+    find_all_wurcs,
+    find_wurcs,
+    model_wurcs,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -71,4 +74,7 @@ __all__ = [
     "get_sails_structure",
     "get_sails_mtz",
     "get_sails_map",
+    "find_all_wurcs",
+    "find_wurcs",
+    "model_wurcs",
 ]

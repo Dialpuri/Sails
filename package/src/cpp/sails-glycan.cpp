@@ -102,6 +102,17 @@ void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sug
     }
 }
 
+void Sails::Glycan::dfs_sites(Sugar *current_sugar, std::vector<Glycosite> &sites, int depth) {
+    const std::set<Sugar *> &sugar_set = adjacency_list[current_sugar];
+    current_sugar->depth = depth;
+    sites.push_back(current_sugar->site);
+
+    for (Sugar *sugar: sugar_set) {
+        sugar->depth = depth + 1;
+        dfs_sites(sugar, sites, depth + 1);
+    }
+}
+
 std::set<Sails::Glycosite> Sails::Glycan::operator-(const Glycan& glycan) {
     std::set<Glycosite> this_keys;
     std::transform(this->sugars.begin(), this->sugars.end(), std::inserter(this_keys, this_keys.end()),

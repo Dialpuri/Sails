@@ -197,6 +197,9 @@ NB_MODULE(sails_module, m) {
           nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&o_mannosylate),
           "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
+    m.def("find_all_wurcs", &find_all_wurcs, "structure"_a, "resource_dir"_a);
+    m.def("find_wurcs", &find_wurcs, "structure"_a, "chain"_a, "seqid"_a,  "resource_dir"_a);
+    m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

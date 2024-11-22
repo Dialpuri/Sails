@@ -30,6 +30,7 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
     const char *snfg_colour_key = "snfgColour";
     const char *preferred_depth_key = "preferredDepths";
     const char *anomer_key = "anomer";
+    const char *wurcs_code_key = "wurcsCode";
     const char *special_key = "special";
 
 
@@ -50,8 +51,10 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
         }
 
         std::string anomer = std::string(value[anomer_key].get_string().value());
+        std::string wurcs_code = std::string(value[wurcs_code_key].get_string().value());
+
         bool special = value[special_key].get_bool();
-        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer, special};
+        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer, wurcs_code, special};
         database.insert({name, data});
     }
 
@@ -187,5 +190,7 @@ Sails::JSONLoader::extract_atom_set(simdjson::simdjson_result<simdjson::ondemand
         atom_sets.emplace_back(atom_set);
     }
 
-    return atom_sets;
-}
+    std::sort(atom_sets.begin(), atom_sets.end(), [](const Sails::AtomSet &a, const Sails::AtomSet &b) {
+        return a.identifier < b.identifier;
+    });
+    return atom_sets;}
