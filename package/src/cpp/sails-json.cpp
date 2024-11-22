@@ -52,6 +52,7 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
 
         std::string anomer = std::string(value[anomer_key].get_string().value());
         std::string wurcs_code = std::string(value[wurcs_code_key].get_string().value());
+
         bool special = value[special_key].get_bool();
         ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer, wurcs_code, special};
         database.insert({name, data});
