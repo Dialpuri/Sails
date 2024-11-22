@@ -134,6 +134,8 @@ namespace Sails {
             for (const auto &linkage: other.linkage_list) {
                 linkage_list.emplace_back(linkage);
             }
+
+            sugar_counts = other.sugar_counts;
         }
 
         Glycan(gemmi::Structure *structure, ResidueDatabase &database, Glycosite &glycosite): m_structure(structure),
@@ -188,6 +190,52 @@ namespace Sails {
          */
         [[nodiscard]] size_t size() const {
             return sugars.size();
+        }
+
+        /**
+         * @brief Returns the number of sugars.
+         *
+         * The size of the sugar list represents the number of sugar elements stored in it.
+         *
+         * @return The number of sugars.
+         */
+        [[nodiscard]] int sugar_count() const {
+            return sugars.size()-1;
+        }
+
+        /**
+         * @brief Returns the names of unique sugars.
+         *
+         * @return A vector of strings of unique sugars.
+         */
+        [[nodiscard]] std::vector<std::string> get_unique_sugar_names() const {
+            std::vector<std::string> unique_sugars;
+            unique_sugars.reserve(sugar_counts.size());
+            for (auto& [k, v]: sugar_counts) {
+                unique_sugars.emplace_back(k);
+            }
+            return unique_sugars;
+        }
+
+        /**
+         * @brief Returns the number of unique sugars.
+         *
+         * @return The number of unique sugars
+         */
+        [[nodiscard]] size_t unique_sugar_count() const {
+            return sugar_counts.size()-1;
+        }
+
+
+        /**
+         * @brief Returns the number of linkages.
+         *
+         * The size of the adjacency list represents the number of linkages in a glycan.
+         *
+         * @return The number of linkages.
+         */
+        [[nodiscard]] int linkage_count() const {
+            return adjacency_list.size();
         }
 
         /**
@@ -249,6 +297,13 @@ namespace Sails {
             }
 
             sugars[residue] = std::make_unique<Sugar>(atom, seqId, residue);
+            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(residue, m_structure);
+
+            if (sugar_counts.find(residue_ptr->name) == sugar_counts.end()) {
+                sugar_counts.insert({residue_ptr->name, 1});
+            } else {
+                sugar_counts[residue_ptr->name] = sugar_counts[residue_ptr->name] + 1;
+            }
         }
 
         /**
@@ -268,6 +323,15 @@ namespace Sails {
                 const auto residue_ptr = &m_structure->models[sugar->site.model_idx].chains[sugar->site.chain_idx].
                         residues;
                 residue_ptr->erase(residue_ptr->begin() + sugar->site.residue_idx);
+            }
+
+            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sugar->site, m_structure);
+            int current_sugar_count = sugar_counts[residue_ptr->name];
+            if (current_sugar_count <= 1) { // if this is the last sugar, remove it from the sugar_counts list
+                auto name_itr = sugar_counts.find(residue_ptr->name);
+                sugar_counts.erase(name_itr, sugar_counts.end());
+            } else {
+                sugar_counts[residue_ptr->name] = sugar_counts[residue_ptr->name] - 1;
             }
 
             Sugar *linked_donor = nullptr;
@@ -394,6 +458,17 @@ namespace Sails {
          */
         [[nodiscard]] gemmi::Structure get_structure() const { return *m_structure; };
 
+        /**
+         * @brief Get the structure ptr associated with the glycan.
+         *
+         * This method returns a ptr to the gemmi::Structure object associated with the glycan.
+         *
+         * @return The gemmi::Structure ptr associated with the glycan.
+         *
+         * @see gemmi::Structure
+         */
+        [[nodiscard]] gemmi::Structure* get_structure_ptr() const { return m_structure; };
+
 
         /**
          * @brief Subtract operator for Glycan objects.
@@ -439,6 +514,12 @@ namespace Sails {
          * Internal residue database - used to write local dot files [[DEPRECATED]]
          */
         ResidueDatabase m_database;
+
+        /**
+         * Sugar counts (e.g. {NAG: 1,BMA: 2})
+         */
+        std::map<std::string, int> sugar_counts;
+
     };
 }
 
