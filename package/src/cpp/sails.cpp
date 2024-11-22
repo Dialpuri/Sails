@@ -366,12 +366,22 @@ std::map<std::string, std::string> get_all_snfgs(gemmi::Structure& structure, st
 
 
 std::map<std::string, std::string> find_wurcs(gemmi::Structure& structure, std::string& chain, int seqid, std::string& resource_dir) {
-gemmi::Structure morph(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
 
-    return structure;
+    Sails::Topology topology = {&structure, residue_database};
+
+    std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+    if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    Sails::Glycosite glycosite = potential_glycosite.value();
+    Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+    std::string generated_wurcs =  Sails::WURCS::generate_wurcs(&glycan, residue_database);
+    std::string key = Sails::Utils::format_residue_from_site(glycosite, &structure);
+    std::map<std::string, std::string> wurcs_map = {{key, generated_wurcs}};
+
+    return wurcs_map;
 }
 
 
@@ -428,6 +438,15 @@ gemmi::Structure model_wurcs(gemmi::Structure& structure, std::string& wurcs, st
 }
 
 
+gemmi::Structure morph(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+
+    return structure;
+}
+
+
 // gemmi::Structure wurcs(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
 //     std::string data_file = resource_dir + "/data.json";
 //     Sails::JSONLoader loader = {data_file};
@@ -451,16 +470,6 @@ gemmi::Structure model_wurcs(gemmi::Structure& structure, std::string& wurcs, st
 //
 //     return structure;
 // }
-
-gemmi::Structure morph(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
-    std::string data_file = resource_dir + "/data.json";
-    Sails::JSONLoader loader = {data_file};
-    Sails::ResidueDatabase residue_database = loader.load_residue_database();
-
-
-
-    return structure;
-}
 
 
 void test() {
