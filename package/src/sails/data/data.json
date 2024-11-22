@@ -8,7 +8,7 @@
                 7
             ],
             "anomer": "α",
-            "wurcs": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [],
             "acceptorSets": [
@@ -28,7 +28,7 @@
                 6
             ],
             "anomer": "β",
-            "wurcs": "",
+            "wurcsCode": "",
             "special": false,
             "donorSets": [
                 {

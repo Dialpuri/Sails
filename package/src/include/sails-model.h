@@ -58,27 +58,18 @@ namespace Sails {
     struct ResidueData {
         ResidueData() = default;
 
-        ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string& snfg_shape,
-                    std::string& snfg_colour, std::vector<int> &preferred_depths, std::string& anomer,
-                    std::string& wurcs
-                    ) : acceptors(acceptors), donors(donors),
+        ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string &snfg_shape,
+                    std::string &snfg_colour, std::vector<int> &preferred_depths, std::string &anomer,
+                    std::string &wurcs, bool special
+        ) : acceptors(acceptors), donors(donors),
             snfg_shape(std::move(snfg_shape)),
             snfg_colour(std::move(snfg_colour)),
             preferred_depths(preferred_depths),
-            anomer(anomer) {
+            anomer(anomer), special(special) {
             if (!wurcs.empty()) {
                 wurcs_code = wurcs;
             }
-        }
 
-        ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string &snfg_shape,
-                    std::string &snfg_colour, const std::vector<int> &preferred_depths, const std::string &anomer,
-                    const bool special) : acceptors(acceptors), donors(donors),
-                                          snfg_shape(std::move(snfg_shape)),
-                                          snfg_colour(std::move(snfg_colour)),
-                                          preferred_depths(preferred_depths),
-                                          anomer(anomer),
-                                          special(special) {
             for (const auto &acceptor: acceptors) {
                 acceptor_map[acceptor.identifier] = acceptor.get_atom_list();
             }
@@ -87,6 +78,7 @@ namespace Sails {
                 donor_map[donor.identifier] = donor.get_atom_list();
             }
         }
+
 
         std::map<int, std::vector<std::string> > acceptor_map;
         std::map<int, std::vector<std::string> > donor_map;
