@@ -3,7 +3,7 @@
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
-       title="Automated Glycan Building in Electron Microscopy" id="Automated-EM-Glycan-Building" help-id="Automated Glycan Building">
+       title="Automated Glycan Building in Electron Microscopy" id="Automated-EM-Glycan-Building" help-id="Automated EM Glycan Building">
 
     <link-summary>
         Master command line projects with Sails: explore options, uses, and file formats like PDB, mmCIF, CIF.
