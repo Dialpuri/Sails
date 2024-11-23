@@ -15,7 +15,7 @@ namespace Sails {
 
         static std::string generate_wurcs(Glycan *glycan, ResidueDatabase &residue_database);
 
-        static Glycan generate_pseudo_glycan(const std::string &wurcs, gemmi::Structure *structure,
+        static PseudoGlycan generate_pseudo_glycan(const std::string &wurcs, gemmi::Structure *structure,
                                              Glycosite &glycosite,
                                              LinkageDatabase &linkage_database, ResidueDatabase &residue_database);
 
