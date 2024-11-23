@@ -4,7 +4,7 @@
 
 <instance-profile id="s"
                  name="Sails"
-                 start-page="Sails.md">
+                 start-page="Installation.topic">
     <toc-element topic="Installation.topic"/>
 	<toc-element toc-title="Automated Glycan Building">
 		<toc-element topic="Automated-Xray-Glycan-Building.topic"/>
