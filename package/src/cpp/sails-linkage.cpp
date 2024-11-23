@@ -110,10 +110,9 @@ bool Sails::Model::residue_in_database(gemmi::Residue *residue) {
 
 
 // RESIDUE MANIPULATION FUNCTIONS
-template <typename T>
+template<typename T>
 void Sails::Model::move_acceptor_atomic_positions(std::vector<T> &atoms, double length,
                                                   std::vector<double> &angles, std::vector<double> &torsions) {
-
     for (int i = 0; i < 3; i++) {
         gemmi::Position atom1, atom2, atom3;
 
@@ -130,15 +129,13 @@ void Sails::Model::move_acceptor_atomic_positions(std::vector<T> &atoms, double 
         gemmi::Vec3 new_position = calculate_projected_point(atom1, atom2, atom3, length, angles[i], torsions[i]);
         if constexpr (std::is_pointer_v<T>) {
             atoms[i + 3]->pos = gemmi::Position(new_position);
-        }
-        else {
+        } else {
             atoms[i + 3].pos = gemmi::Position(new_position);
         }
     }
 }
 
-template <typename T>
-gemmi::Transform Sails::Model::superpose_atoms(std::vector<T> &atoms,
+gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom *> &atoms,
                                                std::vector<gemmi::Atom> &reference_atoms, double length,
                                                std::vector<double> &angles,
                                                std::vector<double> &torsions) {
@@ -146,9 +143,8 @@ gemmi::Transform Sails::Model::superpose_atoms(std::vector<T> &atoms,
 
     std::vector<gemmi::Position> reference_positions;
     std::vector<gemmi::Position> new_positions;
-    std::for_each(atoms.begin() + 3, atoms.end(), [&](const T a) {
-        if constexpr (std::is_pointer_v<T>) new_positions.emplace_back(a->pos);
-        else new_positions.emplace_back(a.pos);
+    std::for_each(atoms.begin() + 3, atoms.end(), [&](const gemmi::Atom *a) {
+        new_positions.emplace_back(a->pos);
     });
     std::for_each(reference_atoms.begin(), reference_atoms.end(), [&](const gemmi::Atom &a) {
         reference_positions.emplace_back(a.pos);
@@ -157,21 +153,21 @@ gemmi::Transform Sails::Model::superpose_atoms(std::vector<T> &atoms,
     return calculate_superposition(reference_positions, new_positions);
 }
 
-// gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom> &atoms,
-//                                                std::vector<gemmi::Atom> &reference_atoms, double length,
-//                                                std::vector<double> &angles,
-//                                                std::vector<double> &torsions) {
-//     move_acceptor_atomic_positions(atoms, length, angles, torsions);
-//
-//     std::vector<gemmi::Position> reference_positions;
-//     std::vector<gemmi::Position> new_positions;
-//     std::for_each(atoms.begin() + 3, atoms.end(), [&](const gemmi::Atom a) { new_positions.emplace_back(a.pos); });
-//     std::for_each(reference_atoms.begin(), reference_atoms.end(), [&](const gemmi::Atom &a) {
-//         reference_positions.emplace_back(a.pos);
-//     });
-//
-//     return calculate_superposition(reference_positions, new_positions);
-// }
+gemmi::Transform Sails::Model::superpose_atoms(std::vector<gemmi::Atom> &atoms,
+                                               std::vector<gemmi::Atom> &reference_atoms, double length,
+                                               std::vector<double> &angles,
+                                               std::vector<double> &torsions) {
+    move_acceptor_atomic_positions(atoms, length, angles, torsions);
+
+    std::vector<gemmi::Position> reference_positions;
+    std::vector<gemmi::Position> new_positions;
+    std::for_each(atoms.begin() + 3, atoms.end(), [&](const gemmi::Atom a) { new_positions.emplace_back(a.pos); });
+    std::for_each(reference_atoms.begin(), reference_atoms.end(), [&](const gemmi::Atom &a) {
+        reference_positions.emplace_back(a.pos);
+    });
+
+    return calculate_superposition(reference_positions, new_positions);
+}
 
 
 void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue &reference_library_monomer,
@@ -501,12 +497,12 @@ gemmi::Residue Sails::Model::replace_residue(gemmi::Residue *target_residue,
     std::vector<gemmi::Position> target_positions;
     std::vector<gemmi::Position> source_positions;
 
-    for (auto& ring_atom: ring_atoms) {
-        gemmi::Atom* found_target_atom = target_residue->find_atom(ring_atom, '*');
-        if (found_target_atom == nullptr) {throw std::runtime_error("Could not find atom in target - " + ring_atom); }
+    for (auto &ring_atom: ring_atoms) {
+        gemmi::Atom *found_target_atom = target_residue->find_atom(ring_atom, '*');
+        if (found_target_atom == nullptr) { throw std::runtime_error("Could not find atom in target - " + ring_atom); }
 
-        gemmi::Atom* found_source_atom = replacement_residue.find_atom(ring_atom, '*');
-        if (found_source_atom == nullptr) {throw std::runtime_error("Could not find atom in source"); }
+        gemmi::Atom *found_source_atom = replacement_residue.find_atom(ring_atom, '*');
+        if (found_source_atom == nullptr) { throw std::runtime_error("Could not find atom in source"); }
 
         target_positions.emplace_back(found_target_atom->pos);
         source_positions.emplace_back(found_source_atom->pos);

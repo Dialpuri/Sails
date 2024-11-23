@@ -275,8 +275,26 @@ namespace Sails {
    * @param torsions The torsions parameter used in the superposition calculation.
    * @return The calculated transformation representing the superposition.
    */
-  template <typename T>
-  static gemmi::Transform superpose_atoms(std::vector<T> &atoms,
+  static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom> &atoms,
+                                          std::vector<gemmi::Atom> &reference_atoms, double length,
+                                          std::vector<double> &angles, std::vector<
+                                           double> &torsions);
+
+  /**
+ * @brief Applies a superposition transformation to a set of atoms.
+ *
+ * This method calculates the superposition transformation between a set of atoms and a set of reference atoms,
+ * specified by their positions. The transformation consists of a translation and rotation applied to the set of atoms,
+ * such that they align as closely as possible with the reference atoms.
+ *
+ * @param atoms The set of atoms to be transformed.
+ * @param reference_atoms The set of reference atoms used for the superposition calculation.
+ * @param length The length parameter used in the superposition calculation.
+ * @param angles The angles parameter used in the superposition calculation.
+ * @param torsions The torsions parameter used in the superposition calculation.
+ * @return The calculated transformation representing the superposition.
+ */
+  static gemmi::Transform superpose_atoms(std::vector<gemmi::Atom*> &atoms,
                                           std::vector<gemmi::Atom> &reference_atoms, double length,
                                           std::vector<double> &angles, std::vector<
                                            double> &torsions);
