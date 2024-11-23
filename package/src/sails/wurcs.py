@@ -1,4 +1,5 @@
 import argparse
+
 from .__version__ import __version__
 import importlib
 from sails import find_all_wurcs, find_wurcs, model_wurcs, interface
@@ -29,7 +30,7 @@ def parse_args():
         "-chain", help="Name of target chain", type=str, required=False
     )
     find_parser.add_argument(
-        "-res", help="Name of target residue (protein)", type=str, required=False
+        "-seqid", help="Name of target residue (protein)", type=str, required=False
     )
     find_parser.add_argument(
         "-logout",
@@ -61,7 +62,7 @@ def parse_args():
     model_parser.add_argument(
         "-seqid",
         help="Sequence ID of the root residue (protein)",
-        type=str,
+        type=int,
         required=True,
     )
 
@@ -75,15 +76,17 @@ def run():
     resource = importlib.resources.files("sails").joinpath("data")
 
     if args.mode == "find":
+        if not args.all and not args.chain:
+            raise ValueError("Specify a chain and seqid, or the --all flag")
         if args.all:
             wurcs = find_all_wurcs(sails_structure, str(resource))
         else:
-            wurcs = find_wurcs(sails_structure, args.chain, args.res, str(resource))
-        with open(args.jsonout, "w", encoding="UTF-8") as json_file:
+            wurcs = find_wurcs(sails_structure, args.chain, args.seqid, str(resource))
+        with open(args.logout, "w", encoding="UTF-8") as json_file:
             json.dump(wurcs, json_file, indent=4)
     else:
         result = model_wurcs(
-            sails_structure, args.wurcs, args.chain, args.res, str(resource)
+            sails_structure, args.wurcs, args.chain, args.seqid, str(resource)
         )
         structure = interface.extract_sails_structure(result)
         structure.make_mmcif_block().write_file(args.modelout)
