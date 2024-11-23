@@ -32,7 +32,7 @@ def parse_args():
         "-res", help="Name of target residue (protein)", type=str, required=False
     )
     find_parser.add_argument(
-        "-jsonout",
+        "-logout",
         help="Path to output json file",
         type=str,
         default="wurcs.json",
