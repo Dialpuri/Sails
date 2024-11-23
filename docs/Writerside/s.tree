@@ -6,6 +6,7 @@
                  name="Sails"
                  start-page="Installation.topic">
     <toc-element topic="Installation.topic"/>
+
 	<toc-element toc-title="Automated Glycan Building">
 		<toc-element topic="Automated-Xray-Glycan-Building.topic"/>
 		<toc-element topic="Automated-EM-Glycan-Building.topic"/>
@@ -24,7 +25,6 @@
 	</toc-element>
 
 <!--	<toc-element topic="Sails.md">-->
-
 <!--	<toc-element topic="Sails&#45;&#45;Angle.md"/>-->
 <!--	<toc-element topic="Sails&#45;&#45;AngleSet.md"/>-->
 <!--	<toc-element topic="Sails&#45;&#45;AtomSet.md"/>-->
@@ -54,8 +54,6 @@
 <!--	<toc-element topic="Sails&#45;&#45;TorsionAngleRefiner.md"/>-->
 <!--	<toc-element topic="Sails&#45;&#45;TorsionSet.md"/>-->
 <!--	<toc-element topic="Sails&#45;&#45;Utils.md"/>-->
-
-
 <!--    </toc-element>-->
 
 </instance-profile>
