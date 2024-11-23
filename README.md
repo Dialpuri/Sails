@@ -8,7 +8,7 @@
 Sails (Software for the Automated Identification of Linked Sugars) is a software package for automatic addition of glycans to protein models obtained through X-ray crystallography.
 
 ## Documentation
-[Link to Documentation](https://dialpuri.github.io/Sails/sails.html)
+[Link to Documentation](https://dialpuri.github.io/Sails/installation.html)
 
 
 ## Authors
