@@ -48,7 +48,6 @@ jobs:
     - name: Move to correct directory
       run: |
         mv package/* .
-        ./get_sources
 
     - name: Install Clang
       run: sudo apt-get install -y clang

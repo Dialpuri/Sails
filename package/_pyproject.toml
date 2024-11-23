@@ -7,7 +7,7 @@ name = "sails"
 dynamic = ["version"]
 description = "Sails: Software for the Automated Identification of Linked Sugars"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Jordan Dialpuri", email = "jordan.dialpuri@york.ac.uk" },
 ]
