@@ -24,7 +24,7 @@
 
 #include <chrono>
 #include <iostream>
-
+#include <src/include/sails-morph.h>
 
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
@@ -432,16 +432,31 @@ gemmi::Structure model_wurcs(gemmi::Structure& structure, std::string& wurcs, st
     if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
     Sails::Glycosite glycosite = potential_glycosite.value();
 
-    Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
+    Sails::Model model = {&structure, linkage_database, residue_database};
+    Sails::PseudoGlycan pseudo_glycan  = Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
+    model.create_pseudo_glycan(pseudo_glycan);
 
     return structure;
 }
 
 
-gemmi::Structure morph(gemmi::Structure& structure, std::string chain, int seqid, std::string& resource_dir) {
+gemmi::Structure morph(gemmi::Structure& structure, std::string& wurcs, std::string& chain, int seqid, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    std::optional<Sails::Glycosite> potential_glycosite = Sails::find_site(structure, chain, seqid);
+    if (!potential_glycosite.has_value()) throw std::runtime_error("Could not find specified site");
+    Sails::Glycosite glycosite = potential_glycosite.value();
+
+    Sails::Topology topology = {&structure, residue_database};
+
+    Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+
+    Sails::PseudoGlycan pseudo_glycan  = Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
+    Sails::Morph morpher = {&structure};
+    morpher.transform(glycan, pseudo_glycan);
 
     return structure;
 }
