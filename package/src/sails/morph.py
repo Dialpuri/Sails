@@ -14,7 +14,7 @@ def parse_args():
     )
     parser.add_argument("-chain", help="Name of target chain", type=str, required=True)
     parser.add_argument(
-        "-res", help="Name of target residue (protein)", type=str, required=True
+        "-res", help="Name of target residue (protein)", type=int, required=True
     )
     parser.add_argument(
         "-wurcs", help="WURCS identifier for new glycan", type=str, required=True
@@ -29,4 +29,8 @@ def run():
     sails_structure = interface.get_sails_structure(args.modelin)
     resource = importlib.resources.files("sails").joinpath("data")
 
-    morph(sails_structure, args.chain, args.res, str(resource))
+    morphed_structure = morph(
+        sails_structure, args.wurcs, args.chain, args.res, str(resource)
+    )
+    structure = interface.extract_sails_structure(morphed_structure)
+    structure.make_mmcif_block().write_file(args.modelout)

@@ -201,7 +201,7 @@ NB_MODULE(sails_module, m) {
     m.def("find_wurcs", &find_wurcs, "structure"_a, "chain"_a, "seqid"_a,  "resource_dir"_a);
     m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
-    m.def("morph", &morph, "structure"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
+    m.def("morph", &morph, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 
