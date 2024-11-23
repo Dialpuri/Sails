@@ -133,6 +133,9 @@ namespace Sails {
    */
   void create_pseudo_glycan(PseudoGlycan& pseudo_glycan);
 
+
+  static gemmi::Residue replace_residue(gemmi::Residue *target_residue,
+                                        const std::string &replacement_residue_name);
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -286,6 +289,8 @@ namespace Sails {
      * @return An optional value that contains the monomer, or an empty optional if the monomer does not exist.
      */
   std::optional<gemmi::Residue> get_monomer(const std::string &monomer, bool remove_h);
+
+  static std::optional<gemmi::Residue> get_monomer_only(const std::string &monomer, bool remove_h);
 
 
   /**

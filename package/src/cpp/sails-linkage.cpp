@@ -61,6 +61,24 @@ std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monom
     return residue;
 }
 
+std::optional<gemmi::Residue> Sails::Model::get_monomer_only(const std::string &monomer, bool remove_h) {
+    std::string monomer_library_path = Utils::get_environment_variable("CLIBD") + "/monomers";
+    std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
+    if (!Utils::file_exists(path)) {
+        return std::nullopt;
+    }
+    gemmi::Structure structure = gemmi::read_structure_file(path, gemmi::CoorFormat::Detect);
+    gemmi::Residue residue = structure.models[0].chains[0].residues[0];
+
+    if (remove_h) {
+        auto leaving_atom_iter = std::remove_if(residue.atoms.begin(), residue.atoms.end(),
+                                                [&](const gemmi::Atom &a) { return a.element.atomic_number() == 1; });
+        residue.atoms.erase(leaving_atom_iter, residue.atoms.end());
+    }
+
+    return residue;
+}
+
 
 void Sails::Model::save(const std::string &path, std::vector<LinkRecord> &links) {
     std::ofstream os(path);
@@ -467,6 +485,36 @@ void Sails::Model::create_pseudo_glycan(PseudoGlycan &pseudo_glycan) {
             }
         }
     }
+}
+
+gemmi::Residue Sails::Model::replace_residue(gemmi::Residue *target_residue,
+                                             const std::string &replacement_residue_name) {
+    const std::vector<std::string> ring_atoms = {"C1", "C2", "C3", "C4", "C5", "O5"};
+
+    auto replacement_residue_result = get_monomer_only(replacement_residue_name, true);
+    if (!replacement_residue_result.has_value()) {
+        throw std::runtime_error("Could not find replacement residue of specified name - " + replacement_residue_name);
+    }
+
+    gemmi::Residue replacement_residue = replacement_residue_result.value();
+
+    std::vector<gemmi::Position> target_positions;
+    std::vector<gemmi::Position> source_positions;
+
+    for (auto& ring_atom: ring_atoms) {
+        gemmi::Atom* found_target_atom = target_residue->find_atom(ring_atom, '*');
+        if (found_target_atom == nullptr) {throw std::runtime_error("Could not find atom in target - " + ring_atom); }
+
+        gemmi::Atom* found_source_atom = replacement_residue.find_atom(ring_atom, '*');
+        if (found_source_atom == nullptr) {throw std::runtime_error("Could not find atom in source"); }
+
+        target_positions.emplace_back(found_target_atom->pos);
+        source_positions.emplace_back(found_source_atom->pos);
+    }
+
+    const gemmi::Transform transform = calculate_superposition(source_positions, target_positions);
+    gemmi::transform_pos_and_adp(replacement_residue, transform);
+    return replacement_residue;
 }
 
 
