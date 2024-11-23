@@ -10,18 +10,19 @@
 #include "../include/sails-glycan.h"
 
 namespace Sails {
-
     class Morph {
     public:
-        Morph(gemmi::Structure* structure): m_structure(structure) {}
+        Morph(gemmi::Structure *structure): m_structure(structure) {
+        }
 
-        void transform(Sails::Glycan* glycan, const std::string& WURCS);
+        void transform(Glycan &glycan, PseudoGlycan &pseudo_glycan);
+
+        void swap_sugars(Glycan& glycan, PseudoGlycan& pseudo_glycan) const;
+
+        static bool check_graph_isomorphism(Glycan &glycan, PseudoGlycan &pseudo_glycan);
 
     private:
-        gemmi::Structure* m_structure;
-
+        gemmi::Structure *m_structure;
     };
-
-
 }
 #endif //SAILS_SAILS_MORPH_H
