@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Morph Glycan" id="Morph-Glycan">
+    <p>
+        Sails provides a utility tool to morph a modelled glycan into another form using a supplied WURCS code. The new
+        glycan will be superimposed onto the modelled glycan and may be useful to morph a high-mannose N-glycan into a
+        more processed kind, for example.
+    </p>
+
+    <chapter title="Command" id="find">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails-morph [OPTIONS]
+        </code-block>
+
+        <p>Example:</p>
+        <code-block lang="shell">
+            sails-morph -modelin structure.cif -chain A -seqid 123 -wurcs "WURCS=2.0/..."
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-modelin">
+                Path to a model.
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-modelout">
+                Path to the morphed output model.
+                <p>Formats accepted: CIF or PDB</p>
+                <p>Default: sails-model-out.cif </p>
+            </def>
+            <def title="-wurcs">
+                WURCS code of glycan to model.
+                <p>Must be in standard form without open chains and without circular glycans.</p>
+            </def>
+            <def title="-chain">
+                Chain name containing the root protein residue
+                <p>Example: A</p>
+            </def>
+            <def title="-seqid">
+                Sequence Id of the root protein of the glycan (e.g. asparagine for an N-glycan)
+                <p>Example: 123</p>
+            </def>
+            <def title="-h, --help">
+                Displays help.
+            </def>
+        </deflist>
+    </chapter>
+</topic>

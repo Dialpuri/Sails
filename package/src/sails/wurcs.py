@@ -20,7 +20,7 @@ def parse_args():
         "find", parents=[parent], formatter_class=formatter
     )
     find_parser.add_argument(
-        "-all",
+        "--all",
         help="Find WURCS identifiers for all glycans",
         action=argparse.BooleanOptionalAction,
         required=False,

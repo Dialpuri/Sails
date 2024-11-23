@@ -52,11 +52,11 @@
                 Ignore chain and seqid, and generate all SNFGs that can be found for the input model
             </def>
             <def title="-chain">
-                Chain name
+                Chain name containing the root protein residue
                 <p>Example: A</p>
             </def>
             <def title="-seqid">
-                Sequence Id of desired SNFG root
+                Sequence Id of desired protein root residue
                 <p>Example: 123</p>
             </def>
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="Model Glycan from WURCS Code" id="Model-Glycan-from-WURCS">
+
+    <p>
+        Sails provides a utility tool to model a glycan into a structure from a known WURCS code and a root residue.
+        This may be useful to glycosylate predicted models or as a simple starting point for manual model building. The
+        glycan is placed with the mean torsion angles for a given linkage.
+    </p>
+
+    <chapter title="Command" id="find">
+        <p>Syntax:</p>
+
+        <code-block lang="shell">
+            sails-wurcs model [OPTIONS]
+        </code-block>
+
+        <p>Example:</p>
+        <code-block lang="shell">
+            sails-wurcs model -modelin structure.cif -wurcs "WURCS=2.0/..." -chain A -seqid 123
+        </code-block>
+    </chapter>
+
+    <chapter title="Options" id="options">
+        <p>Describe what each option is used for:</p>
+
+        <deflist type="medium">
+            <def title="-modelin">
+                Path to a model.
+                <p>Formats accepted: CIF or PDB</p>
+                <b>Required</b>
+            </def>
+            <def title="-modelout">
+                Path to the glycosylated output model.
+                <p>Formats accepted: CIF or PDB</p>
+                <p>Default: sails-model-out.cif </p>
+            </def>
+            <def title="-wurcs">
+                WURCS code of glycan to model.
+                <p>Must be in standard form without open chains and without circular glycans.</p>
+            </def>
+            <def title="-chain">
+                Chain name containing desired root residue
+                <p>Example: A</p>
+            </def>
+            <def title="-seqid">
+                Sequence Id of the root residue of the future glycan (e.g. asparagine for an N-glycan)
+                <p>Example: 123</p>
+            </def>
+            <def title="-h, --help">
+                Displays help.
+            </def>
+        </deflist>
+    </chapter>
+</topic>

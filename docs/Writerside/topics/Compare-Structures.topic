@@ -12,7 +12,7 @@
         of Sails.
     </p>
 
-    <chapter title="Compare Structures" id="compare">
+    <chapter title="Command" id="compare">
         <p>Syntax:</p>
 
         <code-block lang="shell">
