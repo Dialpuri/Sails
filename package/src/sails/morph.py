@@ -14,7 +14,7 @@ def parse_args():
     )
     parser.add_argument("-chain", help="Name of target chain", type=str, required=True)
     parser.add_argument(
-        "-res", help="Name of target residue (protein)", type=int, required=True
+        "-seqid", help="Name of target residue (protein)", type=int, required=True
     )
     parser.add_argument(
         "-wurcs", help="WURCS identifier for new glycan", type=str, required=True
