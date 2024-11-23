@@ -15,19 +15,19 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Clang
-        run: sudo apt-get install -y clang
+#      - name: Install Clang
+#        run: sudo apt-get install -y clang
+#
+#      - name: Set environment variables for Clang
+#        run: |
+#          export CC=$(which clang)
+#          export CXX=$(which clang++)
+#          echo $CC
+#          echo $CXX
+#          clang --version
+#          clang++ --version
 
-      - name: Set environment variables for Clang
-        run: |
-          export CC=$(which clang)
-          export CXX=$(which clang++)
-          echo $CC
-          echo $CXX
-          clang --version
-          clang++ --version
-
-      - name: Install NucleoFind
+      - name: Install Sails
         run: pip install -v .
         working-directory: ./package
 

@@ -97,6 +97,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-solvent.cpp
         ${WRK_DIR}/src/cpp/sails-wurcs.cpp
 
+        ${WRK_DIR}/src/cpp/sails-morph.cpp
         # Density
         ${WRK_DIR}/src/cpp/density/sails-density.cpp
         ${WRK_DIR}/src/cpp/density/sails-xtal-density.cpp
@@ -179,12 +180,12 @@ if (BUILD_EXECUTABLE STREQUAL "ON")
             csails
             PUBLIC
             sails_lib
+            clipper-contrib
             clipper-mmdb
             clipper-cif
             clipper-ccp4
             clipper-minimol
             clipper-core
-            clipper-contrib
             rfftw
             fftw
             ccp4

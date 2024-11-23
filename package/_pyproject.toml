@@ -18,7 +18,7 @@ dependencies=[
     'tqdm',
     'gemmi',
     'numpy<2.0.0',
-    'typing-extensions',
+    'typing-extensions'
 ]
 
 [project.urls]
@@ -32,6 +32,7 @@ sails-compare = "sails.compare:run"
 sails-find = "sails.find:run"
 sails-test = "sails.test:run"
 sails-wurcs = "sails.wurcs:run"
+sails-morph = "sails.morph:run"
 
 [tool.scikit-build]
 # Protect the configuration against future changes in scikit-build-core

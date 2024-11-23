@@ -263,10 +263,11 @@ void Sails::WURCS::add_linkage_to_pseudo_glycan(std::vector<Glycosite> &glycosit
 }
 
 //WURCS=2.0/3,7,6/[a2122h-1b_1-5_2*NCC/3=O][a1122h-1b_1-5][a1122h-1a_1-5]/1-1-2-3-3-3-3/a4-b1_b4-c1_c3-d1_c6-e1_e3-f1_f2-g1
-Sails::Glycan Sails::WURCS::generate_pseudo_glycan(const std::string &wurcs,
+Sails::PseudoGlycan Sails::WURCS::generate_pseudo_glycan(const std::string &wurcs,
                                                    gemmi::Structure *structure,
                                                    Glycosite &glycosite,
-                                                   LinkageDatabase &linkage_database, ResidueDatabase &residue_database) {
+                                                   LinkageDatabase &linkage_database,
+                                                   ResidueDatabase &residue_database) {
     std::vector<std::string> unique_residues = extract_wurcs_unique_residues(wurcs);
     std::vector<int> residue_order = extract_wurcs_residue_order(wurcs);
     std::vector<std::string> linkage_order = extract_wurcs_linkage_order(wurcs);
@@ -303,9 +304,6 @@ Sails::Glycan Sails::WURCS::generate_pseudo_glycan(const std::string &wurcs,
     for (const auto &linkage: linkage_order) {
         add_linkage_to_pseudo_glycan(glycosites, pseudo_glycan, linkage);
     }
-
-    Model model = {structure, linkage_database, residue_database};
-    model.create_pseudo_glycan(pseudo_glycan);
 
     return pseudo_glycan;
 }
