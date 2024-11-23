@@ -9,9 +9,14 @@ project(sails LANGUAGES CXX)
 #set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-#if (SKBUILD)
+if (WIN32)
+    set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_GENERATOR_PLATFORM x64)
+endif()
+
+if (SKBUILD)
     find_package(ZLIB REQUIRED)
-#endif ()
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 

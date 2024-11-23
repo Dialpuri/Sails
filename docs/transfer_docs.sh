@@ -8,15 +8,21 @@ echo """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                  name=\"Sails\"
                  start-page=\"Sails.md\">
     <toc-element topic=\"Installation.topic\"/>
-    <toc-element toc-title="Automated Glycan Building">
-        <toc-element topic="Automated-Xray-Glycan-Building.topic"/>
-        <toc-element topic="Automated-EM-Glycan-Building.topic"/>
+    <toc-element toc-title=\"Automated Glycan Building\">
+        <toc-element topic=\"Automated-Xray-Glycan-Building.topic\"/>
+        <toc-element topic=\"Automated-EM-Glycan-Building.topic\"/>
     </toc-element>
-    	<toc-element toc-title=\"Utility Functions\">
+    <toc-element toc-title=\"Utility Functions\">
     		<toc-element topic=\"Compare-Structures.topic\"/>
     		<toc-element topic=\"Find-Glycosylation-Sites.topic\"/>
     		<toc-element topic=\"Generate-SNFG-Diagrams.topic\"/>
     	</toc-element>
+
+    <toc-element toc-title=\"WURCS Functions\">
+      <toc-element topic=\"Morph-Glycan.topic\"/>
+      <toc-element topic=\"Find-WURCS.topic\"/>
+      <toc-element topic=\"Model-Glycan-from-WURCS.topic\"/>
+    </toc-element>
     <toc-element topic=\"Sails.md\">
     """ > $output_file
 
