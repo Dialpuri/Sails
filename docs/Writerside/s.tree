@@ -14,7 +14,6 @@
 		<toc-element topic="Morph-Glycan.topic"/>
 		<toc-element topic="Find-WURCS.topic"/>
 		<toc-element topic="Model-Glycan-from-WURCS.topic"/>
-
 	</toc-element>
 	<toc-element toc-title="Utility Functions">
 		<toc-element topic="Compare-Structures.topic"/>
