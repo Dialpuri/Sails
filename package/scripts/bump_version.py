@@ -20,7 +20,6 @@ def update_version_in_file(file_path, old_version, new_version):
     with open(file_path, "r") as file:
         content = file.read()
 
-    print(old_version, new_version)
     updated_content = content.replace(old_version, new_version)
 
     with open(file_path, "w") as file:
