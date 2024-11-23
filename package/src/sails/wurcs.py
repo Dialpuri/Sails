@@ -20,7 +20,7 @@ def parse_args():
         "find", parents=[parent], formatter_class=formatter
     )
     find_parser.add_argument(
-        "-all",
+        "--all",
         help="Find WURCS identifiers for all glycans",
         action=argparse.BooleanOptionalAction,
         required=False,
@@ -59,7 +59,10 @@ def parse_args():
         "-chain", help="Name of target chain", type=str, required=True
     )
     model_parser.add_argument(
-        "-res", help="Name of target residue (protein)", type=str, required=True
+        "-seqid",
+        help="Sequence ID of the root residue (protein)",
+        type=str,
+        required=True,
     )
 
     return parser.parse_args()

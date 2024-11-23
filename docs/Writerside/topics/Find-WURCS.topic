@@ -3,25 +3,27 @@
         SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
 <topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
-       title="Find Glycosylation SItes" id="Find-Glycosylation-Sites" help-id="Find-Glycosylation-SItes">
+       title="Find WURCS Codes" id="Find-WURCS">
 
     <p>
-        Sails provides a utility tool to find potential glycosylation sites in a given structure.
-        Sails will search for N-glycosylation sites following the consensus sequence N-X-S/T where X is
-        not proline, as well as for C-glycosylation sites following the consensus sequence W-X-X-W. The tool
-        will output a JSON file with the residues that follow the respective motifs.
+        Sails provides a utility tool to find the WURCS code of a glycan in a macromolecule. A single WURCS code can
+        be generated for a known glycosite or all can be generated. These codes can be used to search glycomics databases.
     </p>
 
     <chapter title="Command" id="find">
         <p>Syntax:</p>
 
         <code-block lang="shell">
-            sails-find [OPTIONS]
+            sails-wurcs find [OPTIONS]
         </code-block>
 
         <p>Example:</p>
         <code-block lang="shell">
-            sails-find -modelin built.cif -logout potential_sites.json
+            sails-wurcs find -modelin structure.cif -chain A -seqid 123
+        </code-block>
+
+        <code-block lang="shell">
+            sails-wurcs find -modelin structure.cif -all -logout all_wurcs.json
         </code-block>
     </chapter>
 
@@ -30,14 +32,26 @@
 
         <deflist type="medium">
             <def title="-modelin">
-                Path to a model that requires comparison to a reference.
+                Path to a model.
                 <p>Formats accepted: CIF or PDB</p>
                 <b>Required</b>
             </def>
             <def title="-logout">
                 Path to output JSON file
-                <p>Default: sites.json </p>
+                <p>Default: wurcs.json </p>
             </def>
+            <def title="--all">
+                Ignore chain and seqid, and generate WURCS codes for all glycans that can be found for the input model
+            </def>
+            <def title="-chain">
+                Chain name containing the root protein residue
+                <p>Example: A</p>
+            </def>
+            <def title="-seqid">
+                Sequence Id of the root protein residue of a glycan (e.g. asparagine for an N-glycan)
+                <p>Example: 123</p>
+            </def>
+
             <def title="-h, --help">
                 Displays help.
             </def>
