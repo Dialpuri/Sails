@@ -26,7 +26,6 @@ Homepage = "https://github.com/Dialpuri/Sails"
 
 [project.scripts]
 sails = "sails.glycosylate:run_cli"
-pysails = "sails.glycosylate:run_python"
 sails-snfg = "sails.snfg:run"
 sails-compare = "sails.compare:run"
 sails-find = "sails.find:run"
