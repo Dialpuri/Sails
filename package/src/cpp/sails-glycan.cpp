@@ -5,6 +5,56 @@
 #include "../include/sails-glycan.h"
 
 
+std::vector<Sails::Glycosite> Sails::Glycan::find_children(Sugar *sugar) {
+    std::stack<Sugar *> sugar_stack;
+    std::set<Sugar *> visited;
+    sugar_stack.push(sugar);
+
+    std::vector<Glycosite> child_sites;
+    while (!sugar_stack.empty()) {
+        Sugar *current_sugar = sugar_stack.top();
+        sugar_stack.pop();
+
+        if (visited.find(current_sugar) == visited.end()) {
+            if (current_sugar != sugar) child_sites.emplace_back(current_sugar->site);
+            visited.insert(current_sugar);
+        }
+
+        for (auto &child: adjacency_list[current_sugar]) {
+            if (visited.find(child) == visited.end()) {
+                sugar_stack.push(child);
+            }
+        }
+    }
+    return child_sites;
+}
+
+std::vector<Sails::LinkageData> Sails::Glycan::extract_linkage_data(LinkageDatabase &linkage_database) const {
+    std::vector<LinkageData> linkages;
+    for (auto &linkage: linkage_list) {
+        const gemmi::Residue *donor_residue = Sails::Utils::get_residue_ptr_from_glycosite(
+            linkage.donor_sugar->site, m_structure);
+        gemmi::Residue *acceptor_residue = Sails::Utils::get_residue_ptr_from_glycosite(
+            linkage.acceptor_sugar->site, m_structure);
+
+        std::vector<LinkageData> available_linkages = linkage_database[donor_residue->name];
+
+        auto found_linkage = std::find_if(available_linkages.begin(), available_linkages.end(),
+                                          [&](const Sails::LinkageData &available_linkage) {
+                                              return available_linkage.donor_number == linkage.donor_number &&
+                                                     available_linkage.acceptor == acceptor_residue->name;
+                                          });
+        if (found_linkage != available_linkages.end()) {
+            linkages.emplace_back(*found_linkage);
+        }
+    }
+
+    if (linkages.size() != linkage_list.size()) {
+        throw std::runtime_error("Linkage list and extracted linkages are not the same size, check data file.");
+    }
+    return linkages;
+}
+
 void Sails::Glycan::print_list() const {
     std::cout << "Adjacency List" << std::endl;
     for (const auto &pair: adjacency_list) {
@@ -113,14 +163,14 @@ void Sails::Glycan::dfs_sites(Sugar *current_sugar, std::vector<Glycosite> &site
     }
 }
 
-std::set<Sails::Glycosite> Sails::Glycan::operator-(const Glycan& glycan) {
+std::set<Sails::Glycosite> Sails::Glycan::operator-(const Glycan &glycan) {
     std::set<Glycosite> this_keys;
     std::transform(this->sugars.begin(), this->sugars.end(), std::inserter(this_keys, this_keys.end()),
-                   [](auto& kv_pair) { return kv_pair.first; });
+                   [](auto &kv_pair) { return kv_pair.first; });
 
     std::set<Glycosite> other_keys;
     std::transform(glycan.sugars.begin(), glycan.sugars.end(), std::inserter(other_keys, other_keys.end()),
-                   [](auto& kv_pair) { return kv_pair.first; });
+                   [](auto &kv_pair) { return kv_pair.first; });
 
     std::set<Glycosite> difference;
     std::set_difference(this_keys.begin(), this_keys.end(), other_keys.begin(), other_keys.end(),

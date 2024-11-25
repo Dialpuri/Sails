@@ -44,6 +44,9 @@ namespace Sails {
 
             std::string donor_number_s = {donor_atom[donor_atom.size()-1]};
             donor_number = std::isdigit(donor_number_s[0]) ? std::stoi(donor_number_s): 1;
+
+            std::string acceptor_number_s = {acceptor_atom[acceptor_atom.size()-1]};
+            acceptor_number = std::isdigit(acceptor_number_s[0]) ? std::stoi(acceptor_number_s): 1;
         }
 
         Sugar *donor_sugar;
@@ -51,6 +54,7 @@ namespace Sails {
         std::string donor_atom;
         std::string acceptor_atom;
         int donor_number;
+        int acceptor_number;
     };
 
 
@@ -467,6 +471,16 @@ namespace Sails {
             return std::nullopt;
         }
 
+        /**
+        * @brief Find the glycosites of the children of the supplied sugar
+        */
+        std::vector<Glycosite> find_children(Sugar *sugar);
+
+
+        /**
+         * @brief Extract LinkageData for all linkages in glycan
+         */
+        std::vector<LinkageData> extract_linkage_data(LinkageDatabase& linkage_database) const;
         /**
         * @brief Prints the adjacency list of the glycan structure.
         *
