@@ -263,6 +263,22 @@ double Sails::Model::calculate_clash_score(const SuperpositionResult &result) co
     return clash_score;
 }
 
+double Sails::Model::calculate_glycan_clash_score(const Glycan &glycan, gemmi::NeighborSearch *ns,
+                                                  gemmi::Structure *structure) {
+    constexpr double radius = 2;
+    double clash_score = 0;
+
+    for (auto &site: glycan.sugar_order) {
+        const gemmi::Residue *residue = Utils::get_residue_ptr_from_glycosite(site, structure);
+        for (auto &atom: residue->atoms) {
+            auto nearest_atoms = ns->find_atoms(atom.pos, '\0', 0, radius);
+            clash_score += static_cast<int>(nearest_atoms.size());
+        }
+    }
+
+    return clash_score;
+}
+
 std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     gemmi::Residue *residue, LinkageData &data, Density &density, bool refine) {
     // find library monomer for acceptor residue
@@ -356,7 +372,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     return best_result;
 }
 
-std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Residue *residue, LinkageData &data) {
+std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Residue *residue, LinkageData &data,
+                                                                    bool use_priority_cluster) {
     auto library_monomer = get_monomer(data.acceptor, true);
 
     if (!library_monomer.has_value()) {
@@ -396,7 +413,16 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Resid
     SuperpositionResult best_result;
     double best_clash = INT_MAX;
 
-    for (auto &cluster: data.clusters) {
+    Clusters clusters;
+    if (use_priority_cluster) {
+        auto priority_cluster = std::find_if(data.clusters.begin(), data.clusters.end(),
+                                             [](const Cluster &cluster) { return cluster.priority; });
+        clusters.emplace_back(*priority_cluster);
+    } else {
+        clusters = data.clusters;
+    }
+
+    for (auto &cluster: clusters) {
         std::vector<double> torsions = cluster.torsions.get_means_in_order();
         std::vector<double> torsion_stddev = cluster.torsions.get_stddev_in_order();
         std::vector<double> angles = cluster.angles.get_means_in_order();
@@ -422,6 +448,62 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Resid
 
     if (best_clash == INT_MAX) return std::nullopt;
     return best_result;
+}
+
+std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Residue *residue, LinkageData &data,
+                                                                    Cluster &cluster,
+                                                                    ResidueDatabase &residue_database) {
+    auto library_monomer = get_monomer_only(data.acceptor, true);
+
+    if (!library_monomer.has_value()) {
+        throw std::runtime_error("Could not get required monomer, "
+            "ensure that CCP4 monomer library is sourced. "
+            "If you have a local monomer library, ensure that you "
+            "have CLIBD set");
+    }
+    auto reference_library_monomer = gemmi::Residue(library_monomer.value());
+
+    std::vector<gemmi::Atom> reference_atoms;
+    ResidueData donor_residue = residue_database[data.donor];
+    ResidueData acceptor_residue = residue_database[data.acceptor];
+
+    // find donor atoms and add them to atoms list
+    auto donor_atoms = donor_residue.donor_map[data.donor_number];
+    std::vector<gemmi::Atom> atoms;
+    for (const auto &donor: donor_atoms) {
+        gemmi::Atom *atom = residue->find_atom(donor, '*');
+        if (atom == nullptr) { throw std::runtime_error("Could not find an atom"); }
+        atoms.emplace_back(*atom);
+    }
+
+    // find acceptor atoms and add them to atoms list
+    auto acceptor_atoms = acceptor_residue.acceptor_map[data.acceptor_number];
+    for (const auto &acceptor: acceptor_atoms) {
+        auto atom = library_monomer.value().find_atom(acceptor, '\0');
+        if (atom == nullptr) { throw std::runtime_error("Could not find an atom"); }
+        atoms.emplace_back(*atom);
+        reference_atoms.emplace_back(*atom); // make a copy so that we have a unchanged reference
+    }
+
+    if (atoms.size() != 6) { throw std::runtime_error("Unexpected atom count"); }
+
+    double length = data.length;
+    std::vector<double> torsions = cluster.torsions.get_means_in_order();
+    std::vector<double> torsion_stddev = cluster.torsions.get_stddev_in_order();
+    std::vector<double> angles = cluster.angles.get_means_in_order();
+    std::vector<double> angles_stddev = cluster.angles.get_stddev_in_order();
+
+    auto new_monomer = gemmi::Residue(library_monomer.value());
+    const gemmi::Transform superpose_result = superpose_atoms(atoms, reference_atoms, length, angles, torsions);
+    gemmi::transform_pos_and_adp(new_monomer, superpose_result);
+
+    remove_leaving_atom(data, reference_library_monomer, new_monomer);
+    new_monomer.seqid = gemmi::SeqId(std::to_string(residue->seqid.num.value + 1));
+    reference_library_monomer.seqid = gemmi::SeqId(std::to_string(residue->seqid.num.value + 1));
+
+    SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
+
+    return result;
 }
 
 void Sails::Model::create_pseudo_glycan(PseudoGlycan &pseudo_glycan) {
@@ -461,7 +543,7 @@ void Sails::Model::create_pseudo_glycan(PseudoGlycan &pseudo_glycan) {
                                                   });
 
                 if (found_linkage != available_linkages.end()) {
-                    std::optional<SuperpositionResult> result = add_residue(parent_residue, *found_linkage);
+                    std::optional<SuperpositionResult> result = add_residue(parent_residue, *found_linkage, true);
                     if (!result.has_value()) { throw std::runtime_error("Could not add residue"); }
 
                     gemmi::Chain *parent_chain = Utils::get_chain_ptr_from_glycosite(node->site, structure);
@@ -481,6 +563,75 @@ void Sails::Model::create_pseudo_glycan(PseudoGlycan &pseudo_glycan) {
             }
         }
     }
+}
+
+void Sails::Model::update_linkage_torsion(Glycan &glycan, Linkage &linkage, Cluster &angles,
+                                          gemmi::Structure *structure, ResidueDatabase &residue_database) {
+    Sugar *donor = linkage.donor_sugar;
+    const Sugar *acceptor = linkage.acceptor_sugar;
+
+    const std::vector<Glycosite> child_glycosites = glycan.find_children(donor);
+
+    gemmi::Residue *donor_residue = Utils::get_residue_ptr_from_glycosite(donor->site, structure);
+    gemmi::Residue *acceptor_residue = Utils::get_residue_ptr_from_glycosite(acceptor->site, structure);
+
+    LinkageData data = {
+        donor_residue->name, acceptor_residue->name, linkage.donor_number, linkage.acceptor_number, 1.4, {}
+    };
+
+    const auto result = add_residue(donor_residue, data, angles, residue_database);
+
+    std::vector<gemmi::Position> reference_positions;
+    std::vector<gemmi::Position> new_positions;
+    std::for_each(acceptor_residue->atoms.begin(), acceptor_residue->atoms.end(), [&](const gemmi::Atom a) {
+        reference_positions.emplace_back(a.pos);
+    });
+    std::for_each(result->new_residue.atoms.begin(), result->new_residue.atoms.end(), [&](const gemmi::Atom &a) {
+        new_positions.emplace_back(a.pos);
+    });
+
+    const gemmi::Transform transform = calculate_superposition(reference_positions, new_positions);
+
+    for (auto child: child_glycosites) {
+        gemmi::Residue *child_residue = Utils::get_residue_ptr_from_glycosite(child, structure);
+        gemmi::transform_pos_and_adp(*child_residue, transform);
+    }
+}
+
+gemmi::Structure Sails::Model::check_linkage_torsion(Glycan &glycan, Linkage &linkage, Cluster &angles) {
+    gemmi::Structure structure(glycan.get_structure());
+
+    Sugar *donor = linkage.donor_sugar;
+    const Sugar *acceptor = linkage.acceptor_sugar;
+
+    const std::vector<Glycosite> child_glycosites = glycan.find_children(donor);
+
+    gemmi::Residue *donor_residue = Utils::get_residue_ptr_from_glycosite(donor->site, &structure);
+    gemmi::Residue *acceptor_residue = Utils::get_residue_ptr_from_glycosite(acceptor->site, &structure);
+
+    LinkageData data = {
+        donor_residue->name, acceptor_residue->name, linkage.donor_number, linkage.acceptor_number, 1.4, {angles}
+    };
+
+    const auto result = add_residue(donor_residue, data, false);
+
+    std::vector<gemmi::Position> reference_positions;
+    std::vector<gemmi::Position> new_positions;
+    std::for_each(acceptor_residue->atoms.begin(), acceptor_residue->atoms.end(), [&](const gemmi::Atom a) {
+        reference_positions.emplace_back(a.pos);
+    });
+    std::for_each(result->new_residue.atoms.begin(), result->new_residue.atoms.end(), [&](const gemmi::Atom &a) {
+        new_positions.emplace_back(a.pos);
+    });
+
+    const gemmi::Transform transform = calculate_superposition(reference_positions, new_positions);
+
+    for (auto child: child_glycosites) {
+        gemmi::Residue *child_residue = Utils::get_residue_ptr_from_glycosite(child, &structure);
+        gemmi::transform_pos_and_adp(*child_residue, transform);
+    }
+
+    return structure;
 }
 
 gemmi::Residue Sails::Model::replace_residue(gemmi::Residue *target_residue,

@@ -133,9 +133,39 @@ namespace Sails {
    */
   void create_pseudo_glycan(PseudoGlycan& pseudo_glycan);
 
+  /**
+  * @brief Update the torsion angles for a linkage and update rest of glycan
+  *
+  */
+  gemmi::Structure check_linkage_torsion(Glycan &glycan, Linkage &linkage, Cluster &angles);
 
+  /**
+* @brief Update the torsion angles for a linkage and update rest of glycan
+*
+*/
+
+  static void update_linkage_torsion(Glycan &glycan, Linkage &linkage, Cluster &angles, gemmi::Structure *structure,
+                                     ResidueDatabase &residue_database);
+
+  /**
+  * @brief Replace a residue with a residue of specified name
+  */
   static gemmi::Residue replace_residue(gemmi::Residue *target_residue,
                                         const std::string &replacement_residue_name);
+
+  /**
+ * @brief Calculates the clash score for an entire Glycan.
+ *
+ * The clash score is calculated by finding the number of nearby atoms for each atom in the
+ * Glycan. Nearby atoms are found using a NeighborSearch with a given radius.
+ *
+ * @param glycan Glycan to calculate clash score with
+ * @param ns
+ * @param structure
+ * @return The calculated clash score.
+ */
+  [[nodiscard]] static double calculate_glycan_clash_score(const Glycan& glycan, gemmi::NeighborSearch* ns, gemmi::Structure *structure);
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -174,11 +204,27 @@ namespace Sails {
    *
    * @param residue The residue to calculate the translation for.
    * @param data The linkage data containing donor and acceptor information.
+   * @param use_priority_cluster
    * @return Optionally, the translated residue.
    * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
    */
   std::optional<Sails::SuperpositionResult> add_residue(
-   gemmi::Residue *residue, LinkageData &data);
+   gemmi::Residue *residue, LinkageData &data, bool use_priority_cluster);
+
+  /**
+  * Performs the translation of a residue based on the given linkage data without density.
+  *
+  * The donor atoms of the input residue are used to calculate a superposition of a given new monomer. A new
+  * monomer is loaded and transformed to the correct position and returned.
+  *
+  * @param residue The residue to calculate the translation for.
+  * @param data The linkage data containing donor and acceptor information.
+  * @param cluster Cluster of angles to add the residue with
+  * @param residue_database Residue database for acceptor/donor atoms
+  * @return Optionally, the translated residue.
+  * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
+  */
+  static std::optional<Sails::SuperpositionResult> add_residue(gemmi::Residue *residue, LinkageData& data, Cluster& cluster, ResidueDatabase &residue_database);
 
   /**
    * Finds favoured additions based on a terminal sugar and a list of possible additions.
