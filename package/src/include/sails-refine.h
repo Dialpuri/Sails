@@ -36,15 +36,15 @@ namespace Sails {
         TorsionAngleRefiner(
             std::vector<gemmi::Atom *> &atoms,
             std::vector<gemmi::Atom> &reference_atoms,
-            Density& density,
-            SuperpositionResult& superposition_result,
+            Density &density,
+            SuperpositionResult &superposition_result,
             double length,
-            std::vector<double> & angle_mean,
-            std::vector<double> & angle_range,
-            std::vector<double> & torsion_mean,
-            std::vector<double> & torsion_range
+            std::vector<double> &angle_mean,
+            std::vector<double> &angle_range,
+            std::vector<double> &torsion_mean,
+            std::vector<double> &torsion_range
 
-            ) : m_all_atoms(atoms),
+        ) : m_all_atoms(atoms),
             m_reference_atoms(reference_atoms),
             m_density(&density),
             m_reference_residue(superposition_result.reference_residue),
@@ -52,8 +52,10 @@ namespace Sails {
             m_angle_mean(angle_mean),
             m_torsion_mean(torsion_mean),
             m_angle_range(angle_range),
-            m_torsion_range(torsion_range) {}
+            m_torsion_range(torsion_range) {
+        }
 
+        TorsionAngleRefiner() = default;
 
         /**
          * Calculates the score function for refining torsion angles based on a set of angles and the density score.
@@ -64,7 +66,7 @@ namespace Sails {
          *
          * @return The calculated score function value.
          */
-        double score_function(std::vector<double>& angles);
+        double score_function(std::vector<double> &angles);
 
         /**
          * Refines torsion angles using a Nelder-Mead optimization algorithm.
@@ -73,10 +75,7 @@ namespace Sails {
          */
         SuperpositionResult refine();
 
-
-
-    private:
-
+    protected:
         /**
         * Calculates the penalty for a given angle based on its deviation from the mean angle
         * using the penalty factor.
@@ -97,6 +96,7 @@ namespace Sails {
          */
         [[nodiscard]] double calculate_penalty_factor() const;
 
+    private:
         /**
          * The length of a linkage bond
          */
@@ -135,12 +135,33 @@ namespace Sails {
         /**
          * Density object used for scoring to any derived density method (Xtal or EM)
          */
-        Density* m_density;
+        Density *m_density;
 
         /**
          * The reference residue used for superpositons
          */
         gemmi::Residue m_reference_residue;
+    };
+
+    struct GlycanRegulariser : TorsionAngleRefiner {
+        GlycanRegulariser(const ResidueDatabase &residue_database,
+                          const LinkageDatabase &linkage_database): TorsionAngleRefiner(),
+                                                              m_residue_database(residue_database),
+                                                              m_linkage_database(linkage_database) {
+        }
+
+
+        static std::vector<double> simplex(std::function<double(std::vector<double> &)> function,
+                                           std::vector<std::vector<double> > &arguments, int no_parameters, int
+                                           max_cycles);
+
+        static gemmi::NeighborSearch create_amino_acid_neighbour_search(const Sails::Glycan &glycan);
+
+        void regularise(Glycan &glycan);
+
+        LinkageDatabase m_linkage_database;
+
+        ResidueDatabase m_residue_database;
     };
 };
 
