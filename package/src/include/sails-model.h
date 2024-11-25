@@ -172,15 +172,17 @@ namespace Sails {
      * @constructor Cluster
      * @param angles A set of angles.
      * @param torsions A set of torsions.
+     * @param priorty Cluster should be used as the primary cluster
      */
     struct Cluster {
-        Cluster(const AngleSet &angles, const TorsionSet &torsions)
+        Cluster(const AngleSet &angles, const TorsionSet &torsions, bool priority)
             : angles(angles),
-              torsions(torsions) {
+              torsions(torsions), priority(priority) {
         }
 
         AngleSet angles;
         TorsionSet torsions;
+        bool priority;
     };
 
     typedef std::vector<Cluster> Clusters;
@@ -332,6 +334,10 @@ namespace Sails {
         bool operator==(const Glycosite &other) const {
             return std::tie(model_idx, chain_idx, residue_idx, atom_idx) == std::tie(
                        other.model_idx, other.chain_idx, other.residue_idx, other.atom_idx);
+        }
+
+        bool operator!=(const Glycosite & other) const {
+            return std::tie(model_idx, chain_idx, residue_idx) != std::tie(other.model_idx, other.chain_idx, other.residue_idx);
         }
 
 
