@@ -15,6 +15,7 @@
 #include <optional>
 
 #include <gemmi/model.hpp>
+#include <gemmi/resinfo.hpp>
 
 #include "sails-model.h"
 #include "sails-utils.h"
@@ -41,12 +42,11 @@ namespace Sails {
               acceptor_sugar(acceptor_sugar),
               donor_atom(donor_atom),
               acceptor_atom(acceptor_atom) {
+            std::string donor_number_s = {donor_atom[donor_atom.size() - 1]};
+            donor_number = std::isdigit(donor_number_s[0]) ? std::stoi(donor_number_s) : 1;
 
-            std::string donor_number_s = {donor_atom[donor_atom.size()-1]};
-            donor_number = std::isdigit(donor_number_s[0]) ? std::stoi(donor_number_s): 1;
-
-            std::string acceptor_number_s = {acceptor_atom[acceptor_atom.size()-1]};
-            acceptor_number = std::isdigit(acceptor_number_s[0]) ? std::stoi(acceptor_number_s): 1;
+            std::string acceptor_number_s = {acceptor_atom[acceptor_atom.size() - 1]};
+            acceptor_number = std::isdigit(acceptor_number_s[0]) ? std::stoi(acceptor_number_s) : 1;
         }
 
         Sugar *donor_sugar;
@@ -99,7 +99,7 @@ namespace Sails {
             return this->site == other.site;
         }
 
-        Linkage* find_linkage(const Sugar *sugar1, const Sugar *sugar2) {
+        Linkage *find_linkage(const Sugar *sugar1, const Sugar *sugar2) {
             for (auto &linkage: linkages) {
                 if (sugar1 == linkage.donor_sugar && sugar2 == linkage.acceptor_sugar) {
                     return &linkage;
@@ -205,7 +205,7 @@ namespace Sails {
          * @return The number of sugars.
          */
         [[nodiscard]] int sugar_count() const {
-            return sugars.size()-1;
+            return sugars.size() - 1;
         }
 
         /**
@@ -216,7 +216,7 @@ namespace Sails {
         [[nodiscard]] std::vector<std::string> get_unique_sugar_names() const {
             std::vector<std::string> names;
             std::set<std::string> unique_sugar_names;
-            for (auto& site: sugar_order) {
+            for (auto &site: sugar_order) {
                 std::string name = Utils::get_residue_ptr_from_glycosite(site, m_structure)->name;
 
                 if (unique_sugar_names.find(name) == unique_sugar_names.end()) {
@@ -285,7 +285,7 @@ namespace Sails {
          * @return The number of unique sugars
          */
         [[nodiscard]] size_t unique_sugar_count() const {
-            return sugar_counts.size()-1;
+            return sugar_counts.size() - 1;
         }
 
 
@@ -299,7 +299,7 @@ namespace Sails {
             for (const auto &[sugar, linked_sugars]: adjacency_list) {
                 count += linked_sugars.size();
             }
-            return count-1;
+            return count - 1;
         }
 
         /**
@@ -307,7 +307,7 @@ namespace Sails {
          *
          * @return A map of sugar ptrs to a set of linked sugar ptrs.
          */
-        [[nodiscard]] const std::map<Sugar*, std::set<Sugar*>>* get_adjacency_list() const {
+        [[nodiscard]] const std::map<Sugar *, std::set<Sugar *> > *get_adjacency_list() const {
             return &adjacency_list;
         }
 
@@ -316,7 +316,7 @@ namespace Sails {
          *
          * @return A ptr to a vector of linkages.
          */
-        [[nodiscard]] const std::vector<Linkage>* get_linkage_list() const {
+        [[nodiscard]] const std::vector<Linkage> *get_linkage_list() const {
             return &linkage_list;
         }
 
@@ -325,8 +325,30 @@ namespace Sails {
          *
          * @return A ptr to a all sugars in this glycan.
          */
-        [[nodiscard]] const std::map<Glycosite, std::unique_ptr<Sugar>>* get_sugars() const {
+        [[nodiscard]] const std::map<Glycosite, std::unique_ptr<Sugar> > *get_sugars() const {
             return &sugars;
+        }
+
+        /**
+         * @brief Create NeighborSearch with amino acids only, not including
+         */
+        gemmi::NeighborSearch create_amino_acid_neighbor_search() const {
+            auto ns = gemmi::NeighborSearch(m_structure->models[0], m_structure->cell, 2);
+            for (int m = 0; m < m_structure->models.size(); m++) {
+                for (int c = 0; c < m_structure->models[m].chains.size(); c++) {
+                    for (int r = 0; r < m_structure->models[m].chains[c].residues.size(); r++) {
+                        auto residue = m_structure->models[m].chains[c].residues[r];
+                        auto current_site = Glycosite(m, c, r);
+                        if (gemmi::find_tabulated_residue(residue.name).is_amino_acid() && current_site !=
+                            root_glycosite) {
+                            for (int a = 0; a < m_structure->models[m].chains[c].residues[r].atoms.size(); a++) {
+                                ns.add_atom(m_structure->models[m].chains[c].residues[r].atoms[a], c, r, a);
+                            }
+                        }
+                    }
+                }
+            }
+            return ns;
         }
 
         /**
@@ -387,7 +409,7 @@ namespace Sails {
                 return;
             }
             sugars[site] = std::make_unique<Sugar>(atom, seqId, site);
-            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(site, m_structure);
+            gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(site, m_structure);
 
             if (sugar_order.empty()) {
                 root_glycosite = site;
@@ -421,9 +443,10 @@ namespace Sails {
                 residue_ptr->erase(residue_ptr->begin() + sugar->site.residue_idx);
             }
 
-            gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sugar->site, m_structure);
+            gemmi::Residue *residue_ptr = Utils::get_residue_ptr_from_glycosite(sugar->site, m_structure);
             int current_sugar_count = sugar_counts[residue_ptr->name];
-            if (current_sugar_count <= 1) { // if this is the last sugar, remove it from the sugar_counts list
+            if (current_sugar_count <= 1) {
+                // if this is the last sugar, remove it from the sugar_counts list
                 auto name_itr = sugar_counts.find(residue_ptr->name);
                 sugar_counts.erase(name_itr, sugar_counts.end());
             } else {
@@ -432,8 +455,8 @@ namespace Sails {
 
             sugar_order.erase(
                 std::remove_if(sugar_order.begin(), sugar_order.end(), [&sugar](const Glycosite &s) {
-                return s == sugar->site;
-            }), sugar_order.end());
+                    return s == sugar->site;
+                }), sugar_order.end());
 
             Sugar *linked_donor = nullptr;
             // remove from adjacency list
@@ -480,7 +503,8 @@ namespace Sails {
         /**
          * @brief Extract LinkageData for all linkages in glycan
          */
-        std::vector<LinkageData> extract_linkage_data(LinkageDatabase& linkage_database) const;
+        std::vector<LinkageData> extract_linkage_data(LinkageDatabase &linkage_database) const;
+
         /**
         * @brief Prints the adjacency list of the glycan structure.
         *
@@ -588,7 +612,7 @@ namespace Sails {
          *
          * @see gemmi::Structure
          */
-        [[nodiscard]] gemmi::Structure* get_structure_ptr() const { return m_structure; };
+        [[nodiscard]] gemmi::Structure *get_structure_ptr() const { return m_structure; };
 
 
         /**
@@ -606,7 +630,7 @@ namespace Sails {
         /**
         * Return the initial sugar ptr for this glycan
         */
-        [[nodiscard]] Sugar* initial_sugar() const {return root_sugar;}
+        [[nodiscard]] Sugar *initial_sugar() const { return root_sugar; }
 
         /**
          * Internal glycosite [[maybe_unused]]
@@ -621,7 +645,7 @@ namespace Sails {
         /**
          * Root sugar
          */
-        Sugar* root_sugar;
+        Sugar *root_sugar;
 
         // private:
 
@@ -660,15 +684,13 @@ namespace Sails {
         * Sugar order (e.g. {NAG, NAG, BMA, MAN, MAN})
         */
         std::vector<Glycosite> sugar_order;
-
     };
 
-    struct PseudoGlycan: Glycan {
+    struct PseudoGlycan : Glycan {
         PseudoGlycan(gemmi::Structure *structure, ResidueDatabase &database, Glycosite &glycosite)
             : Glycan(structure, database, glycosite) {
         }
     };
-
 }
 
 #endif //SAILS_SAILS_GLYCAN_H
