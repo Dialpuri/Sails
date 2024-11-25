@@ -127,9 +127,9 @@ std::vector<double> Sails::GlycanRegulariser::simplex(std::function<double(std::
         }
 
         if (results[worst_index] - results[best_index] < tolerance) {
-            std::cout << "Results[worst_index]: " << results[worst_index] << "Results[best_index]: " << results[
-                        best_index]
-                    << " diff " << results[worst_index] - results[best_index] << std::endl;
+            // std::cout << "Results[worst_index]: " << results[worst_index] << "Results[best_index]: " << results[
+            //             best_index]
+            //         << " diff " << results[worst_index] - results[best_index] << std::endl;
             break;
         }
 
@@ -211,7 +211,6 @@ std::vector<double> Sails::GlycanRegulariser::simplex(std::function<double(std::
 
 void Sails::GlycanRegulariser::regularise(Glycan &glycan) {
     std::vector<LinkageData> linkage_data = glycan.extract_linkage_data(m_linkage_database);
-    Utils::save_structure_to_file(glycan.get_structure(), "../debug/refine_steps/initial.cif");
 
     Linkage linkage = glycan.linkage_list[0];
 
@@ -273,10 +272,10 @@ void Sails::GlycanRegulariser::regularise(Glycan &glycan) {
         return clash_score + penalty;
     };
 
-    // std::vector<double> final_values = simplex(lambda, initial_simplex, parameters, 1000);
-    std::vector<double> final_values = nelder_mead::find_min(lambda, initial_values, true, {}, 1e-8, 1e-8,
-    100000,
-    100000);
+    std::vector<double> final_values = simplex(lambda, initial_simplex, parameters, 10000);
+    // std::vector<double> final_values = nelder_mead::find_min(lambda, initial_values, true, {}, 1e-8, 1e-8,
+    // 100000,
+    // 100000);
 
     int value_index = -1;
     gemmi::Structure trial_structure(glycan.get_structure());
