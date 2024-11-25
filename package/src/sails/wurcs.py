@@ -65,6 +65,13 @@ def parse_args():
         type=int,
         required=True,
     )
+    model_parser.add_argument(
+        "-regularise",
+        help="Regularise the resultant glycan chain to known database torsion values",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        required=False,
+    )
 
     return parser.parse_args()
 
@@ -86,7 +93,12 @@ def run():
             json.dump(wurcs, json_file, indent=4)
     else:
         result = model_wurcs(
-            sails_structure, args.wurcs, args.chain, args.seqid, str(resource)
+            sails_structure,
+            args.wurcs,
+            args.chain,
+            args.seqid,
+            args.regularise,
+            str(resource),
         )
         structure = interface.extract_sails_structure(result)
         structure.make_mmcif_block().write_file(args.modelout)
