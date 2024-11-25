@@ -529,7 +529,6 @@ void Sails::Model::create_pseudo_glycan(PseudoGlycan &pseudo_glycan) {
 
                 const Linkage *linkage = parent->find_linkage(parent, node);
 
-                std::cout << Utils::format_residue_from_site(parent->site, structure) << std::endl;
 
                 if (linkage_database.find(parent_residue->name) == linkage_database.end()) {
                     throw std::runtime_error("Could not find entry in linkage database");
