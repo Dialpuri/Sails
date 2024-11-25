@@ -65,6 +65,11 @@ gemmi::Atom Sails::Utils::get_atom_from_glycosite(const Glycosite &site, const g
     return structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
 }
 
+const gemmi::Atom *Sails::Utils::get_atom_ptr_from_glycosite(const Glycosite &site, const gemmi::Structure *structure) {
+    if (site.atom_idx == -1) { throw std::runtime_error("Site has not been initialised from a Mark"); }
+    return &structure->models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx].atoms[site.atom_idx];
+}
+
 std::optional<gemmi::Chain*> Sails::Utils::get_last_chain(gemmi::Structure *structure) {
     if (structure->models[0].chains.empty()) { return std::nullopt; }
     return &structure->models[0].chains[structure->models[0].chains.size()-1];

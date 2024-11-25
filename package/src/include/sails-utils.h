@@ -162,11 +162,25 @@ namespace Sails::Utils {
     gemmi::Atom get_atom_from_glycosite(const Glycosite &site, const gemmi::Structure *structure);
 
     /**
+     * @brief Retrieves the gemmi::Atom* from the specified glycosite.
+     *
+     * This function retrieves a gemmi::Atom pointer that represents the atom of the
+     * provided Glycosite within the specified gemmi::Structure.
+     *
+     * @param site The glycosite object containing the model, chain, and residue indices.
+     * @param structure The structure from which to retrieve the atom.
+     *
+     * @return The gemmi::Atom* from the specified glycosite.
+     * @throws std::runtime_error if the site has not been initialised from a Mark.
+     */
+    const gemmi::Atom *get_atom_ptr_from_glycosite(const Glycosite &site, const gemmi::Structure *structure);
+
+    /**
     * @brief Retrieve a ptr to the last chain in a gemmi Structure
     *
     * @return an optional gemmi::Chain* if there is at least 1 chain in a ptr, or a nulloption if there are no chains
     */
-    std::optional<gemmi::Chain*> get_last_chain(gemmi::Structure *structure);
+    std::optional<gemmi::Chain *> get_last_chain(gemmi::Structure *structure);
 
     /**
     * @brief Retrieve the index of the last chain in the gemmi Structure
