@@ -3,9 +3,8 @@
 //
 
 #include "../include/sails-gemmi-bindings.h"
+#include "../include/sails-utils.h"
 #include "gemmi/mtz.hpp"
-
-#include <src/include/sails-utils.h>
 
 
 gemmi::Mtz Sails::form_gemmi_mtz(MTZ& mtz) {
