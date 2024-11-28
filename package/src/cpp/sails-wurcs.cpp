@@ -238,7 +238,7 @@ std::vector<std::string> Sails::WURCS::form_residue_name_order(ResidueDatabase &
 
 gemmi::Structure Sails::WURCS::generate_pseudo_structure() {
     gemmi::Structure pseudo_structure;
-    gemmi::Model pseudo_model;
+    gemmi::Model pseudo_model = {};
     gemmi::Chain chain = gemmi::Chain("A");
 
     pseudo_model.chains.emplace_back(chain);

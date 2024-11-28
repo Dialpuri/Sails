@@ -3,8 +3,7 @@
 //
 
 #include "../include/sails-morph.h"
-
-#include <src/include/sails-linkage.h>
+#include "../include/sails-linkage.h"
 
 
 void Sails::Morph::transform(Glycan &glycan, PseudoGlycan &pseudo_glycan) {

@@ -3,8 +3,7 @@
 //
 
 #include "../../include/snfg/sails-snfg.h"
-
-#include "src/include/snfg/sails-snfg-shape.h"
+#include "../../include/snfg/sails-snfg-shape.h"
 
 std::string Sails::SNFG::create_svg_header() const {
     return "<svg width=\"" + std::to_string(SVG_WIDTH) + "\" height=\"" + std::to_string(SVG_HEIGHT) +
