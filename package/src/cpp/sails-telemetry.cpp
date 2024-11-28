@@ -3,8 +3,7 @@
 //
 
 #include "../include/sails-telemetry.h"
-
-#include <src/include/sails-json.h>
+#include "../include/sails-json.h"
 
 
 void Sails::Telemetry::save_state(int cycle) {
