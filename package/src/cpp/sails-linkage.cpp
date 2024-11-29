@@ -190,7 +190,7 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
     if (chain_type == protein) {
         const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
         chain_idx = static_cast<int>(last_chain_idx);
-        gemmi::Chain chain;
+        gemmi::Chain chain = gemmi::Chain("");
         chain.name = Utils::get_next_string(
             structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
         structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
