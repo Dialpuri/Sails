@@ -78,6 +78,7 @@ void Sails::XtalDensity::form_atom_list(const gemmi::Structure &structure, std::
         for (const auto &chain: model.chains) {
             for (const auto &residue: chain.residues) {
                 for (const auto &atom: residue.atoms) {
+                    if (clipper::String(atom.element.name()).trim() == "X") continue;
                     gemmi::Position pos = atom.pos;
                     clipper::Atom clipper_atom;
                     clipper_atom.set_element(clipper::String(atom.element.name()));
