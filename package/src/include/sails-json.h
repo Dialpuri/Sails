@@ -5,7 +5,7 @@
 #ifndef SAILS_SAILS_JSON_H
 #define SAILS_SAILS_JSON_H
 
-#include "../third-party/simdjson.h"
+#include "./third-party/simdjson.h"
 #include "sails-model.h"
 
 #include <filesystem>

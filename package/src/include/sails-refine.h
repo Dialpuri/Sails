@@ -6,15 +6,14 @@
 #define SAILS_REFINE_H
 
 #include "density/sails-density.h"
-
-#include "../third-party/nelder-mead.h"
+#include "sails-linkage.h"
+#include "./third-party/nelder-mead.h"
 
 #include <gemmi/modify.hpp>
 #include <gemmi/model.hpp>
 
 #include <chrono>
 
-#include "sails-linkage.h"
 
 namespace Sails {
     struct SuperpositionResult;

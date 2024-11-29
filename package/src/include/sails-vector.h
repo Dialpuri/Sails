@@ -7,8 +7,7 @@
 
 #include <gemmi/unitcell.hpp>
 #include <gemmi/math.hpp>
-
-#include "../include/sails-utils.h"
+#include "sails-utils.h"
 
 #include <clipper/core/coords.h>
 #include <clipper/core/rotation.h>

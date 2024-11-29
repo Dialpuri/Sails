@@ -6,8 +6,7 @@
 #define SAILS_SAILS_MORPH_H
 
 #include "gemmi/model.hpp" // for Structure
-
-#include "../include/sails-glycan.h"
+#include "sails-glycan.h"
 
 namespace Sails {
     class Morph {
