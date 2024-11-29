@@ -10,7 +10,9 @@ namespace Sails {
 
     class XtalDensity : public Density {
     public:
-        explicit XtalDensity(gemmi::Mtz &mtz);
+    	explicit XtalDensity(gemmi::Mtz &mtz);
+
+    	explicit XtalDensity(gemmi::Mtz &mtz, const std::string& F, const std::string& SIGF);
 
         [[nodiscard]] const gemmi::Mtz *get_mtz() const override { return &m_mtz; }
 

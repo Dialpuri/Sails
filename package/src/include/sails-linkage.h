@@ -74,6 +74,12 @@ namespace Sails {
    monomer_library_path = Utils::get_environment_variable("CLIBD") + "/monomers";
   }
 
+
+  Model(gemmi::Structure *structure, LinkageDatabase &linkage_database, ResidueDatabase &residue_database, const std::string& monomer_library_path)
+   : structure(structure), linkage_database(linkage_database), residue_database(residue_database), monomer_library_path(monomer_library_path) {
+  }
+
+
   /**
    * Extends the given glycan by adding new sugars based on the linkage database.
    *

@@ -11,6 +11,13 @@ Sails::XtalDensity::XtalDensity(gemmi::Mtz &mtz) {
     load_hkl("FP", "SIGFP");
 }
 
+Sails::XtalDensity::XtalDensity(gemmi::Mtz &mtz, const std::string& F, const std::string& SIGF) {
+    m_mtz = std::move(mtz);
+    initialise_hkl();
+    load_hkl(F, SIGF);
+}
+
+
 void Sails::XtalDensity::initialise_hkl() {
     m_resolution = clipper::Resolution(m_mtz.resolution_high());
     const gemmi::UnitCell *cell = &m_mtz.cell;
