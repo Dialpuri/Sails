@@ -19,6 +19,8 @@
 #include <gemmi/ccp4.hpp>
 #include <gemmi/modify.hpp>
 
+#include <string>
+#include <src/include/sails-maths.h>
 
 namespace Sails {
 	struct SuperpositionResult;
@@ -83,6 +85,18 @@ namespace Sails {
 		 */
         [[nodiscard]] float atomwise_score(const gemmi::Residue &residue) const;
 
+
+        /**
+         * @brief Calculate a given score for the protein which is used as a reference for other scores
+         *
+         * @param structure The structure containing the mainchain
+         * @param method The density score method to be used. Default value is rscc
+         * @param verbose
+         */
+         [[nodiscard]] Maths::MeanAndVariance calculate_protein_stats(gemmi::Structure &structure,
+                                                                      const DensityScoreMethod &method = rscc, bool verbose = false);
+
+
         /**
          * @brief Calculates the density for a given box based on a gemmi::Residue object.
          *
@@ -117,7 +131,7 @@ namespace Sails {
          * for a residue. This method calculates the RSCC score by comparing the observed and calculated density values
          * at different positions within a bounding box around the residue.
          *
-         * @param result The gemmi::Residue object for which the RSCC score will be calculated.
+         * @param residue The gemmi::Residue object for which the RSCC score will be calculated.
          *
          * @return The RSCC score for the given residue.
          * @throws std::runtime_error if the residue is empty.
@@ -224,6 +238,19 @@ namespace Sails {
          */
         [[nodiscard]] float score_position(const gemmi::Position& pos) const;
 
+		/*
+		 * @brief Get mean and variance of protein
+		 */
+		[[nodiscard]] Maths::MeanAndVariance get_protein_stats() const {return protein_stats;};
+
+
+		/*
+		 * @brief Set mean and variance of protein
+		 */
+		void set_protein_stats(const Maths::MeanAndVariance& stats);
+
+	private:
+		Maths::MeanAndVariance protein_stats;
     };
 
 } // namespace Sails

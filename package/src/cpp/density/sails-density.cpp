@@ -4,6 +4,7 @@
 
 #include "../../include/density/sails-density.h"
 #include "../../include/sails-refine.h"
+#include "../../include/sails-maths.h"
 #include <clipper/contrib/edcalc.h>
 #include <clipper/contrib/sfweight.h>
 #include <clipper/minimol/minimol.h>
@@ -45,6 +46,35 @@ float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
                                      return get_work_grid()->interpolate_value(current_atom.pos);
                                  }) / (residue.atoms.size());
 }
+
+
+Sails::Maths::MeanAndVariance Sails::Density::calculate_protein_stats(gemmi::Structure &structure,
+                                                                      const DensityScoreMethod &method, bool verbose) {
+    if (verbose) std::cout << "Scoring protein residues for weighting..." << std::endl;
+    std::vector<double> scores;
+
+    for (auto & model : structure.models) {
+       for (auto & chain : model.chains) {
+
+           const int samples = std::min(100, static_cast<int>(chain.residues.size()));
+           std::vector<gemmi::Residue> sampled_residues;
+           std::sample(chain.residues.begin(), chain.residues.end(), std::back_inserter(sampled_residues), samples,
+            std::mt19937 {std::random_device{}()});
+
+           for (auto & r : sampled_residues) {
+               gemmi::Residue* residue = &r;
+               if (gemmi::ResidueInfo info = gemmi::find_tabulated_residue(residue->name); !info.is_amino_acid()) {continue;}
+                scores.emplace_back(score_residue(*residue, method));
+           }
+       }
+    }
+
+    const Maths::MeanAndVariance stats =  Maths::calculate_mean_and_variance(scores);
+    if (verbose) std::cout << "Finished. Protein Mean - " << stats.mean << " Variance - " << stats.variance  << std::endl;
+
+    return stats;
+}
+
 
 gemmi::Grid<> Sails::Density::calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const {
 
@@ -146,7 +176,7 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     std::vector<float> obs_values = {};
     std::vector<float> calc_values = {};
 
-    constexpr double step_size = 0.5;
+    constexpr double step_size = 1;
     for (double x = min.x; x <= max.x; x += step_size) {
         for (double y = min.y; y <= max.y; y += step_size) {
             for (double z = min.z; z <= max.z; z += step_size) {
@@ -181,16 +211,25 @@ float Sails::Density::rscc_score(SuperpositionResult &result) {
 
     std::vector<float> obs_values = {};
     std::vector<float> calc_values = {};
+    constexpr double step_size = 1;
+    size_t num_points = ((max.x - min.x) / step_size + 1) *
+                    ((max.y - min.y) / step_size + 1) *
+                    ((max.z - min.z) / step_size + 1);
+    obs_values.reserve(num_points);
+    calc_values.reserve(num_points);
 
     gemmi::Residue r1, r2, r3;
+    gemmi::Transform inverse_transform = result.transformation.inverse();
+    gemmi::Position current_pos;
 
-    constexpr double step_size = 1;
     for (double x = min.x; x <= max.x; x += step_size) {
         for (double y = min.y; y <= max.y; y += step_size) {
             for (double z = min.z; z <= max.z; z += step_size) {
-                gemmi::Position position = {x, y, z};
-                obs_values.emplace_back(get_best_grid()->interpolate_value(position));
-                gemmi::Vec3 translated_position = result.transformation.inverse().apply(position);
+                current_pos.x = x;
+                current_pos.y = y;
+                current_pos.z = z;
+                obs_values.emplace_back(get_best_grid()->interpolate_value(current_pos));
+                gemmi::Vec3 translated_position = inverse_transform.apply(current_pos);
                 calc_values.emplace_back(calculated->interpolate_value(gemmi::Position(translated_position)));
             }
         }
@@ -303,4 +342,8 @@ float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
 
 float Sails::Density::score_position(const gemmi::Position &pos) const {
     return get_work_grid()->interpolate_value(pos);
+}
+
+void Sails::Density::set_protein_stats(const Maths::MeanAndVariance &stats) {
+    protein_stats = stats;
 }
