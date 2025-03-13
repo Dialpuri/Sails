@@ -16,6 +16,8 @@ namespace nb = nanobind;
 using namespace nb::literals;
 
 NB_MODULE(sails_module, m) {
+        nb::set_leak_warnings(false);
+
         // reflection classes
         nb::class_<Sails::NumberPair>(m, "Pair")
                         .def(nb::init<double, double>())
