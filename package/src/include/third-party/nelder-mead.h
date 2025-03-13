@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <vector>
-
+// Taken from - https://github.com/YibaiMeng/nelder-mead
 namespace nelder_mead {
 
 template <typename T> class Vec {
