@@ -101,6 +101,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
         ${WRK_DIR}/src/cpp/sails-solvent.cpp
         ${WRK_DIR}/src/cpp/sails-wurcs.cpp
+        ${WRK_DIR}/src/cpp/sails-maths.cpp
 
         ${WRK_DIR}/src/cpp/sails-morph.cpp
         # Density
@@ -319,7 +320,7 @@ if (CMAKE_C_PLATFORM_ID STREQUAL "emscripten")
     add_executable(sails_module ${WRK_DIR}/src/bindings/js_sails.cpp)
     set_target_properties (sails_module  PROPERTIES OUTPUT_NAME sails )
     set_target_properties(sails_module PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/wasm)
-
+    target_link_libraries(sails_module sails_lib)
     target_link_options(sails_module PRIVATE
 #                --preload-file data/linkage_torsions@/
                 -sDEMANGLE_SUPPORT=0 -sEXIT_RUNTIME=1 -sASSERTIONS=2 -fexceptions
