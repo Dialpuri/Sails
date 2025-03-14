@@ -147,7 +147,70 @@ def extract_gemmi_structure(structure: gemmi.Structure) -> sails.Structure:
             oc.residues.append(or_)
         om.chains.append(oc)
     os.models.append(om)
+
+    for connection in structure.connections:
+        sails_connection = create_sails_connection(connection)
+        os.connections.append(sails_connection)
     return os
+
+
+def create_sails_connection(connection: gemmi.Connection) -> sails.Connection:
+    sails_connection = sails.Connection()
+    sails_connection.link_id = connection.link_id
+    sails_connection.name = connection.name
+    sails_connection.type = sails.ConnectionType(connection.type)
+    sails_resid1 = create_sails_residue_id(connection.partner1.res_id)
+    sails_resid2 = create_sails_residue_id(connection.partner2.res_id)
+    sails_partner1 = sails.AtomAddress(
+        connection.partner1.chain_name,
+        sails_resid1,
+        connection.partner1.atom_name,
+        connection.partner1.altloc,
+    )
+    sails_partner2 = sails.AtomAddress(
+        connection.partner2.chain_name,
+        sails_resid2,
+        connection.partner2.atom_name,
+        connection.partner2.altloc,
+    )
+    sails_connection.partner1 = sails_partner1
+    sails_connection.partner2 = sails_partner2
+    sails_connection.reported_distance = connection.reported_distance
+    return sails_connection
+
+
+def create_sails_residue_id(resid: gemmi.ResidueId):
+    sails_resid = sails.ResidueId()
+    sails_resid.seqid = sails.SeqId(resid.seqid.num, resid.seqid.icode)
+    sails_resid.name = resid.name
+    return sails_resid
+
+
+def create_gemmi_residue_id(resid: sails.ResidueId):
+    gemmi_resid = gemmi.ResidueId()
+    gemmi_resid.name = resid.name
+    gemmi_resid.seqid = gemmi.SeqId(resid.seqid.num(), resid.seqid.icode())
+    return gemmi_resid
+
+
+def create_gemmi_connection(conn: sails.Connection):
+    connection = gemmi.Connection()
+    connection.name = conn.name
+    connection.type = gemmi.ConnectionType(conn.type.value)
+    connection.reported_distance = conn.reported_distance
+    connection.link_id = conn.link_id
+    gemmi_resid1 = create_gemmi_residue_id(conn.partner1.res_id)
+    gemmi_resid2 = create_gemmi_residue_id(conn.partner2.res_id)
+    connection.partner1.altloc = conn.partner1.altloc
+    connection.partner1.chain_name = conn.partner1.chain_name
+    connection.partner1.res_id = gemmi_resid1
+    connection.partner1.atom_name = conn.partner1.atom_name
+
+    connection.partner2.altloc = conn.partner2.altloc
+    connection.partner2.chain_name = conn.partner2.chain_name
+    connection.partner2.res_id = gemmi_resid2
+    connection.partner2.atom_name = conn.partner2.atom_name
+    return connection
 
 
 def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
@@ -178,7 +241,9 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
 
     cell = structure.cell()
     os.cell = gemmi.UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma)
-
+    os.connections = gemmi.ConnectionList(
+        [create_gemmi_connection(conn) for conn in structure.connections]
+    )
     return os
 
 

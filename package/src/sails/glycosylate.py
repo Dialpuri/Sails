@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Tuple, List
 
 import gemmi
-from sails import interface, n_glycosylate, c_glycosylate, o_mannosylate, __version__
+from sails import (
+    interface,
+    n_glycosylate,
+    c_glycosylate,
+    o_mannosylate,
+    glycosylate_site,
+    __version__,
+)
 
 
 class Type(enum.IntEnum):
@@ -100,6 +107,80 @@ def glycosylate_em(
     )
 
 
+def glycosylate_xtal_site(
+    structure: gemmi.Structure | Path | str,
+    mtz: gemmi.Mtz | Path | str,
+    chain: str,
+    resid: int,
+    cycles: int,
+    f: str,
+    sigf: str,
+    fwt: str,
+    phwt: str,
+    verbose: bool = False,
+) -> Tuple[gemmi.Structure, gemmi.Mtz, dict, dict]:
+    """
+    :param structure: The input structure file in gemmi.Structure, Path, or str format.
+    :param mtz: The input MTZ file in gemmi.Mtz, Path, or str format.
+    :param chain: The chain name of the parent chain (e.g. A)
+    :param resid: The residue ID of the parent residue (e.g. 16)
+    :param cycles: The number of cycles to perform glycosylation.
+    :param f: The column label for the structure factor values.
+    :param sigf: The column label for the structure factor uncertainties.
+    :param fwt: The column label for the structure factor amplitude weights (potentially None).
+    :param phwt: The column label for the structure factor phase weights (potentially None).
+    :param verbose: Flag specifying whether to print verbose output. Default is False.
+    :return: A tuple containing the glycosylated structure in gemmi.Structure format,
+             the glycosylated MTZ file in gemmi.Mtz format, the log as a string, and a dictionary of snfgs.
+    """
+    sails_structure = interface.get_sails_structure(structure)
+    sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
+    resource = importlib.resources.files("sails").joinpath("data")
+
+    result = glycosylate_site(
+        sails_structure, sails_mtz, chain, resid, cycles, str(resource), verbose
+    )
+
+    return (
+        interface.extract_sails_structure(result.structure),
+        interface.extract_sails_mtz(result.mtz),
+        json.loads(result.log),
+        result.snfgs,
+    )
+
+
+def glycosylate_em_site(
+    structure: gemmi.Structure | Path | str,
+    map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str,
+    chain: str,
+    resid: int,
+    cycles: int,
+    verbose: bool = False,
+) -> Tuple[gemmi.Structure, dict, dict]:
+    """
+    :param structure: The input structure file in gemmi.Structure, Path, or str format.
+    :param map: The input grid in CCP4Map, gemmi.FloatGrid, Path or str format
+    :param chain: The chain name of the parent chain (e.g. A)
+    :param resid: The residue ID of the parent residue (e.g. 16)
+    :param cycles: The number of cycles to perform glycosylation.
+    :param verbose: Flag specifying whether to print verbose output. Default is False.
+    :return:
+    """
+    sails_structure = interface.get_sails_structure(structure)
+    sails_grid = interface.get_sails_map(map)
+    resource = importlib.resources.files("sails").joinpath("data")
+
+    result = glycosylate_site(
+        sails_structure, sails_grid, chain, resid, cycles, str(resource), verbose
+    )
+
+    return (
+        interface.extract_sails_structure(result.structure),
+        json.loads(result.log),
+        result.snfgs,
+    )
+
+
 def get_column_labels(fo_columns: str, fwt_columns: str) -> List[str]:
     if "," not in fo_columns:
         raise RuntimeError(
@@ -161,9 +242,15 @@ def xray(args):
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
 
     cycles = args.cycles if args.type == Type.n_glycosylate else 1
-    structure, mtz, log, snfgs = glycosylate_xtal(
-        args.modelin, args.mtzin, cycles, *labels, args.type, args.v
-    )
+
+    if args.chain and args.resid:
+        structure, mtz, log, snfgs = glycosylate_xtal_site(
+            args.modelin, args.mtzin, args.chain, args.resid, cycles, *labels, args.v
+        )
+    else:
+        structure, mtz, log, snfgs = glycosylate_xtal(
+            args.modelin, args.mtzin, cycles, *labels, args.type, args.v
+        )
 
     if args.snfgout:
         save_snfgs(snfgs, Path(args.snfgout))
@@ -176,9 +263,14 @@ def xray(args):
 
 def em(args):
     cycles = args.cycles if args.type == Type.n_glycosylate else 1
-    structure, log, snfgs = glycosylate_em(
-        args.modelin, args.mapin, cycles, args.type, args.v
-    )
+    if args.chain and args.resid:
+        structure, log, snfgs = glycosylate_em_site(
+            args.modelin, args.mapin, args.chain, args.resid, cycles, args.v
+        )
+    else:
+        structure, log, snfgs = glycosylate_em(
+            args.modelin, args.mapin, cycles, args.type, args.v
+        )
     structure.make_mmcif_block().write_file(args.modelout)
     save_log(log, args)
 
@@ -213,6 +305,8 @@ def parse_args():
     )
     group.add_argument("-logout", type=str, default="sails-log.json")
     group.add_argument("-snfgout", type=str)
+    group.add_argument("-chain", type=str, required=False)
+    group.add_argument("-resid", type=int, required=False)
     group.add_argument("-cycles", type=int, required=False, default=2)
     group.add_argument(
         "-type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate
