@@ -21,13 +21,14 @@
 
 #include <string>
 #include <src/include/sails-maths.h>
+#include <src/include/sails-model.h>
 
 namespace Sails {
 	struct SuperpositionResult;
 	typedef clipper::HKL_info::HKL_reference_index HRI;
 
 	enum DensityScoreMethod {
-		atomwise, rscc, rsr, dds
+		atomwise, rscc, rsr, dds, q
 	};
 
 	class Density {
@@ -217,6 +218,30 @@ namespace Sails {
         float difference_density_score(gemmi::Residue &residue) const;
 
         /**
+         * @brief Calculate Q score for an atom
+         *
+         * @param pos
+         * @param A
+         * @param B
+         * @param sigma
+         * @param N
+         * @return
+         */
+        float calculate_q_score(gemmi::Position& pos, float A, float B, float sigma, int
+                                N) const;
+
+		/**
+		 * @brief Calculate Q score for a residue
+		 *
+		 * This methoid calculates the Q score (https://www.nature.com/articles/s41592-020-0731-1) for a residue
+		 *
+		 * @param residue The gemmi::Residue object for which the Q score is to be calcualted
+		 *
+		 * @return The Q score
+		 */
+		float q_score(gemmi::Residue &residue) const;
+
+        /**
          * @brief Scores an atom
          *
          * This method takes a gemmi::Atom object and generates a score corresponding to the interpolated density value.
@@ -237,6 +262,20 @@ namespace Sails {
          * @return The score of the position based on the density value at that position.
          */
         [[nodiscard]] float score_position(const gemmi::Position& pos) const;
+
+        /**
+         * @brief Interpolate the grid at the positions provided and return the values
+         *
+         * @param positions Points to be sampled on the work grid
+         * @return A vector of sampled points (interpolated values)
+         */
+        [[nodiscard]] std::vector<double> sample_density(const std::vector<gemmi::Position>& positions) const;
+
+		/*
+		 * @brief Calculate mean and variance of input map
+		 */
+		[[nodiscard]] Maths::MeanAndVariance calculate_work_map_stats() const;;
+
 
 		/*
 		 * @brief Get mean and variance of protein

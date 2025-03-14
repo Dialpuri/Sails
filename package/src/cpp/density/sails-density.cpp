@@ -3,6 +3,9 @@
 //
 
 #include "../../include/density/sails-density.h"
+
+#include <random>
+
 #include "../../include/sails-refine.h"
 #include "../../include/sails-maths.h"
 #include <clipper/contrib/edcalc.h>
@@ -35,6 +38,8 @@ double Sails::Density::score_result(SuperpositionResult& result) {
             return rsr_score(result);
         case dds:
             return difference_density_score(result.new_residue);
+        case q:
+            return q_score(result.new_residue);
         default:
             return -1;
     }
@@ -51,7 +56,7 @@ float Sails::Density::atomwise_score(const gemmi::Residue &residue) const {
 Sails::Maths::MeanAndVariance Sails::Density::calculate_protein_stats(gemmi::Structure &structure,
                                                                       const DensityScoreMethod &method, bool verbose) {
     if (verbose) std::cout << "Scoring protein residues for weighting..." << std::endl;
-    std::vector<double> scores;
+    std::vector<float> scores;
 
     for (auto & model : structure.models) {
        for (auto & chain : model.chains) {
@@ -335,6 +340,64 @@ float Sails::Density::difference_density_score(gemmi::Residue &residue) const {
     return sum / points;
 }
 
+float Sails::Density::calculate_q_score(gemmi::Position &pos, const float A, const float B, const float sigma, const int
+                                        N) const {
+
+    const std::vector<double> sample_space = Maths::linspace(0, 2, 21);
+
+    auto u = Maths::zeros(N, 21);
+    auto v = Maths::zeros(N, 21);
+
+    for (int i = 0; i < sample_space.size(); i++) {
+        const float gaussian_sample = A * exp(-0.5 * pow(sample_space[i] / sigma, 2)) + B;
+        auto v_vector = Maths::fill(gaussian_sample, N);
+
+        auto radial_points = Maths::Utils::get_radial_points(pos, sample_space[i], N);
+
+        if (radial_points.size() != N) {
+            continue;
+        }
+
+        auto u_vector = sample_density(radial_points);
+
+        Maths::assign_columns(u, i, u_vector);
+        Maths::assign_columns(v, i, v_vector);
+    }
+
+    Maths::Matrix u_norm = Maths::normalise_rows(u);
+    Maths::Matrix v_norm = Maths::normalise_rows(v);
+
+    const double numerator = Maths::dot_product(u_norm, v_norm);
+    const double demonimator = Maths::frobenius_norm(u_norm) * Maths::frobenius_norm(v_norm);
+    const double Q = numerator / demonimator;
+    return Q;
+}
+
+
+
+float Sails::Density::q_score(gemmi::Residue &residue) const {
+
+    Maths::MeanAndVariance map_stats = calculate_work_map_stats();
+
+    double stddev = sqrt(map_stats.variance);
+    const double A = map_stats.mean + (10 * stddev);
+    const double B = map_stats.mean - stddev;
+    constexpr double sigma = 0.6;
+    constexpr int N = 8;
+
+    float q_score = 0.0f;
+    // auto t0 = std::chrono::high_resolution_clock::now();
+
+    for (auto & atom : residue.atoms) {
+        q_score += calculate_q_score(atom.pos, A, B, sigma, N);
+    }
+    // auto t1 = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
+    // std::cout << "time taken " << duration.count() << " microseconds" << std::endl;
+
+    return q_score;
+}
+
 float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
     return score_position(atom.pos);
 }
@@ -343,6 +406,20 @@ float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
 float Sails::Density::score_position(const gemmi::Position &pos) const {
     return get_work_grid()->interpolate_value(pos);
 }
+
+std::vector<double> Sails::Density::sample_density(const std::vector<gemmi::Position> &positions) const {
+    std::vector<double> values;
+    values.reserve(positions.size());
+    for (auto &position: positions) {
+        values.emplace_back(get_work_grid()->interpolate_value(position));
+    }
+    return values;
+}
+
+Sails::Maths::MeanAndVariance Sails::Density::calculate_work_map_stats() const {
+    return Sails::Maths::calculate_mean_and_variance(get_work_grid()->data);
+}
+
 
 void Sails::Density::set_protein_stats(const Maths::MeanAndVariance &stats) {
     protein_stats = stats;
