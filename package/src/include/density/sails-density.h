@@ -228,7 +228,7 @@ namespace Sails {
          * @return
          */
         float calculate_q_score(gemmi::Position& pos, float A, float B, float sigma, int
-                                N) const;
+                                N);
 
 		/**
 		 * @brief Calculate Q score for a residue
@@ -239,7 +239,7 @@ namespace Sails {
 		 *
 		 * @return The Q score
 		 */
-		float q_score(gemmi::Residue &residue) const;
+		float q_score(gemmi::Residue &residue);
 
         /**
          * @brief Scores an atom
@@ -290,6 +290,23 @@ namespace Sails {
 
 	private:
 		Maths::MeanAndVariance protein_stats;
+
+		/**
+		* Radial points for each distance for use in Q score calculation centered at 0
+		*/
+		std::unordered_map<double, std::vector<gemmi::Position>> radial_points_map{};
+
+		/**
+		* Expected v normalised matrix for Q score calculation
+		*/
+		Sails::Maths::Matrix expected_v_norm_matrix{};
+
+		/*
+		 * A and B from Q score calculation
+		 */
+		float A = INT_MAX;
+		float B = INT_MAX;
+
     };
 
 } // namespace Sails

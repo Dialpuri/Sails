@@ -29,6 +29,7 @@ double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScore
 }
 
 double Sails::Density::score_result(SuperpositionResult& result) {
+
     switch (get_score_method()) {
         case atomwise:
             return atomwise_score(result.new_residue);
@@ -341,31 +342,50 @@ float Sails::Density::difference_density_score(gemmi::Residue &residue) const {
 }
 
 float Sails::Density::calculate_q_score(gemmi::Position &pos, const float A, const float B, const float sigma, const int
-                                        N) const {
+                                        N) {
 
     const std::vector<double> sample_space = Maths::linspace(0, 2, 21);
 
     auto u = Maths::zeros(N, 21);
-    auto v = Maths::zeros(N, 21);
-
     for (int i = 0; i < sample_space.size(); i++) {
-        const float gaussian_sample = A * exp(-0.5 * pow(sample_space[i] / sigma, 2)) + B;
-        auto v_vector = Maths::fill(gaussian_sample, N);
+        std::vector<gemmi::Position> sampled_points;
 
-        auto radial_points = Maths::Utils::get_radial_points(pos, sample_space[i], N);
+        // Check to see if radial points have already been calculated, if so just use those
+        if (radial_points_map.find(sample_space[i]) == radial_points_map.end()) {
+            gemmi::Position origin = {0, 0, 0};
+            sampled_points = Maths::Utils::get_radial_points(origin, sample_space[i], N);
 
-        if (radial_points.size() != N) {
-            continue;
+            if (sampled_points.size() != N) {
+                continue;
+            }
+
+            radial_points_map[sample_space[i]] = sampled_points;
+        } else {
+            sampled_points = radial_points_map[sample_space[i]];
         }
-
-        auto u_vector = sample_density(radial_points);
-
+        for (auto& point : sampled_points) {
+            point += pos;
+        }
+        auto u_vector = sample_density(sampled_points);
         Maths::assign_columns(u, i, u_vector);
-        Maths::assign_columns(v, i, v_vector);
     }
 
+    // Check to see if v_norm matrix has already been calcualted
+    Sails::Maths::Matrix v_norm;
+    if (expected_v_norm_matrix.empty()) {
+        Maths::Matrix v = Maths::zeros(N, 21);
+        for (int i = 0; i < sample_space.size(); i++) {
+            const float gaussian_sample = A * exp(-0.5 * pow(sample_space[i] / sigma, 2)) + B;
+            std::vector<double> v_vector =  Maths::fill(gaussian_sample, N);
+
+            Maths::assign_columns(v, i, v_vector);
+        }
+        v_norm = Maths::normalise_rows(v);
+        expected_v_norm_matrix = v_norm;
+    } else {
+        v_norm = expected_v_norm_matrix;
+    }
     Maths::Matrix u_norm = Maths::normalise_rows(u);
-    Maths::Matrix v_norm = Maths::normalise_rows(v);
 
     const double numerator = Maths::dot_product(u_norm, v_norm);
     const double demonimator = Maths::frobenius_norm(u_norm) * Maths::frobenius_norm(v_norm);
@@ -375,26 +395,21 @@ float Sails::Density::calculate_q_score(gemmi::Position &pos, const float A, con
 
 
 
-float Sails::Density::q_score(gemmi::Residue &residue) const {
+float Sails::Density::q_score(gemmi::Residue &residue) {
 
-    Maths::MeanAndVariance map_stats = calculate_work_map_stats();
-
-    double stddev = sqrt(map_stats.variance);
-    const double A = map_stats.mean + (10 * stddev);
-    const double B = map_stats.mean - stddev;
+    if (A == INT_MAX && B == INT_MAX) {
+        Maths::MeanAndVariance map_stats = calculate_work_map_stats();
+        double stddev = sqrt(map_stats.variance);
+        A = map_stats.mean + (10 * stddev);
+        B = map_stats.mean - stddev;
+    }
     constexpr double sigma = 0.6;
     constexpr int N = 8;
 
     float q_score = 0.0f;
-    // auto t0 = std::chrono::high_resolution_clock::now();
-
     for (auto & atom : residue.atoms) {
         q_score += calculate_q_score(atom.pos, A, B, sigma, N);
     }
-    // auto t1 = std::chrono::high_resolution_clock::now();
-    // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0);
-    // std::cout << "time taken " << duration.count() << " microseconds" << std::endl;
-
     return q_score;
 }
 
