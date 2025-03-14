@@ -201,7 +201,7 @@ namespace Sails::Utils {
      *
      * @note The file path must be valid and accessible for writing. If the file already exists, it will be overwritten.
      */
-    void save_residues_to_file(std::vector<gemmi::Residue> residues, const std::string &path);
+    void save_residues_to_file(const std::vector<gemmi::Residue>& residues, const std::string &path);
 
 
     /**
@@ -225,6 +225,14 @@ namespace Sails::Utils {
      */
     void save_structure_to_file(const gemmi::Structure &structure, const std::string &path);
 
+
+    /**
+     * Create a model containing just this residue in the A chain
+     *
+     * @param residue Residue to encapsulate in a model
+     * @return The new gemmi::Model
+     */
+    gemmi::Model create_model_from_residue(const gemmi::Residue& residue);
 
     /**
      * @brief Computes the next string will be alphabetically.

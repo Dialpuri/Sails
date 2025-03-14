@@ -79,7 +79,7 @@ std::string Sails::Utils::linkage_to_id(const Sails::LinkageData &data) {
            data.acceptor;
 }
 
-void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, const std::string &path) {
+void Sails::Utils::save_residues_to_file(const std::vector<gemmi::Residue>& residues, const std::string &path) {
     gemmi::Structure structure;
     gemmi::Model model = gemmi::Model("A");
     gemmi::Chain chain = gemmi::Chain("A");
@@ -108,6 +108,15 @@ void Sails::Utils::save_structure_to_file(const gemmi::Structure &structure, con
     write_cif_to_stream(of, make_mmcif_document(structure));
     of.close();
 }
+
+gemmi::Model Sails::Utils::create_model_from_residue(const gemmi::Residue &residue) {
+    auto model = gemmi::Model("1");
+    auto chain = gemmi::Chain("A");
+    chain.residues.push_back(residue);
+    model.chains.push_back(chain);
+    return model;
+}
+
 
 std::string Sails::Utils::get_next_string(const std::string& input) {
     std::string result = input;
