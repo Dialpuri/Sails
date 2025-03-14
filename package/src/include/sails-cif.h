@@ -23,6 +23,7 @@ namespace Sails {
         * @param residue2 The second residue of the link record.
         * @param atom1 The first atom of the link record.
         * @param atom2 The second atom of the link record.
+        * @param distance distance between atoms
         */
         LinkRecord(
             std::string id,
@@ -31,9 +32,10 @@ namespace Sails {
             gemmi::Residue &residue1,
             gemmi::Residue &residue2,
             gemmi::Atom &atom1,
-            gemmi::Atom &atom2
+            gemmi::Atom &atom2,
+            float distance
         ): id(std::move(id)), chain1(chain1), chain2(chain2), residue1(residue1), residue2(residue2), atom1(atom1),
-           atom2(atom2) {
+           atom2(atom2), distance(distance) {
         }
 
         /**
@@ -130,14 +132,14 @@ namespace Sails {
             };
         }
 
-    private:
+    // private:
         gemmi::Chain chain1;
         gemmi::Chain chain2;
         gemmi::Residue residue1;
         gemmi::Residue residue2;
         gemmi::Atom atom1;
         gemmi::Atom atom2;
-
+        double distance;
         std::string id;
         std::string pdbx_role;
     };
@@ -152,6 +154,14 @@ namespace Sails {
      */
     std::vector<Sails::LinkRecord> generate_link_records(gemmi::Structure *structure, Sails::Glycosites *glycosites,
                                                          Sails::Topology *topology);
+
+    /**
+     * @brief Add link records to the structure connection information
+     *
+     * @param structure A pointer to the gemmi::Structure object
+     * @param link_records A vector of link records
+     */
+    void add_link_records_to_structure(gemmi::Structure *structure, std::vector<Sails::LinkRecord> &link_records);
 
 }
 
