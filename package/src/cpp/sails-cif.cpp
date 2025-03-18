@@ -39,7 +39,7 @@ void Sails::add_link_records_to_structure(gemmi::Structure *structure, std::vect
         gemmi::AtomAddress a2 = {link.chain2.name, link.residue2.seqid, link.residue2.name, link.atom2.name};
         gemmi::Connection connection = {
             link.id,
-            link.id,
+            "",
             gemmi::Connection::Covale,
             gemmi::Asu::Any,
             a1,
