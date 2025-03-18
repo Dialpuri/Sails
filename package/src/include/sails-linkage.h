@@ -163,6 +163,7 @@ namespace Sails {
    * monomer is loaded and transformed to the correct position and returned.
    *
    * @param residue The residue to calculate the translation for.
+   * @param previous_site The site of the previous residue
    * @param data The linkage data containing donor and acceptor information.
    * @param density The constructed density object for accessing experimental data.
    * @param refine Boolean to run real space simplex refinement on the residue.
@@ -170,7 +171,7 @@ namespace Sails {
    * @throws std::runtime_error if any required atom or data is not found, or unexpected atom count.
    */
   std::optional<Sails::SuperpositionResult> add_residue(
-   gemmi::Residue *residue, LinkageData &data, Density &density, bool refine);
+   gemmi::Residue *residue, const Sails::Glycosite &previous_site, LinkageData &data, Density &density, bool refine);
 
   /**
    * Performs the translation of a residue based on the given linkage data without density.
@@ -208,7 +209,8 @@ namespace Sails {
    * @param result The superposition result representing the sugar to be added.
    * @param chain_type A flag indicating whether the sugar chain is only composed of sugars.
    */
-  void add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &result, ChainType &chain_type);
+  Sails::Glycosite add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &result,
+                                          ChainType &chain_type);
 
   /**
    * @brief Calculates the clash score for the given SuperpositionResult.
@@ -331,6 +333,14 @@ namespace Sails {
   static void rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string> &atoms, Density &density);
 
   /**
+   * @brief Get the next available SeqId.
+   *
+   * @param site The site of the current residue
+   * @return Next SeqId number
+   */
+  int get_next_seqid(const Sails::Glycosite& site) const;
+
+  /**
    * @brief Finds chain type of sugars
    *
    */
@@ -351,7 +361,7 @@ namespace Sails {
    * @param terminal_sugar The terminal sugar where the new residue is being added.
    * @param addition The superposition result containing the new residue being added.
    */
-  void print_addition_log(const Sugar *terminal_sugar, SuperpositionResult &addition);
+  void print_addition_log(const Sugar *terminal_sugar, Sails::Glycosite &addition);
 
   /**
    * @brief Print the log for an attempted addition of a residue to a model.

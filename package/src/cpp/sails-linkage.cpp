@@ -7,8 +7,8 @@
 
 // LOGGING FUNCTIONS
 
-void Sails::Model::print_addition_log(const Sails::Sugar *terminal_sugar, Sails::SuperpositionResult &addition) {
-    std::cout << "Adding " << Utils::format_residue_key(&addition.new_residue) << " to " <<
+void Sails::Model::print_addition_log(const Sails::Sugar *terminal_sugar, Sails::Glycosite &addition) {
+    std::cout << "Adding " << Utils::format_residue_from_site(addition, structure) << " to " <<
             Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
 }
 
@@ -25,7 +25,7 @@ void Sails::Model::print_rejection_log() {
 
 void Sails::Model::print_successful_log(Sails::Density &density, std::optional<Sails::SuperpositionResult> opt_result) {
     float rscc = density.rscc_score(opt_result.value());
-    std::cout << " added " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC = " <<
+    std::cout << " potential additional found - " << Utils::format_residue_key(&opt_result.value().new_residue) << " with RSCC = " <<
             rscc << std::endl;
 }
 
@@ -183,8 +183,9 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 }
 
 
-void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
-                                          ChainType &chain_type) {
+Sails::Glycosite Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar,
+                                                      SuperpositionResult &favoured_addition,
+                                                      ChainType &chain_type) {
     int chain_idx = terminal_sugar->site.chain_idx;
 
     if (chain_type == protein) {
@@ -197,8 +198,11 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
     }
 
     auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
-    favoured_addition.new_residue.seqid = gemmi::SeqId(static_cast<int>(all_residues->size()) + 1, '?');
+    favoured_addition.new_residue.seqid = gemmi::SeqId(get_next_seqid(terminal_sugar->site), '?');
+    std::cout << "Adding residue with seqid " << favoured_addition.new_residue.seqid.num.value << std::endl;
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
+    Sails::Glycosite added_site = {terminal_sugar->site.model_idx, chain_idx, static_cast<int>(all_residues->size()-1)};
+    return added_site;
 }
 
 void Sails::Model::rotate_exocyclic_atoms(gemmi::Residue *residue, std::vector<std::string> &atoms, Density &density) {
@@ -264,7 +268,7 @@ double Sails::Model::calculate_clash_score(const SuperpositionResult &result) co
 }
 
 std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
-    gemmi::Residue *residue, LinkageData &data, Density &density, bool refine) {
+    gemmi::Residue *residue, const Glycosite &previous_site, LinkageData &data, Density &density, bool refine) {
     // find library monomer for acceptor residue
     auto library_monomer = get_monomer(data.acceptor, true);
 
@@ -324,7 +328,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
         // remove leaving atom
         remove_leaving_atom(data, reference_library_monomer, new_monomer);
-        new_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
+        int next_seqid = get_next_seqid(previous_site);
+        new_monomer.seqid = gemmi::SeqId(next_seqid, 0);
         reference_library_monomer.seqid = gemmi::SeqId(residue->seqid.num.value + 1, 0);
 
         SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
@@ -344,7 +349,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
 
         // calculate rscc
         float rscc = density.rscc_score(result);
-        if (rscc < 0.2) {
+        if (rscc < 0.25) {
             continue;
         }
         if (rscc > best_rscc) {
@@ -354,6 +359,16 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     }
     if (best_rscc == INT_MIN) return std::nullopt;
     return best_result;
+}
+
+int Sails::Model::get_next_seqid(const Sails::Glycosite &site) const {
+    gemmi::Chain* chain_ptr = Sails::Utils::get_chain_ptr_from_glycosite(site, structure);
+    gemmi::Residue* last_residue = &chain_ptr->residues.back();
+    gemmi::ResidueInfo residue_info = gemmi::find_tabulated_residue(last_residue->name);
+    if (residue_info.is_amino_acid()) {
+        return 1;
+    }
+    return last_residue->seqid.num.value + 1;
 }
 
 std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Residue *residue, LinkageData &data) {
@@ -542,7 +557,7 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &c
     for (LinkageData &data: linkage_database[residue_ptr->name]) {
         if (debug) print_attempted_addition_log(residue_ptr, data, &terminal_sugar->site);
 
-        std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, data, density, true);
+        std::optional<SuperpositionResult> opt_result = add_residue(residue_ptr, terminal_sugar->site, data, density, true);
 
         if (!opt_result.has_value()) {
             if (debug) print_rejection_log();
@@ -561,8 +576,9 @@ void Sails::Model::extend_if_possible(Density &density, bool debug, ChainType &c
 
     // add the favoured addition to the structure member
     for (SuperpositionResult &addition: favoured_additions) {
-        if (debug) print_addition_log(terminal_sugar, addition);
-        add_sugar_to_structure(terminal_sugar, addition, chain_type);
+        Sails::Glycosite added_sugar = add_sugar_to_structure(terminal_sugar, addition, chain_type);
+        if (debug) print_addition_log(terminal_sugar, added_sugar);
+
         chain_type = non_protein;
     }
 }
@@ -572,6 +588,7 @@ Sails::Glycan Sails::Model::extend(Glycan &glycan, Glycosite &base_glycosite, De
     ChainType chain_type = find_chain_type(terminal_sugars);
 
     for (const auto &terminal_sugar: terminal_sugars) {
+        std::cout << "Terminal sugar: " <<  Utils::format_residue_from_site(terminal_sugar->site, structure) << std::endl;
         extend_if_possible(density, debug, chain_type, terminal_sugar);
     }
 
