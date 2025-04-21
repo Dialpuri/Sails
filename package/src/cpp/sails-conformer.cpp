@@ -10,7 +10,7 @@ void Sails::Conformer::remove_leaving_atoms(Sails::LinkageData &data, gemmi::Res
                                        gemmi::Residue &new_monomer) {
 
     std::unordered_map<std::string, std::unordered_map<int, std::string>> leaving_atoms = {
-        {"ASN", {{2, "HD22"}}},
+        {"AASN", {{2, "HD22"}}},
         {"SER", {{1, "HG"}}},
         {"THR", {{1, "HG1"}}},
         {"TRP", {{1, "HD1"}}},
@@ -21,12 +21,11 @@ void Sails::Conformer::remove_leaving_atoms(Sails::LinkageData &data, gemmi::Res
     reference_library_monomer.atoms.erase(std::remove_if(reference_library_monomer.atoms.begin(), reference_library_monomer.atoms.end(),
                                                          [&](const gemmi::Atom &a) {
                                                              if (a.element.atomic_number() != 1) return false;
-                                                             if (leaving_atoms.find(reference_library_monomer.name) != leaving_atoms.end()) {
-                                                                if (leaving_atoms[reference_library_monomer.name].find(data.donor_number) != leaving_atoms[reference_library_monomer.name].end()) {
-                                                                    return leaving_atoms[reference_library_monomer.name][data.donor_number] == a.name;
-                                                                }
-                                                             }
-                                                             return false;
+                                                             if (leaving_atoms.find(reference_library_monomer.name) == leaving_atoms.end()) return false;
+                                                             if (leaving_atoms[reference_library_monomer.name].find(data.donor_number) == leaving_atoms[reference_library_monomer.name].end()) return false;
+
+                                                             return leaving_atoms[reference_library_monomer.name][data.donor_number] == a.name;
+
                                                          }), reference_library_monomer.atoms.end());
 
     std::string leaving_hydrogen = "HO" + std::to_string(data.donor_number); // HOx atom leaves in sugars
