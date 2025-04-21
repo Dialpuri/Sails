@@ -32,8 +32,10 @@ if (NOT SKBUILD)
   after editing C++ files.")
 endif ()
 
-find_package(ZLIB REQUIRED)
-#set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Debug
+if (SKBUILD)
+    find_package(ZLIB REQUIRED)
+endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(WRK_DIR "${CMAKE_CURRENT_SOURCE_DIR}")

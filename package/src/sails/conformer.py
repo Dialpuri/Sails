@@ -10,7 +10,7 @@ def parse_args() -> argparse.Namespace:
         "--donor_residue", help="Name of donor residue e.g. NAG", required=True
     )
     parser.add_argument(
-        "--acceptor_residue", help="Name of donor residue e.g. NAG", required=True
+        "--acceptor_residue", help="Name of acceptor residue e.g. NAG", required=True
     )
     parser.add_argument(
         "--donor_number", help="Number of donor atom e.g. 4", required=True

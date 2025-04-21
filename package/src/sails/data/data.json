@@ -203,7 +203,7 @@
             ]
         },
         {
-            "name": "ASN",
+            "name": "AASN",
             "snfgShape": "rectangle",
             "snfgColour": "white",
             "preferredDepths": [
@@ -281,7 +281,7 @@
     ],
     "linkages": [
         {
-            "donorResidue": "ASN",
+            "donorResidue": "AASN",
             "acceptorResidue": "NAG",
             "donorNumber": 2,
             "acceptorNumber": 1,
@@ -807,6 +807,33 @@
                         "psiStdDev": 54.477,
                         "omegaMean": 63.742,
                         "omegaStdDev": 7.224
+                    }
+                }
+            ]
+        },
+        {
+            "donorResidue": "MAN",
+            "acceptorResidue": "NAG",
+            "donorNumber": 2,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.164,
+                        "alphaStdDev": 1,
+                        "betaMean": 110.3,
+                        "betaStdDev": 1,
+                        "gammaMean": 113.6,
+                        "gammaStdDev": 1
+                    },
+                    "torsions": {
+                        "phiMean": 1,
+                        "phiStdDev": 1,
+                        "psiMean": 1,
+                        "psiStdDev": 1,
+                        "omegaMean": 178.5,
+                        "omegaStdDev": 5
                     }
                 }
             ]

@@ -17,7 +17,7 @@ from .sails_module import (
     MTZ,
     GlycoSite,
     Dot,
-    test_snfg,
+    # test_snfg,
     get_snfg,
     get_all_snfgs,
     Grid,
