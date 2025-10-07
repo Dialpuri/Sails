@@ -139,6 +139,7 @@ NB_MODULE(sails_module, m) {
                         .def_rw("chain_idx", &Sails::Glycosite::chain_idx)
                         .def_rw("residue_idx", &Sails::Glycosite::residue_idx)
                         .def_rw("atom_idx", &Sails::Glycosite::atom_idx);
+        nb::bind_vector<std::vector<Sails::Glycosite> >(m, "GlycoSites");
 
         nb::class_<Sails::Dot>(m, "Dot")
                         .def(nb::init<gemmi::Structure &>())
@@ -196,6 +197,10 @@ NB_MODULE(sails_module, m) {
     m.def("o_mannosylate",
           nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&o_mannosylate),
           "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
+        "structure"_a, "grid"_a, "resource_dir"_a);
+
 
     m.def("find_all_wurcs", &find_all_wurcs, "structure"_a, "resource_dir"_a);
     m.def("find_wurcs", &find_wurcs, "structure"_a, "chain"_a, "seqid"_a,  "resource_dir"_a);

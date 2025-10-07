@@ -122,7 +122,7 @@ def extract_gemmi_structure(structure: gemmi.Structure) -> sails.Structure:
         )
     )
     om = sails.Model()
-    om.name = structure[0].name
+    om.num = structure[0].num
     for chain in structure[0]:
         oc = sails.Chain()
         oc.name = chain.name

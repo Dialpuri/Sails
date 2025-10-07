@@ -3,6 +3,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import List, Tuple
+
+import gemmi
 import numpy as np
 from tqdm import tqdm
 
@@ -164,6 +166,9 @@ class Sails:
             output_path / f"sails-{type.name}{suffix}",
         )
 
+    def get_grid(self, type: MapType):
+        return self.predicted_grids[type]
+
 
 def run():
     """Run prediction from command line arguments"""
@@ -198,7 +203,8 @@ def predict_map(
     phase: str = "PHWT",
     overlap: int = None,
     nthreads: int = 1,
-):
+    save_map: bool = False,
+) -> gemmi.FloatGrid:
     """Run prediction from Python"""
     logging.info(
         f"Running prediction with model {model}, input {input}, output {output}, resolution {resolution}, amplitude {amplitude}, phase {phase}, overlap {overlap}"
@@ -214,6 +220,6 @@ def predict_map(
     )
     prediction = Sails(model_path, configuration=configuration)
     prediction.predict(input, [amplitude, phase], resolution_cutoff=resolution)
-    prediction.save_grid(MapType.phosphate, output)
-    prediction.save_grid(MapType.sugar, output)
-    prediction.save_grid(MapType.base, output)
+    if save_map:
+        prediction.save_grid(MapType.glycan, output)
+    return prediction.get_grid(MapType.glycan)

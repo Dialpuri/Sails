@@ -26,6 +26,7 @@ from .sails_module import (
     find_wurcs,
     model_wurcs,
     morph,
+    identify_predicted_sites,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -79,4 +80,5 @@ __all__ = [
     "find_wurcs",
     "model_wurcs",
     "morph",
+    "identify_predicted_sites",
 ]

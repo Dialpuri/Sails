@@ -15,6 +15,7 @@ class Type(enum.IntEnum):
     n_glycosylate = 1
     c_glycosylate = 2
     o_mannosylate = 3
+    auto = 4
 
     def __str__(self):
         return self.name
@@ -37,12 +38,26 @@ def map_type_to_function(type: Type):
     if type == Type.o_mannosylate:
         return o_mannosylate
 
+    # if type == Type.auto:
+    #     return auto_glycosylate
+
     raise TypeError("Type not found")
+
+
+def read_prediction_dir(path: Path | str) -> gemmi.FloatGrid:
+    path = Path(path)
+    glycan_path = path / "sails-glycan.map"
+    if not glycan_path.exists():
+        raise FileNotFoundError(glycan_path)
+
+    map_ = gemmi.read_ccp4_map(str(glycan_path))
+    return map_.grid
 
 
 def glycosylate_xtal(
     structure: gemmi.Structure | Path | str,
     mtz: gemmi.Mtz | Path | str,
+    preddirin: Path | str,
     cycles: int,
     f: str,
     sigf: str,
@@ -68,6 +83,15 @@ def glycosylate_xtal(
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files("sails").joinpath("data")
 
+    #     if type == Type.auto:
+    #     if preddirin:
+    #         predicted_map = read_prediction_dir(preddirin)
+    #     else:
+    #         predicted_map = predict_map("binary", mtz, "output", nthreads=8, save_map=True)
+    #     sails_grid = interface.get_sails_map(predicted_map)
+    #
+    #     result = auto_glycosylate(sails_structure, sails_mtz, sails_grid, cycles, str(resource), verbose)
+    # else:
     func = map_type_to_function(type)
     result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
@@ -162,7 +186,7 @@ def xray(args):
 
     cycles = args.cycles if args.type == Type.n_glycosylate else 1
     structure, mtz, log, snfgs = glycosylate_xtal(
-        args.modelin, args.mtzin, cycles, *labels, args.type, args.v
+        args.modelin, args.mtzin, args.preddirin, cycles, *labels, args.type, args.v
     )
 
     if args.snfgout:
@@ -207,15 +231,16 @@ def parse_args():
     parent = argparse.ArgumentParser(add_help=False)
     group = parent.add_argument_group("Required arguments for all modes")
     group.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
-    group.add_argument("-modelin", type=str, required=True)
+    group.add_argument("--modelin", type=str, required=True)
+    group.add_argument("--preddirin", type=str, required=False)
     group.add_argument(
-        "-modelout", type=str, required=False, default="sails-model-out.cif"
+        "--modelout", type=str, required=False, default="sails-model-out.cif"
     )
-    group.add_argument("-logout", type=str, default="sails-log.json")
-    group.add_argument("-snfgout", type=str)
-    group.add_argument("-cycles", type=int, required=False, default=2)
+    group.add_argument("--logout", type=str, default="sails-log.json")
+    group.add_argument("--snfgout", type=str)
+    group.add_argument("--cycles", type=int, required=False, default=2)
     group.add_argument(
-        "-type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate
+        "--type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate
     )
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
@@ -225,17 +250,17 @@ def parse_args():
     xray_parser_group = xray_parser.add_argument_group(
         "Required arguments in X-ray mode"
     )
-    xray_parser_group.add_argument("-mtzin", type=str, required=True)
+    xray_parser_group.add_argument("--mtzin", type=str, required=True)
     xray_parser_group.add_argument(
-        "-mtzout", type=str, required=False, default="sails-refln-out.mtz"
+        "--mtzout", type=str, required=False, default="sails-refln-out.mtz"
     )
     xray_parser_group.add_argument(
-        "-colin-fo", type=str, required=False, default="FP,SIGFP"
+        "--colin-fo", type=str, required=False, default="FP,SIGFP"
     )
-    xray_parser_group.add_argument("-colin-fwt", type=str, required=False, default="")
+    xray_parser_group.add_argument("--colin-fwt", type=str, required=False, default="")
 
     em_parser = subparsers.add_parser("em", parents=[parent], formatter_class=formatter)
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
-    em_parser_group.add_argument("-mapin", type=str, required=True)
+    em_parser_group.add_argument("--mapin", type=str, required=True)
 
     return parser.parse_args()

@@ -7,7 +7,8 @@
 
 #include <map>
 #include <optional>
-
+#include <algorithm>
+#include <set>
 #include <gemmi/neighbor.hpp>
 
 namespace Sails {
@@ -218,6 +219,25 @@ namespace Sails {
     };
 
     typedef std::map<std::string, std::vector<LinkageData> > LinkageDatabase;
+
+    /** @brief Find protein donors in LinkageDatabase
+     *
+     */
+    inline std::set<std::string> find_protein_donors(LinkageDatabase &linkage_database) {
+        std::set<std::string> acceptor_names = {};
+        std::set<std::string> donor_names = {};
+        for (const auto& [donor_name, linkages]: linkage_database) {
+            for (auto& linkage: linkages) {
+                acceptor_names.insert(linkage.acceptor);
+            }
+            donor_names.insert(donor_name);
+        }
+        std::set<std::string> difference = {};
+        std::set_difference(donor_names.begin(), donor_names.end(), acceptor_names.begin(),
+            acceptor_names.end(), std::inserter(difference, difference.begin()));
+        return difference;
+    }
+
 
     /**
      * @class Glycosite

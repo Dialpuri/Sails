@@ -26,6 +26,8 @@
 #include <iostream>
 #include <src/include/sails-morph.h>
 
+#include "src/include/sails-predictions.h"
+
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
     std::cout << "Removing " << Sails::Utils::format_residue_from_site(s1, structure) << "--"
@@ -292,6 +294,17 @@ Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     Sails::SolventAccessibility::SolventAccessibilityMap sa_map = sa.calculate_solvent_accessibility();
     auto glycosites = Sails::find_o_mannosylation_sites(structure, sa_map);
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
+}
+
+Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::Grid<>& grid, std::string &resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+    auto predictions = Sails::Predictions(grid, linkage_database, residue_database);
+
+    Sails::Glycosites potential_sites = predictions.find_potential_sites(structure);
+    return potential_sites;
 }
 
 // EM FUNCTIONS

@@ -22,25 +22,31 @@ add_library(gemmi_cpp STATIC
         ${gemmi_src}/src/align.cpp
         ${gemmi_src}/src/assembly.cpp
         ${gemmi_src}/src/calculate.cpp
+        ${gemmi_src}/src/ccp4.cpp
         ${gemmi_src}/src/crd.cpp
         ${gemmi_src}/src/ddl.cpp
+        ${gemmi_src}/src/dssp.cpp
         ${gemmi_src}/src/eig3.cpp
+        ${gemmi_src}/src/fprime.cpp
         ${gemmi_src}/src/gz.cpp
         ${gemmi_src}/src/intensit.cpp
         ${gemmi_src}/src/json.cpp
         ${gemmi_src}/src/mmcif.cpp
         ${gemmi_src}/src/mmread_gz.cpp
+        ${gemmi_src}/src/monlib.cpp
         ${gemmi_src}/src/mtz.cpp
         ${gemmi_src}/src/mtz2cif.cpp
         ${gemmi_src}/src/polyheur.cpp
+        ${gemmi_src}/src/pdb.cpp
         ${gemmi_src}/src/read_cif.cpp
         ${gemmi_src}/src/resinfo.cpp
         ${gemmi_src}/src/riding_h.cpp
+        ${gemmi_src}/src/select.cpp
         ${gemmi_src}/src/sprintf.cpp
+        ${gemmi_src}/src/symmetry.cpp
+        ${gemmi_src}/src/to_json.cpp
         ${gemmi_src}/src/to_mmcif.cpp
         ${gemmi_src}/src/to_pdb.cpp
-        ${gemmi_src}/src/pdb.cpp
-        ${gemmi_src}/src/monlib.cpp
         ${gemmi_src}/src/topo.cpp
         ${gemmi_src}/src/xds_ascii.cpp
 )
@@ -64,7 +70,6 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/ccp4.hpp
         ${gemmi_src}/include/gemmi/cellred.hpp
         ${gemmi_src}/include/gemmi/chemcomp.hpp
-        #        ${gemmi_src}/include/gemmi/chemcomp_xyz.hpp
         ${gemmi_src}/include/gemmi/cif.hpp
         ${gemmi_src}/include/gemmi/cif2mtz.hpp
         ${gemmi_src}/include/gemmi/cifdoc.hpp
@@ -73,6 +78,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/ddl.hpp
         ${gemmi_src}/include/gemmi/dencalc.hpp
         ${gemmi_src}/include/gemmi/dirwalk.hpp
+        ${gemmi_src}/include/gemmi/dssp.hpp
         ${gemmi_src}/include/gemmi/ecalc.hpp
         ${gemmi_src}/include/gemmi/eig3.hpp
         ${gemmi_src}/include/gemmi/elem.hpp
@@ -87,20 +93,21 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/grid.hpp
         ${gemmi_src}/include/gemmi/gz.hpp
         ${gemmi_src}/include/gemmi/input.hpp
+        ${gemmi_src}/include/gemmi/intensit.hpp
         ${gemmi_src}/include/gemmi/interop.hpp
         ${gemmi_src}/include/gemmi/it92.hpp
         ${gemmi_src}/include/gemmi/iterator.hpp
         ${gemmi_src}/include/gemmi/json.hpp
         ${gemmi_src}/include/gemmi/levmar.hpp
         ${gemmi_src}/include/gemmi/linkhunt.hpp
+        ${gemmi_src}/include/gemmi/logger.hpp
         ${gemmi_src}/include/gemmi/math.hpp
-        #        ${gemmi_src}/include/gemmi/merge.hpp
         ${gemmi_src}/include/gemmi/metadata.hpp
-        ${gemmi_src}/include/gemmi/mmcif.hpp
         ${gemmi_src}/include/gemmi/mmcif_impl.hpp
+        ${gemmi_src}/include/gemmi/mmcif.hpp
         ${gemmi_src}/include/gemmi/mmdb.hpp
-        ${gemmi_src}/include/gemmi/mmread.hpp
         ${gemmi_src}/include/gemmi/mmread_gz.hpp
+        ${gemmi_src}/include/gemmi/mmread.hpp
         ${gemmi_src}/include/gemmi/model.hpp
         ${gemmi_src}/include/gemmi/modify.hpp
         ${gemmi_src}/include/gemmi/monlib.hpp
@@ -109,17 +116,15 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/neighbor.hpp
         ${gemmi_src}/include/gemmi/neutron92.hpp
         ${gemmi_src}/include/gemmi/numb.hpp
-        ${gemmi_src}/include/gemmi/pdb.hpp
         ${gemmi_src}/include/gemmi/pdb_id.hpp
+        ${gemmi_src}/include/gemmi/pdb.hpp
         ${gemmi_src}/include/gemmi/pirfasta.hpp
         ${gemmi_src}/include/gemmi/polyheur.hpp
         ${gemmi_src}/include/gemmi/qcp.hpp
         ${gemmi_src}/include/gemmi/read_cif.hpp
-        ${gemmi_src}/include/gemmi/read_map.hpp
         ${gemmi_src}/include/gemmi/recgrid.hpp
         ${gemmi_src}/include/gemmi/reciproc.hpp
         ${gemmi_src}/include/gemmi/refln.hpp
-        #        ${gemmi_src}/include/gemmi/remarks.hpp
         ${gemmi_src}/include/gemmi/resinfo.hpp
         ${gemmi_src}/include/gemmi/riding_h.hpp
         ${gemmi_src}/include/gemmi/scaling.hpp
@@ -127,6 +132,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/seqalign.hpp
         ${gemmi_src}/include/gemmi/seqid.hpp
         ${gemmi_src}/include/gemmi/seqtools.hpp
+        ${gemmi_src}/include/gemmi/serialize.hpp
         ${gemmi_src}/include/gemmi/sfcalc.hpp
         ${gemmi_src}/include/gemmi/small.hpp
         ${gemmi_src}/include/gemmi/smcif.hpp
@@ -147,7 +153,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/util.hpp
         ${gemmi_src}/include/gemmi/version.hpp
         ${gemmi_src}/include/gemmi/xds_ascii.hpp
-
+        ${gemmi_src}/include/gemmi/xds2mtz.hpp
 
 )
 
