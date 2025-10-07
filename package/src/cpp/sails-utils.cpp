@@ -81,7 +81,7 @@ std::string Sails::Utils::linkage_to_id(const Sails::LinkageData &data) {
 
 void Sails::Utils::save_residues_to_file(std::vector<gemmi::Residue> residues, const std::string &path) {
     gemmi::Structure structure;
-    gemmi::Model model = gemmi::Model("A");
+    gemmi::Model model = gemmi::Model(0);
     gemmi::Chain chain = gemmi::Chain("A");
     for (auto& residue : residues) {
         chain.residues.push_back(residue);

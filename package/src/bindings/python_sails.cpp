@@ -54,7 +54,7 @@ NB_MODULE(sails_module, m) {
 
         nb::class_<gemmi::Model>(m, "Model")
                         .def(nb::init<>())
-                        .def_rw("name", &gemmi::Model::name)
+                        .def_rw("num", &gemmi::Model::num)
                         .def_rw("chains", &gemmi::Model::chains);
         nb::bind_vector<std::vector<gemmi::Chain> >(m, "Chains");
 

@@ -50,7 +50,7 @@ FetchContent_Declare(
 # Download Gemmi
 FetchContent_Declare(
         gemmi-dependencies
-        URL http://www.ysbl.york.ac.uk/jsd523/gemmi-0.6.5.tar.gz
+        URL http://www.ysbl.york.ac.uk/jsd523/gemmi-v0.7.0.tar.gz
 )
 
 FetchContent_MakeAvailable(clipper-dependencies mmdb2-dependencies fftw-dependencies ccp4-dependencies gemmi-dependencies)

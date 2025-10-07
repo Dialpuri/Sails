@@ -39,6 +39,7 @@ add_library(gemmi_cpp STATIC
         ${gemmi_src}/src/sprintf.cpp
         ${gemmi_src}/src/to_mmcif.cpp
         ${gemmi_src}/src/to_pdb.cpp
+        ${gemmi_src}/src/pdb.cpp
         ${gemmi_src}/src/monlib.cpp
         ${gemmi_src}/src/topo.cpp
         ${gemmi_src}/src/xds_ascii.cpp
@@ -63,7 +64,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/ccp4.hpp
         ${gemmi_src}/include/gemmi/cellred.hpp
         ${gemmi_src}/include/gemmi/chemcomp.hpp
-        ${gemmi_src}/include/gemmi/chemcomp_xyz.hpp
+        #        ${gemmi_src}/include/gemmi/chemcomp_xyz.hpp
         ${gemmi_src}/include/gemmi/cif.hpp
         ${gemmi_src}/include/gemmi/cif2mtz.hpp
         ${gemmi_src}/include/gemmi/cifdoc.hpp
@@ -93,7 +94,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/levmar.hpp
         ${gemmi_src}/include/gemmi/linkhunt.hpp
         ${gemmi_src}/include/gemmi/math.hpp
-#        ${gemmi_src}/include/gemmi/merge.hpp
+        #        ${gemmi_src}/include/gemmi/merge.hpp
         ${gemmi_src}/include/gemmi/metadata.hpp
         ${gemmi_src}/include/gemmi/mmcif.hpp
         ${gemmi_src}/include/gemmi/mmcif_impl.hpp
@@ -118,7 +119,7 @@ set(gemmi_HEADERS
         ${gemmi_src}/include/gemmi/recgrid.hpp
         ${gemmi_src}/include/gemmi/reciproc.hpp
         ${gemmi_src}/include/gemmi/refln.hpp
-        ${gemmi_src}/include/gemmi/remarks.hpp
+        #        ${gemmi_src}/include/gemmi/remarks.hpp
         ${gemmi_src}/include/gemmi/resinfo.hpp
         ${gemmi_src}/include/gemmi/riding_h.hpp
         ${gemmi_src}/include/gemmi/scaling.hpp
@@ -153,7 +154,7 @@ set(gemmi_HEADERS
 set(gemmi_third_party-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/fast_float.h
         ${gemmi_src}/include/gemmi/third_party/pocketfft_hdronly.h
-#        ${gemmi_src}/include/gemmi/third_party/sajson.h
+        #        ${gemmi_src}/include/gemmi/third_party/sajson.h
         ${gemmi_src}/include/gemmi/third_party/tinydir.h
 )
 
@@ -198,7 +199,7 @@ set(gemmi_third_party_tao_pegtl_analysis-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/generic.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/grammar_info.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/insert_guard.hpp
-        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/insert_rules.hpp
+        #        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/insert_rules.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/rule_info.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/analysis/rule_type.hpp
 )
@@ -217,7 +218,7 @@ set(gemmi_third_party_tao_pegtl_internal-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bof.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bol.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bump_help.hpp
-        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bump_impl.hpp
+        #        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bump_impl.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/bytes.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/control.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/cr_crlf_eol.hpp
@@ -240,7 +241,7 @@ set(gemmi_third_party_tao_pegtl_internal-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/eof.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/eol.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/eolf.hpp
-        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/file_mapper.hpp
+        #        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/file_mapper.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/file_opener.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/file_reader.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/has_apply.hpp
@@ -262,7 +263,7 @@ set(gemmi_third_party_tao_pegtl_internal-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/list_tail.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/list_tail_pad.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/marker.hpp
-        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/minus.hpp
+        #        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/minus.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/must.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/not_at.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/one.hpp
@@ -284,7 +285,7 @@ set(gemmi_third_party_tao_pegtl_internal-headers_HEADERS
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/rep_opt.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/require.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/result_on_found.hpp
-        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/rule_conjunction.hpp
+        #        ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/rule_conjunction.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/rules.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/seq.hpp
         ${gemmi_src}/include/gemmi/third_party/tao/pegtl/internal/skip_control.hpp
