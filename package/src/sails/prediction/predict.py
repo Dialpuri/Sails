@@ -11,7 +11,7 @@ from tqdm import tqdm
 from .load import load_density, load_onnx_model
 from .grid_tools import interpolate_grid, reinterpolate_grid, precompute_slices
 from .arguments import parse_arguments
-from .model import find_model, get_model_config
+from .model import find_model, get_model_config, ModelType
 from .save import save_grid
 from ..logs import setup_logging
 from .config import Configuration, MapType
@@ -50,7 +50,9 @@ class Sails:
         slices = precompute_slices(work_grid_shape, overlap=self.configuration.overlap)
         box_size = self.configuration.box_size
 
-        total_array = np.zeros((*work_grid_shape, 2), dtype=np.float32)
+        total_array = np.zeros(
+            (*work_grid_shape, self.configuration.channels), dtype=np.float32
+        )
         count_array = np.zeros_like(total_array, dtype=np.float32)
 
         # Variance arrays for Welch's one pass variance method
@@ -174,7 +176,8 @@ def run():
     """Run prediction from command line arguments"""
     setup_logging()
     args = parse_arguments()
-    model_path = find_model(args.model)
+    model = ModelType[args.model]
+    model_path = find_model(model)
     model_configuration = get_model_config(model_path, args.overlap)
     configuration = Configuration(
         use_gpu=args.gpu,
@@ -192,6 +195,8 @@ def run():
     )
     output_dir = Path(args.output)
     sails.save_grid(MapType.glycan, output_dir)
+    if model == ModelType.multiclass:
+        sails.save_grid(MapType.protein, output_dir)
 
 
 def predict_map(
@@ -204,11 +209,13 @@ def predict_map(
     overlap: int = None,
     nthreads: int = 1,
     save_map: bool = False,
-) -> gemmi.FloatGrid:
+) -> gemmi.FloatGrid | Tuple[gemmi.FloatGrid, gemmi.FloatGrid]:
     """Run prediction from Python"""
     logging.info(
         f"Running prediction with model {model}, input {input}, output {output}, resolution {resolution}, amplitude {amplitude}, phase {phase}, overlap {overlap}"
     )
+
+    model = ModelType[model]
     model_path = find_model(model)
     model_configuration = get_model_config(model_path, overlap)
     configuration = Configuration(
@@ -222,4 +229,9 @@ def predict_map(
     prediction.predict(input, [amplitude, phase], resolution_cutoff=resolution)
     if save_map:
         prediction.save_grid(MapType.glycan, output)
+        if model == ModelType.multiclass:
+            prediction.save_grid(MapType.protein, output)
+
+    if model == ModelType.multiclass:
+        return prediction.get_grid(MapType.glycan), prediction.get_grid(MapType.protein)
     return prediction.get_grid(MapType.glycan)

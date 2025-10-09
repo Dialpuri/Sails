@@ -89,7 +89,6 @@ def get_latest_model(type: ModelType) -> str:
         file = filename.get("rfilename", "")
         if file.endswith(".onnx"):
             possible_models.append(file)
-
     # Get latest model out of list based on date
     possible_models = sorted(possible_models, reverse=True)
     latest_model = possible_models[0]
@@ -219,7 +218,7 @@ def get_model_config(model_path: Path, overlap: int | None) -> SimpleNamespace:
             )
         case ModelType.multiclass:
             return SimpleNamespace(
-                box_size=128, overlap=64 if overlap is None else overlap
+                box_size=128, overlap=64 if overlap is None else overlap, channels=3
             )
         case _:
             raise RuntimeError(f"Invalid model type - {model_type}")

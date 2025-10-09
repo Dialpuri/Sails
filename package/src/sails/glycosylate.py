@@ -9,6 +9,7 @@ from typing import Tuple, List
 
 import gemmi
 from sails import interface, n_glycosylate, c_glycosylate, o_mannosylate, __version__
+from .prediction.model import ModelType
 
 
 class Type(enum.IntEnum):
@@ -44,14 +45,26 @@ def map_type_to_function(type: Type):
     raise TypeError("Type not found")
 
 
-def read_prediction_dir(path: Path | str) -> gemmi.FloatGrid:
+def read_prediction_dir(
+    path: Path | str, model_type: ModelType
+) -> gemmi.FloatGrid | Tuple[gemmi.FloatGrid, gemmi.FloatGrid]:
     path = Path(path)
     glycan_path = path / "sails-glycan.map"
+    protein_path = path / "sails-protein.map"
+
     if not glycan_path.exists():
         raise FileNotFoundError(glycan_path)
 
-    map_ = gemmi.read_ccp4_map(str(glycan_path))
-    return map_.grid
+    if model_type == ModelType.multiclass:
+        if not protein_path.exists():
+            raise FileNotFoundError(protein_path)
+
+    glycan_map = gemmi.read_ccp4_map(str(glycan_path))
+
+    if model_type == ModelType.multiclass:
+        protein_map = gemmi.read_ccp4_map(str(protein_path))
+        return glycan_map.grid, protein_map.grid
+    return glycan_map.grid
 
 
 def glycosylate_xtal(

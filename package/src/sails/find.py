@@ -10,6 +10,7 @@ import json
 from sails import identify_predicted_sites, GlycoSite
 from .interface import get_sails_structure, get_sails_map
 from .glycosylate import read_prediction_dir, save_log
+from .prediction.model import ModelType
 from .prediction.predict import predict_map
 
 
@@ -161,13 +162,13 @@ def get_amplitude_phase(args):
 def xray(args):
     sails_structure = get_sails_structure(args.modelin)
     resource = importlib.resources.files("sails").joinpath("data")
-
+    model = ModelType[args.modeltype]
     if args.preddirin:
-        predicted_map = read_prediction_dir(args.preddirin)
+        predictions = read_prediction_dir(args.preddirin, model)
     else:
         amplitude, phase = get_amplitude_phase(args)
-        predicted_map = predict_map(
-            "binary",
+        predictions = predict_map(
+            model.name,
             args.mtzin,
             "output",
             nthreads=8,
@@ -176,8 +177,18 @@ def xray(args):
             save_map=True,
         )
 
-    sails_grid = get_sails_map(predicted_map)
-    result = identify_predicted_sites(sails_structure, sails_grid, str(resource))
+    if model == ModelType.binary:
+        glycan_predicted_map = predictions
+        sails_grid = get_sails_map(glycan_predicted_map)
+        result = identify_predicted_sites(sails_structure, sails_grid, str(resource))
+    else:
+        glycan_predicted_map, protein_predicted_map = predictions
+        sails_glycan_grid = get_sails_map(glycan_predicted_map)
+        sails_protein_grid = get_sails_map(protein_predicted_map)
+        result = identify_predicted_sites(
+            sails_structure, sails_glycan_grid, sails_protein_grid, str(resource)
+        )
+
     log = convert_glycosites_to_log(result, args.modelin)
     save_log(log, args)
 
@@ -267,6 +278,12 @@ def run():
         type=str,
         help="Path to output file",
     )
+    xray_parser.add_argument(
+        "--modeltype",
+        required=True,
+        choices=[type.name for type in ModelType],
+        help="Binary or Multiclass model",
+    )
     xray_parser.add_argument("--colin-fo", type=str, required=False, default="FP,SIGFP")
     xray_parser.add_argument(
         "--colin-fwt", type=str, required=False, default="FWT,PHWT"
@@ -286,6 +303,12 @@ def run():
         default="sites.json",
         type=str,
         help="Path to output file",
+    )
+    em_parser.add_argument(
+        "--modeltype",
+        required=True,
+        choices=[type.name for type in ModelType],
+        help="Binary or Multiclass model",
     )
 
     args = parser.parse_args()

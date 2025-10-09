@@ -296,16 +296,28 @@ Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
 }
 
-Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::Grid<>& grid, std::string &resource_dir) {
+Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::Grid<>& glycan_grid, std::string &resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
     Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
-    auto predictions = Sails::Predictions(grid, linkage_database, residue_database);
+    auto predictions = Sails::Predictions(&glycan_grid, linkage_database, residue_database);
 
     Sails::Glycosites potential_sites = predictions.find_potential_sites(structure);
     return potential_sites;
 }
+
+Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::Grid<>& glycan_grid, gemmi::Grid<>& protein_grid, std::string &resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+    auto predictions = Sails::Predictions(&glycan_grid, &protein_grid, linkage_database, residue_database);
+
+    Sails::Glycosites potential_sites = predictions.find_potential_sites(structure);
+    return potential_sites;
+}
+
 
 // EM FUNCTIONS
 

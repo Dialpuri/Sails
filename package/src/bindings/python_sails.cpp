@@ -199,7 +199,9 @@ NB_MODULE(sails_module, m) {
           "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
-        "structure"_a, "grid"_a, "resource_dir"_a);
+        "structure"_a, "glycan_grid"_a, "resource_dir"_a);
+    m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
+        "structure"_a, "glycan_grid"_a, "protein_grid"_a, "resource_dir"_a);
 
 
     m.def("find_all_wurcs", &find_all_wurcs, "structure"_a, "resource_dir"_a);
