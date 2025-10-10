@@ -25,7 +25,7 @@ dependencies=[
 ]
 
 [tool.setuptools]
-packages = ["sails"]
+packages = ["sails", "sails.prediction"]
 package-dir = {"" = "src"}
 include-package-data = true
 
