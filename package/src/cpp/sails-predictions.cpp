@@ -5,7 +5,8 @@
 #include "../include/sails-predictions.h"
 
 
-gemmi::NeighborSearch Sails::Predictions::create_neighbour_search(gemmi::Grid<> *grid, float threshold, const gemmi::UnitCell& unit_cell) {
+std::optional<gemmi::NeighborSearch> Sails::Predictions::create_neighbour_search(
+    gemmi::Grid<> *grid, float threshold, const gemmi::UnitCell &unit_cell) {
 
     gemmi::Model model = gemmi::Model(0);
     gemmi::Chain chain = gemmi::Chain("A");
@@ -33,6 +34,10 @@ gemmi::NeighborSearch Sails::Predictions::create_neighbour_search(gemmi::Grid<> 
         }
     }
 
+    if (seqid == 0) {
+        return std::nullopt;
+    }
+
     model.chains = {chain};
 
     gemmi::NeighborSearch ns = {model, unit_cell, 2};
@@ -54,7 +59,11 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_glycan(gemmi::S
 
     Glycosites potential_sites = {};
 
-    gemmi::NeighborSearch ns = create_neighbour_search(m_glycan_map, 0.1, structure.cell);
+    std::optional<gemmi::NeighborSearch> ns_optional = create_neighbour_search(m_glycan_map, 0.1, structure.cell);
+    if (!ns_optional.has_value()) {
+        return potential_sites;
+    }
+    gemmi::NeighborSearch ns = ns_optional.value();
 
     for (int m = 0; m < structure.models.size(); m++) {
         for (int c = 0; c < structure.models[m].chains.size(); c++) {
@@ -92,7 +101,11 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_glycan(gemmi::S
 Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein_glycan(gemmi::Structure &structure) {
     Glycosites potential_sites = {};
 
-    gemmi::NeighborSearch ns = create_neighbour_search(m_protein_map, 0.1, structure.cell);
+    std::optional<gemmi::NeighborSearch> ns_optional = create_neighbour_search(m_protein_map, 0.1, structure.cell);
+    if (!ns_optional.has_value()) {
+        return potential_sites;
+    }
+    gemmi::NeighborSearch ns = ns_optional.value();
 
     for (int m = 0; m < structure.models.size(); m++) {
         for (int c = 0; c < structure.models[m].chains.size(); c++) {
@@ -123,6 +136,5 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein_glycan(
             }
         }
     }
-
     return potential_sites;
 }

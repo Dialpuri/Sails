@@ -28,7 +28,8 @@ namespace Sails {
         Glycosites find_potential_sites(gemmi::Structure &structure);
 
     private:
-        gemmi::NeighborSearch create_neighbour_search(gemmi::Grid<> *grid, float threshold, const gemmi::UnitCell& unit_cell);
+        std::optional<gemmi::NeighborSearch> create_neighbour_search(gemmi::Grid<> *grid, float threshold,
+                                                                     const gemmi::UnitCell &unit_cell);
 
         Glycosites find_potential_sites_using_glycan(gemmi::Structure &structure);
 
