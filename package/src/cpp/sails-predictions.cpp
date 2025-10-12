@@ -82,6 +82,9 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_glycan(gemmi::S
                 for (const auto& donor_set : donor_sets) {
                     std::string last_donor_atom_name = donor_set.atom3;
                     gemmi::Atom* last_donor_atom = residue.find_atom(last_donor_atom_name, '*');
+                    if (last_donor_atom == nullptr) {
+                        continue;
+                    }
                     auto nearby_points = ns.find_atoms(last_donor_atom->pos, '*', 0.1, 2);
 
                     if (nearby_points.empty()) {
