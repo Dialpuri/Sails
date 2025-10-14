@@ -25,7 +25,7 @@ namespace Sails {
             m_protein_map = protein_map;
         };
 
-        Glycosites find_potential_sites(gemmi::Structure &structure);
+        Glycosites find_potential_sites(gemmi::Structure &structure, bool use_glycan);
 
     private:
         std::optional<gemmi::NeighborSearch> create_neighbour_search(gemmi::Grid<> *grid, float threshold,
@@ -33,7 +33,7 @@ namespace Sails {
 
         Glycosites find_potential_sites_using_glycan(gemmi::Structure &structure);
 
-        Glycosites find_potential_sites_using_protein_glycan(gemmi::Structure &structure);
+        Glycosites find_potential_sites_using_protein(gemmi::Structure &structure);
 
 
         gemmi::Grid<>* m_glycan_map = nullptr;

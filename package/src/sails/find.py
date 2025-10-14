@@ -185,8 +185,13 @@ def xray(args):
         glycan_predicted_map, protein_predicted_map = predictions
         sails_glycan_grid = get_sails_map(glycan_predicted_map)
         sails_protein_grid = get_sails_map(protein_predicted_map)
+        searchtype = args.searchtype
         result = identify_predicted_sites(
-            sails_structure, sails_glycan_grid, sails_protein_grid, str(resource)
+            sails_structure,
+            sails_glycan_grid,
+            sails_protein_grid,
+            searchtype == "glycan",
+            str(resource),
         )
 
     log = convert_glycosites_to_log(result, args.modelin)
@@ -283,6 +288,12 @@ def run():
         required=True,
         choices=[type.name for type in ModelType],
         help="Binary or Multiclass model",
+    )
+    xray_parser.add_argument(
+        "--searchtype",
+        required=True,
+        choices=["protein", "glycan"],
+        help="Search for protein or glycan, only used if modeltype is multiclass",
     )
     xray_parser.add_argument("--colin-fo", type=str, required=False, default="FP,SIGFP")
     xray_parser.add_argument(

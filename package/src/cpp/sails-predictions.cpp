@@ -45,14 +45,14 @@ std::optional<gemmi::NeighborSearch> Sails::Predictions::create_neighbour_search
     return ns;
 }
 
-Sails::Glycosites Sails::Predictions::find_potential_sites(gemmi::Structure &structure) {
-    if (m_glycan_map == nullptr) {
-        throw std::invalid_argument("Glycan map is null");
-    }
-    if (m_protein_map == nullptr) {
+Sails::Glycosites Sails::Predictions::find_potential_sites(gemmi::Structure &structure, bool use_glycan) {
+    if (use_glycan && m_glycan_map != nullptr) {
         return find_potential_sites_using_glycan(structure);
     }
-    return find_potential_sites_using_protein_glycan(structure);
+    if (!use_glycan && m_protein_map != nullptr) {
+        return find_potential_sites_using_protein(structure);
+    }
+    throw std::invalid_argument("Glycan map is null");
 }
 
 Sails::Glycosites Sails::Predictions::find_potential_sites_using_glycan(gemmi::Structure &structure) {
@@ -101,7 +101,7 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_glycan(gemmi::S
     return potential_sites;
 }
 
-Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein_glycan(gemmi::Structure &structure) {
+Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein(gemmi::Structure &structure) {
     Glycosites potential_sites = {};
 
     std::optional<gemmi::NeighborSearch> ns_optional = create_neighbour_search(m_protein_map, 0.1, structure.cell);
