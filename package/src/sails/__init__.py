@@ -27,6 +27,7 @@ from .sails_module import (
     model_wurcs,
     morph,
     identify_predicted_sites,
+    auto_glycosylate,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -81,4 +82,5 @@ __all__ = [
     "model_wurcs",
     "morph",
     "identify_predicted_sites",
+    "auto_glycosylate",
 ]

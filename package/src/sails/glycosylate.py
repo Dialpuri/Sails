@@ -8,8 +8,16 @@ from pathlib import Path
 from typing import Tuple, List
 
 import gemmi
-from sails import interface, n_glycosylate, c_glycosylate, o_mannosylate, __version__
+from sails import (
+    interface,
+    n_glycosylate,
+    c_glycosylate,
+    o_mannosylate,
+    __version__,
+    auto_glycosylate,
+)
 from .prediction.model import ModelType
+from .prediction.predict import predict_map
 
 
 class Type(enum.IntEnum):
@@ -39,8 +47,8 @@ def map_type_to_function(type: Type):
     if type == Type.o_mannosylate:
         return o_mannosylate
 
-    # if type == Type.auto:
-    #     return auto_glycosylate
+    if type == Type.auto:
+        return auto_glycosylate
 
     raise TypeError("Type not found")
 
@@ -96,17 +104,31 @@ def glycosylate_xtal(
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files("sails").joinpath("data")
 
-    #     if type == Type.auto:
-    #     if preddirin:
-    #         predicted_map = read_prediction_dir(preddirin)
-    #     else:
-    #         predicted_map = predict_map("binary", mtz, "output", nthreads=8, save_map=True)
-    #     sails_grid = interface.get_sails_map(predicted_map)
-    #
-    #     result = auto_glycosylate(sails_structure, sails_mtz, sails_grid, cycles, str(resource), verbose)
-    # else:
-    func = map_type_to_function(type)
-    result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
+    if type == Type.auto:
+        if preddirin:
+            predictions = read_prediction_dir(
+                preddirin, model_type=ModelType.multiclass
+            )
+        else:
+            predictions = predict_map(
+                "multiclass", mtz, "output", nthreads=8, save_map=True
+            )
+        glycan, protein = predictions
+        sails_glycan = interface.get_sails_map(glycan)
+        sails_protein = interface.get_sails_map(protein)
+
+        result = auto_glycosylate(
+            sails_structure,
+            sails_mtz,
+            sails_glycan,
+            sails_protein,
+            cycles,
+            str(resource),
+            verbose,
+        )
+    else:
+        func = map_type_to_function(type)
+        result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (
         interface.extract_sails_structure(result.structure),
@@ -197,7 +219,9 @@ def save_snfgs(snfgs: dict, snfg_path: Path):
 def xray(args):
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
 
-    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    cycles = (
+        args.cycles if args.type == Type.n_glycosylate or args.type == Type.auto else 1
+    )
     structure, mtz, log, snfgs = glycosylate_xtal(
         args.modelin, args.mtzin, args.preddirin, cycles, *labels, args.type, args.v
     )
@@ -253,7 +277,7 @@ def parse_args():
     group.add_argument("--snfgout", type=str)
     group.add_argument("--cycles", type=int, required=False, default=2)
     group.add_argument(
-        "--type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate
+        "--type", type=Type.from_string, choices=list(Type), default=Type.auto
     )
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
