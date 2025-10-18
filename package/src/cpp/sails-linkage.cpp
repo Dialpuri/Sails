@@ -29,6 +29,26 @@ void Sails::Model::print_successful_log(Sails::Density &density, std::optional<S
             rscc << std::endl;
 }
 
+void Sails::Model::standardise_residue_names() const {
+    std::map<std::string, std::string> names = {
+        {
+            "AMAN", "MAN"
+        }
+    };
+
+    for (int m = 0; m < structure->models.size(); m++) {
+        for (int c = 0; c < structure->models[m].chains.size(); c++) {
+            for (int r = 0; r < structure->models[m].chains[c].residues.size(); r++) {
+                gemmi::Residue* residue = &structure->models[m].chains[c].residues[r];
+                if (names.count(residue->name) == 0) continue;
+
+                std::string new_name = names.at(residue->name);
+                residue->name = new_name;
+            }
+        }
+    }
+}
+
 
 // UTILITY FUNCTIONS
 std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monomer, bool remove_h) {
@@ -40,7 +60,6 @@ std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monom
     std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
 
     if (!Utils::file_exists(path)) {
-        std::cerr << "File " << path << " does not exist" << std::endl;
         path = special_monomer_path + "/" + monomer + ".cif";
         if (!Utils::file_exists(path)) {
             std::cout << path << " monomer does not exist" << std::endl;
@@ -312,6 +331,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     SuperpositionResult best_result;
     float best_rscc = INT_MIN;
 
+    int i = 0;
     for (auto &cluster: data.clusters) {
         std::vector<double> torsions = cluster.torsions.get_means_in_order();
         std::vector<double> torsion_stddev = cluster.torsions.get_stddev_in_order();

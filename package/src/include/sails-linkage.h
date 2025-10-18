@@ -142,6 +142,11 @@ namespace Sails {
 
   static gemmi::Residue replace_residue(gemmi::Residue *target_residue,
                                         const std::string &replacement_residue_name);
+
+
+
+  void standardise_residue_names() const;
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
