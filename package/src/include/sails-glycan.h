@@ -245,6 +245,26 @@ namespace Sails {
         }
 
         /**
+         * @brief Returns the DFS order of the sugars sites.
+         *
+         * @return A vector of Glycosites in DFS order
+         */
+        [[nodiscard]] std::vector<Sails::Glycosite> get_sugar_site_dfs_order_without_root() {
+            std::vector<Glycosite> sites;
+            dfs_sites(root_sugar, sites, 0);
+            sites.erase(sites.begin(), sites.begin() + 1);
+            return sites;
+        }
+
+        void renumber() {
+            std::vector<Glycosite> sites = get_sugar_site_dfs_order_without_root();
+            for (int i = 0; i < sites.size(); i++) {
+                gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sites[i], m_structure);
+                residue_ptr->seqid.num.value = i;
+            }
+        }
+
+        /**
          * @brief Returns the order of the sugars.
          *
          * @return A vector of names of sugars in order e.g. NAG,NAG,BMA,MAN
