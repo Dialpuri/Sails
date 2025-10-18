@@ -60,7 +60,7 @@ void Sails::XtalDensity::load_hkl(const std::string &f, const std::string &sig_f
 gemmi::Grid<> Sails::XtalDensity::load_grid(const gemmi::Mtz &mtz, const std::string &f_col, const std::string &phi_col,
                                         bool normalise) {
     constexpr std::array<int, 3> null_size = {0, 0, 0};
-    constexpr double sample_rate = 0;
+    constexpr double sample_rate = 3;
     constexpr auto order = gemmi::AxisOrder::XYZ;
 
     const gemmi::Mtz::Column &f = mtz.get_column_with_label(f_col);
@@ -136,12 +136,19 @@ void Sails::XtalDensity::recalculate_map(gemmi::Structure &structure) {
         recalculated_data.emplace_back(hkl.h());
         recalculated_data.emplace_back(hkl.k());
         recalculated_data.emplace_back(hkl.l());
-        recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.f()));
-        recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.sigf()));
-        recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.f()));
+        recalculated_data.emplace_back(fobs_reflection.f());
+        recalculated_data.emplace_back(fobs_reflection.sigf());
+        recalculated_data.emplace_back(fbest_reflection.f());
         recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.phi()));
-        recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.f()));
+        recalculated_data.emplace_back(fdiff_reflection.f());
         recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.phi()));
+
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.f()));
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fobs_reflection.sigf()));
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.f()));
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fbest_reflection.phi()));
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.f()));
+        // recalculated_data.emplace_back(clipper::Util::rad2d(fdiff_reflection.phi()));
     }
 
     gemmi::Mtz new_mtz;
@@ -160,7 +167,7 @@ void Sails::XtalDensity::recalculate_map(gemmi::Structure &structure) {
 
     m_mtz = std::move(new_mtz);
     m_grid = load_grid(m_mtz, "FWT", "PHWT", false);
-    m_difference_grid = load_grid(m_mtz, "DELFWT", "PHDELWT", true);
+    m_difference_grid = load_grid(m_mtz, "DELFWT", "PHDELWT", false);
 }
 
 void Sails::XtalDensity::calculate_po_pc_map(gemmi::Structure &structure) {
