@@ -66,3 +66,21 @@ std::optional<std::string> Sails::Telemetry::format_log(gemmi::Structure *struct
     }
     return std::nullopt;
 }
+
+
+std::optional<std::string> Sails::Telemetry::format_log(std::vector<TelemetryFormat> &log, bool write, const std::string& filepath) {
+    JSONWriter writer;
+    TelemetryLog telemetry_log;
+    telemetry_log[0] = log;
+
+    if (write) {
+        std::ofstream stream(filepath);
+        writer.write_json_file(telemetry_log, stream);
+        stream.close();
+    } else {
+        std::stringstream stream;
+        writer.write_json_file(telemetry_log, stream);
+        return stream.str();
+    }
+    return std::nullopt;
+}

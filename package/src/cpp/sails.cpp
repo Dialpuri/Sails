@@ -546,7 +546,7 @@ gemmi::Structure morph(gemmi::Structure& structure, std::string& wurcs, std::str
 }
 
 
-gemmi::Structure validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool remove, std::string& resource_dir) {
+Sails::Output validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool remove, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
@@ -561,6 +561,7 @@ gemmi::Structure validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bo
     float threshold = 0.75;
 
     std::vector<Sails::Glycosite> to_remove = {};
+    std::vector<Sails::TelemetryFormat> log = {};
 
     for (int m = 0; m < structure.models.size(); m++) {
         for (int c = 0; c < structure.models[m].chains.size(); c++) {
@@ -573,12 +574,11 @@ gemmi::Structure validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bo
 
                 Sails::Glycosite site = {m, c, r};
                 float rscc = density.rscc_score(*residue_ptr);
-                std::cout << Sails::Utils::format_residue_from_site(site, &structure) << " with RSCC = " << rscc;
+                std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
+                log.emplace_back(residue_key, rscc);
                 if (rscc > threshold) {
-                    std::cout << std::endl;
                     continue;
                 }
-                std::cout << " - removing" << std::endl;
                 to_remove.emplace_back(site);
             }
         }
@@ -593,7 +593,11 @@ gemmi::Structure validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bo
         residue_ptr->erase(residue_ptr->begin() + site.residue_idx);
     }
 
-    return structure;
+    std::string log_string = Sails::Telemetry::format_log(log, false, "").value();
+    return {
+        structure,
+        log_string
+    };
 }
 
 

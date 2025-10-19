@@ -1,4 +1,6 @@
 import argparse
+import json
+
 from .__version__ import __version__
 import importlib
 from sails import validate, interface
@@ -16,7 +18,8 @@ def parse_args():
     group = parent.add_argument_group("Required arguments for all modes")
     group.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
     group.add_argument("--modelin", type=str, required=True)
-    group.add_argument("--modelout", type=str, default="sails-validated.cif")
+    group.add_argument("--modelout", type=str, default="sails-validate.cif")
+    group.add_argument("--logout", type=str, default="sails-validate.log")
     group.add_argument("--remove", action=argparse.BooleanOptionalAction, default=False)
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
@@ -50,6 +53,10 @@ def run():
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
     sails_mtz = interface.get_sails_mtz(args.mtzin, *labels)
 
-    morphed_structure = validate(sails_structure, sails_mtz, args.remove, str(resource))
-    structure = interface.extract_sails_structure(morphed_structure)
+    result = validate(sails_structure, sails_mtz, args.remove, str(resource))
+
+    structure = interface.extract_sails_structure(result.structure)
     structure.make_mmcif_block().write_file(args.modelout)
+    log = json.loads(result.log)
+    with open(args.logout, "w") as f:
+        json.dump(log, f)

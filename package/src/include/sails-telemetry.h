@@ -25,6 +25,11 @@ namespace Sails {
               dds_score(dds_score) {
         }
 
+        TelemetryFormat(const std::string &residue_id, double rscc_score)
+            : residue_id(residue_id),
+              rscc_score(rscc_score), rsr_score(0), dds_score(0) {
+        }
+
         std::string residue_id;
         double rscc_score;
         double rsr_score;
@@ -153,6 +158,7 @@ namespace Sails {
          */
         void format_log(gemmi::Structure* structure);
 
+        static std::optional<std::string> format_log(std::vector<TelemetryFormat>& log, bool write, const std::string& filepath);
 
         /**
          * @brief Calculates the telemetry log for Sails.
