@@ -29,6 +29,7 @@ from .sails_module import (
     identify_predicted_sites,
     auto_glycosylate,
     validate,
+    glycosylate_site,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -85,4 +86,5 @@ __all__ = [
     "identify_predicted_sites",
     "auto_glycosylate",
     "validate",
+    "glycosylate_site",
 ]

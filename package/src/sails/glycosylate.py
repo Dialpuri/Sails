@@ -15,6 +15,7 @@ from sails import (
     o_mannosylate,
     __version__,
     auto_glycosylate,
+    glycosylate_site,
 )
 from .prediction.model import ModelType
 from .prediction.predict import predict_map
@@ -79,6 +80,8 @@ def glycosylate_xtal(
     structure: gemmi.Structure | Path | str,
     mtz: gemmi.Mtz | Path | str,
     preddirin: Path | str,
+    chain: str,
+    seqid: int | str,
     cycles: int,
     f: str,
     sigf: str,
@@ -103,6 +106,23 @@ def glycosylate_xtal(
     sails_structure = interface.get_sails_structure(structure)
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files("sails").joinpath("data")
+
+    if chain and seqid:
+        result = glycosylate_site(
+            sails_structure,
+            sails_mtz,
+            chain,
+            int(seqid),
+            cycles,
+            str(resource),
+            verbose,
+        )
+        return (
+            interface.extract_sails_structure(result.structure),
+            interface.extract_sails_mtz(result.mtz),
+            json.loads(result.log),
+            result.snfgs,
+        )
 
     if type == Type.auto:
         if preddirin:
@@ -223,7 +243,15 @@ def xray(args):
         args.cycles if args.type == Type.n_glycosylate or args.type == Type.auto else 1
     )
     structure, mtz, log, snfgs = glycosylate_xtal(
-        args.modelin, args.mtzin, args.preddirin, cycles, *labels, args.type, args.v
+        args.modelin,
+        args.mtzin,
+        args.preddirin,
+        args.chain,
+        args.seqid,
+        cycles,
+        *labels,
+        args.type,
+        args.v,
     )
 
     if args.snfgout:
@@ -279,6 +307,8 @@ def parse_args():
     group.add_argument(
         "--type", type=Type.from_string, choices=list(Type), default=Type.auto
     )
+    group.add_argument("--chain", type=str, required=False)
+    group.add_argument("--seqid", type=str, required=False)
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
     xray_parser = subparsers.add_parser(

@@ -367,6 +367,15 @@ Sails::Output auto_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mt
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
 }
 
+Sails::Output glycosylate_site(gemmi::Structure &structure, Sails::MTZ &sails_mtz, std::string& chain, int seqid, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    std::optional<Sails::Glycosite> potential_site = Sails::find_site(structure, chain, seqid);
+    if (!potential_site.has_value()) {
+        throw std::runtime_error("Site could not be found");
+    }
+    Sails::Glycosites glycosites = {potential_site.value()};
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
+}
 
 
 // EM FUNCTIONS

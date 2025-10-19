@@ -202,6 +202,10 @@ NB_MODULE(sails_module, m) {
       nb::overload_cast<gemmi::Structure &, Sails::MTZ &, gemmi::Grid<>&, gemmi::Grid<>&, int, std::string &, bool>(&auto_glycosylate), "structure"_a,
       "mtz"_a, "glycan_grid"_a, "protein_grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
+    m.def("glycosylate_site",
+      nb::overload_cast<gemmi::Structure &, Sails::MTZ &, std::string&, int, int, std::string &, bool>(&glycosylate_site), "structure"_a,
+      "mtz"_a, "chain"_a, "seqid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
     m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
         "structure"_a, "glycan_grid"_a, "resource_dir"_a);
     m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, gemmi::Grid<>&, bool, std::string &>(&identify_predicted_sites),
