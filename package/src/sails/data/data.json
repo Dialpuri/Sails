@@ -10,6 +10,7 @@
             "anomer": "α",
             "wurcsCode": "",
             "special": false,
+            "isSugar": true,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -30,6 +31,7 @@
             "anomer": "β",
             "wurcsCode": "",
             "special": false,
+            "isSugar": true,
             "donorSets": [
                 {
                     "atom3": "O6",
@@ -57,6 +59,7 @@
             "anomer": "α",
             "wurcsCode": "a1221m-1a_1-5",
             "special": true,
+            "isSugar": true,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -81,6 +84,7 @@
             "anomer": "α",
             "wurcsCode": "a1122h-1a_1-5",
             "special": false,
+            "isSugar": true,
             "donorSets": [
                 {
                     "atom3": "O2",
@@ -126,6 +130,7 @@
             "anomer": "α",
             "wurcsCode": "a1122h-1a_1-5*",
             "special": false,
+            "isSugar": true,
             "donorSets": [],
             "acceptorSets": [
                 {
@@ -146,6 +151,7 @@
             "anomer": "β",
             "wurcsCode": "a1122h-1b_1-5",
             "special": false,
+            "isSugar": true,
             "donorSets": [
                 {
                     "atom3": "O6",
@@ -180,6 +186,7 @@
             "anomer": "β",
             "wurcsCode": "a2122h-1b_1-5_2*NCC/3=O",
             "special": false,
+            "isSugar": true,
             "donorSets": [
                 {
                     "atom1": "C5",
@@ -219,6 +226,7 @@
             "anomer": "",
             "wurcsCode": "",
             "special": false,
+            "isSugar": false,
             "donorSets": [
                 {
                     "atom1": "CB",
@@ -239,6 +247,7 @@
             "anomer": "",
             "wurcsCode": "",
             "special": false,
+            "isSugar": false,
             "donorSets": [
                 {
                     "atom1": "CD2",
@@ -259,6 +268,7 @@
             "anomer": "",
             "wurcsCode": "",
             "special": false,
+            "isSugar": false,
             "donorSets": [
                 {
                     "atom1": "CA",
@@ -279,6 +289,7 @@
             "anomer": "",
             "wurcsCode": "",
             "special": false,
+            "isSugar": false,
             "donorSets": [
                 {
                     "atom1": "CA",
@@ -300,24 +311,6 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 127.765,
-                        "alphaStdDev": 8.153,
-                        "betaMean": 112.241,
-                        "betaStdDev": 8.153,
-                        "gammaMean": 113.442,
-                        "gammaStdDev": 1.689
-                    },
-                    "torsions": {
-                        "phiMean": 54.086,
-                        "phiStdDev": 36.298,
-                        "psiMean": -179.512,
-                        "psiStdDev": 53.054,
-                        "omegaMean": 167.981,
-                        "omegaStdDev": 11.815
-                    }
-                },
-                {
-                    "angles": {
                         "alphaMean": 122.28,
                         "alphaStdDev": 5.253,
                         "betaMean": 109.788,
@@ -332,6 +325,23 @@
                         "psiStdDev": 28.245,
                         "omegaMean": 176.266,
                         "omegaStdDev": 7.108
+                    }
+                },{
+                    "angles": {
+                        "alphaMean": 127.765,
+                        "alphaStdDev": 8.153,
+                        "betaMean": 112.241,
+                        "betaStdDev": 8.153,
+                        "gammaMean": 113.442,
+                        "gammaStdDev": 1.689
+                    },
+                    "torsions": {
+                        "phiMean": 54.086,
+                        "phiStdDev": 36.298,
+                        "psiMean": -179.512,
+                        "psiStdDev": 53.054,
+                        "omegaMean": 167.981,
+                        "omegaStdDev": 11.815
                     }
                 }
             ]

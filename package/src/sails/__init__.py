@@ -28,6 +28,7 @@ from .sails_module import (
     morph,
     identify_predicted_sites,
     auto_glycosylate,
+    validate,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -83,4 +84,5 @@ __all__ = [
     "morph",
     "identify_predicted_sites",
     "auto_glycosylate",
+    "validate",
 ]

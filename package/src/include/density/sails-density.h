@@ -197,10 +197,11 @@ namespace Sails {
          * This method calculates the difference density score for the given residue using the difference_grid.
          *
          * @param residue The gemmi::Residue object for which the difference density score is to be calculated.
+         * @param map_stats
          *
          * @return The difference density score for the residue.
          */
-        float difference_density_score(gemmi::Residue &residue) const;
+        int check_difference_density(gemmi::Residue &residue, std::pair<float, float> map_stats) const;
 
         /**
          * @brief Scores an atom
@@ -223,6 +224,9 @@ namespace Sails {
          * @return The score of the position based on the density value at that position.
          */
         [[nodiscard]] float score_position(const gemmi::Position& pos) const;
+
+
+		[[nodiscard]] std::pair<float, float> calculate_map_statistics(const gemmi::Grid<> *grid) const;
 
     };
 

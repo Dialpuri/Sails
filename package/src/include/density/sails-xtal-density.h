@@ -14,6 +14,8 @@ namespace Sails {
 
     	explicit XtalDensity(gemmi::Mtz &mtz, const std::string& F, const std::string& SIGF);
 
+		void load_map_coefficients(const std::string& fwt = "FWT", const std::string& phwt = "PHWT");
+
         [[nodiscard]] const gemmi::Mtz *get_mtz() const override { return &m_mtz; }
 
         [[nodiscard]] const gemmi::Grid<> *get_work_grid() const override { return &m_po_pc_grid; }

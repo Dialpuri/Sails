@@ -17,6 +17,10 @@ Sails::XtalDensity::XtalDensity(gemmi::Mtz &mtz, const std::string& F, const std
     load_hkl(F, SIGF);
 }
 
+void Sails::XtalDensity::load_map_coefficients(const std::string &fwt, const std::string &phwt) {
+    m_grid = load_grid(m_mtz, fwt, phwt, false);
+}
+
 
 void Sails::XtalDensity::initialise_hkl() {
     m_resolution = clipper::Resolution(m_mtz.resolution_high());

@@ -61,13 +61,15 @@ namespace Sails {
 
         ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string &snfg_shape,
                     std::string &snfg_colour, std::vector<int> &preferred_depths, std::string &anomer,
-                    std::string &wurcs, bool special
+                    std::string &wurcs, bool special, bool is_sugar
         ) : acceptors(acceptors), donors(donors),
             snfg_shape(std::move(snfg_shape)),
             snfg_colour(std::move(snfg_colour)),
             preferred_depths(preferred_depths),
             anomer(anomer),
-            special(special) {
+            special(special),
+            is_sugar(is_sugar)
+        {
 
             if (!wurcs.empty()) {wurcs_code = wurcs;}
 
@@ -90,6 +92,7 @@ namespace Sails {
         std::vector<int> preferred_depths;
         std::string anomer;
         bool special;
+        bool is_sugar;
         std::optional<std::string> wurcs_code = std::nullopt;
     };
 

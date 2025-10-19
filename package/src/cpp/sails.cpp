@@ -29,19 +29,29 @@
 #include "src/include/sails-predictions.h"
 
 
-void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure, float score) {
+void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure) {
     std::cout << "Removing " << Sails::Utils::format_residue_from_site(s1, structure) << "--"
-    << Sails::Utils::format_residue_from_site(s2, structure) << " because of high DDS = " << score <<std::endl;
+    << Sails::Utils::format_residue_from_site(s2, structure) << " because of negative difference density " << std::endl;
 }
 
-void print_removal_rscc(const gemmi::Residue& residue, float rscc) {
-    std::cout << "Removing " << Sails::Utils::format_residue_key(&residue) << " because of low RSCC =" << rscc << std::endl;
+void print_removal_rscc(const Sails::Glycosite &site, float rscc, gemmi::Structure *structure) {
+    std::cout << "Removing " << Sails::Utils::format_residue_from_site(site, structure) << " because of low RSCC =" << rscc << std::endl;
+}
+
+void print_rscc(const Sails::Glycosite &site, float rscc, gemmi::Structure *structure) {
+    std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - RSCC = " << rscc << std::endl;
+}
+
+void print_dds(const Sails::Glycosite &site, float dds, gemmi::Structure *structure) {
+    std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - DDS = " << dds << std::endl;
 }
 
 void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, bool strict,
                              bool debug) {
     const float rscc_threshold = strict ? 0.65: 0.5;
     const float dds_threshold = strict ? 1.0: 1.1;
+
+    const std::pair<float, float> difference_density_stats = density->calculate_map_statistics(density->get_difference_grid());
 
     std::vector<Sails::Sugar *> to_remove;
     for (const auto &[fst, snd]: *glycan) {
@@ -57,30 +67,38 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         // if (residue.name == "TRP") { continue; } // don't remove TRP
 
         // remove cases with low rscc
-        if (const float rscc = density->rscc_score(residue); rscc < rscc_threshold) {
+        const float rscc = density->rscc_score(residue);
+        print_rscc(snd->site, rscc, structure);
+        if (rscc < rscc_threshold) {
             to_remove.emplace_back(snd.get()); // add pointer to
-            if (debug) print_removal_rscc(residue, rscc);
+            if (debug) print_removal_rscc(snd->site, rscc, structure);
             continue;
         }
 
         // remove cases with high difference density score
-        if (const float diff_score = density->difference_density_score(residue); diff_score > dds_threshold) {
-            if (debug) print_rejection_dds(sugar_result.value()->site, fst, structure, diff_score);
-            to_remove.emplace_back(snd.get());
-        }
+        // const int no_atoms_in_negative_density = density->check_difference_density(residue, difference_density_stats);
+        // // std::cout << Sails::Utils::format_residue_from_site(fst, structure) << " " << no_atoms_in_negative_density << std::endl;
+        // if (no_atoms_in_negative_density > 4) {
+        //     if (debug) print_rejection_dds(sugar_result.value()->site, fst, structure);
+        //     to_remove.emplace_back(snd.get());
+        // }
+        // print_dds(snd->site, diff_score, structure);
+        // if ( diff_score > dds_threshold) {
+
+        // }
     }
 
     // add linked sugars to removal list
+    std::set<Sails::Sugar *> additional_sugars;
     for (auto &sugar: to_remove) {
-        std::vector<Sails::Sugar *> additional_sugars;
-        for (auto &linked_sugar: glycan->adjacency_list[sugar]) {
-            // check that the linked sugar is not already in the removal list
-            if (std::find(to_remove.begin(), to_remove.end(), linked_sugar) != to_remove.end()) continue;
+        std::vector<Sails::Sugar*> downstream_sugars = glycan->get_downstream_sugars(sugar);
 
-            additional_sugars.emplace_back(linked_sugar);
+        for (auto& downstream_sugar: downstream_sugars) {
+            if (std::find(to_remove.begin(), to_remove.end(), downstream_sugar) != to_remove.end()) continue;
+            additional_sugars.insert(downstream_sugar);
         }
-        to_remove.insert(to_remove.end(), additional_sugars.begin(), additional_sugars.end());
     }
+    to_remove.insert(to_remove.end(), additional_sugars.begin(), additional_sugars.end());
 
     // sort removal in decsending order so removed indices don't cause later array overflow
     std::sort(to_remove.begin(), to_remove.end(), [](const Sails::Sugar *a, const Sails::Sugar *b) {
@@ -88,6 +106,8 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
     });
 
     for (auto &sugar: to_remove) {
+            std::cout << "REMOVING: " << Sails::Utils::format_residue_from_site(sugar->site, structure) << std::endl;
+
         glycan->remove_sugar(sugar);
     }
 }
@@ -124,6 +144,13 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
     density.recalculate_map(structure);
     density.calculate_po_pc_map(original_structure);
 
+    //
+    // gemmi::Grid<> x = *density.get_work_grid();
+    // gemmi::Ccp4<> m;
+    // m.grid = x ;
+    // m.update_ccp4_header();
+    // m.write_ccp4_map("wrk.map");
+
     structure.cell = density.get_mtz()->cell;
     structure.spacegroup_hm = density.get_mtz()->spacegroup_name;
 
@@ -138,6 +165,11 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
         if (verbose) std::cout << "\rCycle #" << i << std::endl;
 
         for (auto &glycosite: glycosites) {
+            // auto c = Sails::Utils::get_chain_from_glycosite(glycosite, &structure);
+            // auto r = Sails::Utils::get_residue_from_glycosite(glycosite, &structure);
+            // if (c.name != "D" || r.seqid.num.value != 483) continue;
+            //
+            // std::cout << "Checking " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
             // if (glycan.empty()) { continue; }
 
@@ -154,6 +186,13 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
         density.recalculate_map(structure);
         density.calculate_po_pc_map(original_structure);
 
+        // const auto x = density.get_mtz();
+        // std::string y = "wrk" + std::to_string(i) + ".mtz";
+        // x->write_to_file(y);
+        // std::string z = "wrk" + std::to_string(i) + ".cif";
+        //
+        // Sails::Utils::save_structure_to_file(structure, z);
+
         // remove erroneous sugars
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
@@ -165,6 +204,7 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+            new_glycan.renumber();
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
@@ -179,9 +219,11 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
     std::cout << std::endl;
 
+    model.standardise_residue_names();
+
+
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
-
     Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
@@ -274,28 +316,6 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
     };
 }
 
-// XRAY FUNCTIONS
-
-Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
-                            bool verbose) {
-    auto glycosites = Sails::find_n_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
-}
-
-Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
-                            bool verbose) {
-    auto glycosites = Sails::find_c_glycosylation_sites(structure);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
-}
-
-Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
-                            bool verbose) {
-    Sails::SolventAccessibility sa = Sails::SolventAccessibility(&structure);
-    Sails::SolventAccessibility::SolventAccessibilityMap sa_map = sa.calculate_solvent_accessibility();
-    auto glycosites = Sails::find_o_mannosylation_sites(structure, sa_map);
-    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
-}
-
 Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::Grid<>& glycan_grid, std::string &resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
@@ -317,6 +337,36 @@ Sails::Glycosites identify_predicted_sites(gemmi::Structure &structure, gemmi::G
     Sails::Glycosites potential_sites = predictions.find_potential_sites(structure, use_glycan);
     return potential_sites;
 }
+
+
+// XRAY FUNCTIONS
+
+Sails::Output n_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    auto glycosites = Sails::find_n_glycosylation_sites(structure);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
+}
+
+Sails::Output c_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    auto glycosites = Sails::find_c_glycosylation_sites(structure);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
+}
+
+Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    Sails::SolventAccessibility sa = Sails::SolventAccessibility(&structure);
+    Sails::SolventAccessibility::SolventAccessibilityMap sa_map = sa.calculate_solvent_accessibility();
+    auto glycosites = Sails::find_o_mannosylation_sites(structure, sa_map);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, true, verbose);
+}
+
+Sails::Output auto_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, gemmi::Grid<>& glycan_grid, gemmi::Grid<>& protein_grid, int cycles, std::string &resource_dir,
+                            bool verbose) {
+    Sails::Glycosites glycosites = identify_predicted_sites(structure, glycan_grid, protein_grid, true, resource_dir);
+    return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
+}
+
 
 
 // EM FUNCTIONS
@@ -482,6 +532,57 @@ gemmi::Structure morph(gemmi::Structure& structure, std::string& wurcs, std::str
     Sails::PseudoGlycan pseudo_glycan  = Sails::WURCS::generate_pseudo_glycan(wurcs, &structure, glycosite, linkage_database, residue_database);
     Sails::Morph morpher = {&structure};
     morpher.transform(glycan, pseudo_glycan);
+
+    return structure;
+}
+
+
+gemmi::Structure validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool remove, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    gemmi::Mtz mtz = form_gemmi_mtz(sails_mtz);
+    check_spacegroup(&mtz, &structure); // check to ensure the MTZ has a spacegroup
+
+    auto density = Sails::XtalDensity(mtz);
+    density.load_map_coefficients();
+
+    float threshold = 0.75;
+
+    std::vector<Sails::Glycosite> to_remove = {};
+
+    for (int m = 0; m < structure.models.size(); m++) {
+        for (int c = 0; c < structure.models[m].chains.size(); c++) {
+            for (int r = 0; r < structure.models[m].chains[c].residues.size(); r++) {
+
+                gemmi::Residue* residue_ptr = &structure.models[m].chains[c].residues[r];
+                if (residue_database.count(residue_ptr->name) == 0) continue;
+                const Sails::ResidueData& residue_data = residue_database.at(residue_ptr->name);
+                if (!residue_data.is_sugar) continue;
+
+                Sails::Glycosite site = {m, c, r};
+                float rscc = density.rscc_score(*residue_ptr);
+                std::cout << Sails::Utils::format_residue_from_site(site, &structure) << " with RSCC = " << rscc;
+                if (rscc > threshold) {
+                    std::cout << std::endl;
+                    continue;
+                }
+                std::cout << " - removing" << std::endl;
+                to_remove.emplace_back(site);
+            }
+        }
+    }
+
+    std::sort(to_remove.begin(), to_remove.end(), [](const Sails::Glycosite& a, const Sails::Glycosite& b) {
+          return !(a < b);
+      });
+
+    for (const auto& site: to_remove) {
+        const auto residue_ptr = &structure.models[site.model_idx].chains[site.chain_idx].residues;
+        residue_ptr->erase(residue_ptr->begin() + site.residue_idx);
+    }
 
     return structure;
 }

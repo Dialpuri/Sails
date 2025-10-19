@@ -213,6 +213,7 @@ NB_MODULE(sails_module, m) {
     m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("morph", &morph, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
+    m.def("validate", &validate, "structure"_a, "mtz"_a, "remove"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

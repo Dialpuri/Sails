@@ -17,8 +17,8 @@ double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScore
             return rscc_score(residue);
         case rsr:
             return rsr_score(residue);
-        case dds:
-            return difference_density_score(residue);
+        // case dds:
+        //     return check_difference_density(residue, TODO);
         default:
             return -1;
     }
@@ -32,8 +32,8 @@ double Sails::Density::score_result(SuperpositionResult& result) {
             return rscc_score(result);
         case rsr:
             return rsr_score(result);
-        case dds:
-            return difference_density_score(result.new_residue);
+        // case dds:
+        //     return check_difference_density(result.new_residue, TODO);
         default:
             return -1;
     }
@@ -72,10 +72,10 @@ gemmi::Grid<> Sails::Density::calculate_density_for_grid(gemmi::Residue &residue
 
     gemmi::DensityCalculator<gemmi::C4322<float>, float> density_calculator;
 
-    density_calculator.grid.copy_metadata_from(*get_work_grid());
-    density_calculator.grid.spacing[0] = get_work_grid()->spacing[0];
-    density_calculator.grid.spacing[1] = get_work_grid()->spacing[1];
-    density_calculator.grid.spacing[2] = get_work_grid()->spacing[2];
+    density_calculator.grid.copy_metadata_from(*get_best_grid());
+    density_calculator.grid.spacing[0] = get_best_grid()->spacing[0];
+    density_calculator.grid.spacing[1] = get_best_grid()->spacing[1];
+    density_calculator.grid.spacing[2] = get_best_grid()->spacing[2];
 
     density_calculator.d_min = get_resolution();
     density_calculator.initialize_grid();
@@ -126,7 +126,7 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     for (auto &atom: residue.atoms) {
         box.extend(atom.pos);
     }
-    box.add_margin(1);
+    // box.add_margin();
 
     // gemmi::Grid<> calc = calculate_density_for_box(residue, box);
     gemmi::Grid<> calc = calculate_density_for_grid(residue);
@@ -139,14 +139,13 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     // std::vector rs = {residue};
     // Utils::save_residues_to_file(rs, "res.pdb");
 
-
     const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
 
     std::vector<float> obs_values = {};
     std::vector<float> calc_values = {};
 
-    constexpr double step_size = 0.5;
+    const double step_size = get_best_grid()->spacing[0];
     for (double x = min.x; x <= max.x; x += step_size) {
         for (double y = min.y; y <= max.y; y += step_size) {
             for (double z = min.z; z <= max.z; z += step_size) {
@@ -270,30 +269,44 @@ float Sails::Density::rsr_score(SuperpositionResult &result) {
     return numerator / denominator;
 }
 
-float Sails::Density::difference_density_score(gemmi::Residue &residue) const {
-    gemmi::Box <gemmi::Position> box;
-    for (auto &atom: residue.atoms) {
-        box.extend(atom.pos);
-    }
+int Sails::Density::check_difference_density(gemmi::Residue &residue, std::pair<float, float> map_stats) const {
 
-    const gemmi::Position max = box.maximum;
-    const gemmi::Position min = box.minimum;
+    float threshold = map_stats.first - 2 * map_stats.second;
 
-    float sum = 0.0f;
-    int points = 0;
-    constexpr double step_size = 0.5;
-    for (double x = min.x; x <= max.x; x += step_size) {
-        for (double y = min.y; y <= max.y; y += step_size) {
-            for (double z = min.z; z <= max.z; z += step_size) {
-                gemmi::Position position = {x, y, z};
-                float value = get_difference_grid()->interpolate_value(position);
-                sum += abs(value);
-                points++;
-            }
+    std::set<std::string> ring_atoms = {
+        "C1", "C2", "C3", "C4", "C5", "O5"
+    };
+    int i = 0;
+    for (auto & atom : residue.atoms) {
+        // if (ring_atoms.count(atom.name) == 0) continue;
+        if (get_difference_grid()->interpolate_value(atom.pos) < threshold) {
+            i++;
         }
     }
-
-    return sum / points;
+    return i;
+    // gemmi::Box <gemmi::Position> box;
+    // for (auto &atom: residue.atoms) {
+    //     box.extend(atom.pos);
+    // }
+    //
+    // const gemmi::Position max = box.maximum;
+    // const gemmi::Position min = box.minimum;
+    //
+    // float sum = 0.0f;
+    // int points = 0;
+    // constexpr double step_size = 0.5;
+    // for (double x = min.x; x <= max.x; x += step_size) {
+    //     for (double y = min.y; y <= max.y; y += step_size) {
+    //         for (double z = min.z; z <= max.z; z += step_size) {
+    //             gemmi::Position position = {x, y, z};
+    //             float value = get_difference_grid()->interpolate_value(position);
+    //             sum += abs(value);
+    //             points++;
+    //         }
+    //     }
+    // }
+    //
+    // return sum / points;
 }
 
 float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
@@ -303,4 +316,19 @@ float Sails::Density::score_atomic_position(const gemmi::Atom &atom) const {
 
 float Sails::Density::score_position(const gemmi::Position &pos) const {
     return get_work_grid()->interpolate_value(pos);
+}
+
+std::pair<float, float> Sails::Density::calculate_map_statistics(const gemmi::Grid<> *grid) const {
+    const float sum = std::accumulate(grid->data.begin(), grid->data.end(), 0.0f);
+    float mean = sum / grid->data.size();
+
+    float sq_sum = std::accumulate(grid->data.begin(), grid->data.end(), 0.0,
+            [mean](const double acc, const double x) {
+                const double diff = x - mean;
+                return acc + diff * diff;
+            });
+
+    float stdev = std::sqrt(sq_sum / grid->data.size());
+
+    return std::make_pair(mean, stdev);
 }

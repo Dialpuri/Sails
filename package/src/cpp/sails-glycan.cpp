@@ -134,5 +134,19 @@ std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Glycosite &root_s
     }
     std::vector<Sugar *> terminal_sugars;
     dfs(sugars[root_seq_id].get(), terminal_sugars);
+
+    // FUC has no links, but would be the terminal sugar in order, so add the sugar before FUC in that case
+    std::vector<Sugar*> additional_sugars;
+    for (auto& sugar: terminal_sugars) {
+        gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sugar->site, m_structure);
+        if (residue_ptr->name == "FUC") {
+            auto previous_sugar = find_previous_sugar(sugar);
+            if (previous_sugar.has_value()) {
+                additional_sugars.emplace_back(previous_sugar.value());
+            }
+        }
+    }
+
+    terminal_sugars.insert(terminal_sugars.end(), additional_sugars.begin(), additional_sugars.end());
     return terminal_sugars;
 }

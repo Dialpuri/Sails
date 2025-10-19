@@ -252,7 +252,7 @@ namespace Sails {
         [[nodiscard]] std::vector<Sails::Glycosite> get_sugar_site_dfs_order_without_root() {
             std::vector<Glycosite> sites;
             dfs_sites(root_sugar, sites, 0);
-            sites.erase(sites.begin(), sites.begin() + 1);
+            sites.erase(sites.begin());
             return sites;
         }
 
@@ -260,7 +260,7 @@ namespace Sails {
             std::vector<Glycosite> sites = get_sugar_site_dfs_order_without_root();
             for (int i = 0; i < sites.size(); i++) {
                 gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sites[i], m_structure);
-                residue_ptr->seqid.num.value = i;
+                residue_ptr->seqid.num.value = i+1;
             }
         }
 
@@ -316,6 +316,14 @@ namespace Sails {
                 count += linked_sugars.size();
             }
             return count-1;
+        }
+
+
+        [[nodiscard]] std::vector<Sugar*> get_downstream_sugars(Sugar* sugar) {
+            std::vector<Sugar*> downstream_sugars;
+            dfs(sugar, downstream_sugars, 0);
+            // downstream_sugars.erase(downstream_sugars.begin());
+            return downstream_sugars;
         }
 
         /**
