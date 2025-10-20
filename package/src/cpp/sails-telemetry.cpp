@@ -71,7 +71,7 @@ std::optional<std::string> Sails::Telemetry::format_log(gemmi::Structure *struct
 std::optional<std::string> Sails::Telemetry::format_log(std::vector<TelemetryFormat> &log, bool write, const std::string& filepath) {
     JSONWriter writer;
     TelemetryLog telemetry_log;
-    telemetry_log[0] = log;
+    telemetry_log[1] = log;
 
     if (write) {
         std::ofstream stream(filepath);
