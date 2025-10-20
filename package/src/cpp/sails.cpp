@@ -224,6 +224,7 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
+    Sails::add_links_to_structure(model.get_structure(), links);
     Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
@@ -305,7 +306,6 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
-
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
     Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();

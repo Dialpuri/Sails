@@ -38,6 +38,58 @@ NB_MODULE(sails_module, m) {
                         .def_rw("delfwt_phdelwt", &Sails::Reflection::delfwt_phdelwt);
 
 
+        nb::class_<gemmi::ResidueId>(m, "ResidueId")
+            .def_rw("seqid", &gemmi::ResidueId::seqid)
+            .def_rw("segment", &gemmi::ResidueId::segment)
+            .def_rw("name", &gemmi::ResidueId::name);
+
+        nb::class_<gemmi::AtomAddress>(m, "AtomAddress")
+            .def(nb::init<>())
+            .def(nb::init<const std::string&, const gemmi::ResidueId&, const std::string&, char>(),
+                 nb::arg("chain_name"), nb::arg("res_id"), nb::arg("atom_name"), nb::arg("altloc") = '\0')
+            .def(nb::init<const std::string&, const gemmi::SeqId&, const std::string&, const std::string&, char>(),
+                 nb::arg("chain_name"), nb::arg("seq_id"), nb::arg("res"), nb::arg("atom_name"), nb::arg("altloc") = '\0')
+            .def_rw("chain_name", &gemmi::AtomAddress::chain_name)
+            .def_rw("res_id", &gemmi::AtomAddress::res_id)
+            .def_rw("atom_name", &gemmi::AtomAddress::atom_name)
+            .def_rw("altloc", &gemmi::AtomAddress::altloc)
+            .def("__eq__", &gemmi::AtomAddress::operator==)
+            .def("__str__", &gemmi::AtomAddress::str);
+
+        nb::enum_<gemmi::Connection::Type>(m, "ConnectionType")
+            .value("Covale", gemmi::Connection::Type::Covale)
+            .value("Disulf", gemmi::Connection::Type::Disulf)
+            .value("Hydrog", gemmi::Connection::Type::Hydrog)
+            .value("MetalC", gemmi::Connection::Type::MetalC)
+            .value("Unknown", gemmi::Connection::Type::Unknown);
+
+        nb::bind_vector<std::vector<gemmi::Connection> >(m, "Connections");
+
+        nb::class_<gemmi::Connection>(m, "Connection")
+            .def(nb::init<>())
+            .def_rw("name", &gemmi::Connection::name)
+            .def_rw("link_id", &gemmi::Connection::link_id)
+            .def_rw("type", &gemmi::Connection::type)
+            .def_rw("asu", &gemmi::Connection::asu)
+            .def_rw("partner1", &gemmi::Connection::partner1)
+            .def_rw("partner2", &gemmi::Connection::partner2)
+            .def_rw("reported_distance", &gemmi::Connection::reported_distance)
+            .def_prop_rw(
+                "reported_sym",
+                [](gemmi::Connection &self) {
+                    return nb::cast(std::array<short, 4>{
+                        self.reported_sym[0],
+                        self.reported_sym[1],
+                        self.reported_sym[2],
+                        self.reported_sym[3]
+                    });
+                },
+                [](gemmi::Connection &self, const std::array<short, 4> &arr) {
+                    for (size_t i = 0; i < 4; ++i)
+                        self.reported_sym[i] = arr[i];
+                });
+
+
         // gemmi Structure
         nb::class_<gemmi::Structure>(m, "Structure")
                         .def(nb::init<>())
@@ -45,6 +97,7 @@ NB_MODULE(sails_module, m) {
                         .def("cell", [](const gemmi::Structure &structure) {
                                 return Sails::Cell(structure.cell);
                         })
+                        .def_rw("connections", &gemmi::Structure::connections)
                         .def("set_cell", [](gemmi::Structure &structure, const Sails::Cell &cell) {
                                 structure.cell = gemmi::UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta,
                                                                  cell.gamma);

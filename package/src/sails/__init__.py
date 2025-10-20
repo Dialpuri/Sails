@@ -30,6 +30,9 @@ from .sails_module import (
     auto_glycosylate,
     validate,
     glycosylate_site,
+    Connections,
+    AtomAddress,
+    ResidueId,
 )
 from .__version__ import __version__
 from .glycosylate import glycosylate_xtal, glycosylate_em, Type
@@ -87,4 +90,7 @@ __all__ = [
     "auto_glycosylate",
     "validate",
     "glycosylate_site",
+    "Connections",
+    "AtomAddress",
+    "ResidueId",
 ]

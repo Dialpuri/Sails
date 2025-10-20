@@ -103,7 +103,7 @@ void Sails::Model::save(const std::string &path, std::vector<LinkRecord> &links)
     std::ofstream os(path);
     gemmi::cif::Document document = make_mmcif_document(*structure);
     gemmi::cif::Block *block = &document.sole_block();
-    auto struct_conn = block->find_or_add("_struct_conn", LinkRecord::tags());
+    auto struct_conn = block->find_or_add("", LinkRecord::tags());
 
     for (LinkRecord &link: links) {
         struct_conn.append_row(link.labels());
