@@ -126,11 +126,14 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     for (auto &atom: residue.atoms) {
         box.extend(atom.pos);
     }
-    // box.add_margin();
+    box.add_margin(1);
 
     // gemmi::Grid<> calc = calculate_density_for_box(residue, box);
     gemmi::Grid<> calc = calculate_density_for_grid(residue);
+    gemmi::Model model = Utils::create_model(residue);
 
+    gemmi::NeighborSearch ns = {model, get_best_grid()->unit_cell, 1.5};
+    ns.populate();
     // gemmi::Ccp4<> m;
     // m.grid = calc;
     // m.update_ccp4_header();
@@ -150,8 +153,11 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
         for (double y = min.y; y <= max.y; y += step_size) {
             for (double z = min.z; z <= max.z; z += step_size) {
                 gemmi::Position position = {x, y, z};
-                obs_values.emplace_back(get_best_grid()->interpolate_value(position));
-                calc_values.emplace_back(calc.interpolate_value(position));
+                auto nearest_atom = ns.find_atoms(position, '*', 0, 1.5);
+                if (!nearest_atom.empty()) {
+                    obs_values.emplace_back(get_best_grid()->interpolate_value(position));
+                    calc_values.emplace_back(calc.interpolate_value(position));
+                }
             }
         }
     }

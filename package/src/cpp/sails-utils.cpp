@@ -142,3 +142,11 @@ std::vector<std::string> Sails::Utils::split(const std::string &string, char del
     }
     return tokens;
 }
+
+gemmi::Model Sails::Utils::create_model(gemmi::Residue &residue) {
+    auto model = gemmi::Model(0);
+    auto chain = gemmi::Chain("A");
+    chain.residues.push_back(residue);
+    model.chains.push_back(chain);
+    return model;
+}

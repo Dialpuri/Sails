@@ -257,6 +257,8 @@ namespace Sails::Utils {
      * @return a vector of strings split by the delimiter
      */
     std::vector<std::string> split(const std::string &string, char delimiter);
+
+    gemmi::Model create_model(gemmi::Residue& residue);
 } // namespace Sails::Utils
 
 
