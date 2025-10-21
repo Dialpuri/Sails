@@ -61,9 +61,9 @@ double Sails::TorsionAngleRefiner::score_function(std::vector<double> &all_angle
         penalty += calculate_penalty(torsions[i], m_torsion_mean[i], m_torsion_range[i], penalty_factor);
     }
 
-    double bond_length_delta = abs(all_angles[0] - m_length);
+    double bond_length_delta = std::abs(all_angles[0] - m_length);
     if (bond_length_delta > 0.3) {
-        penalty += 1e10;
+        penalty += bond_length_delta * 1e5;
     }
     // std::cout << penalty << " " << score << " " << penalty_factor << std::endl;
 

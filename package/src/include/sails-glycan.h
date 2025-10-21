@@ -321,7 +321,18 @@ namespace Sails {
 
         [[nodiscard]] std::vector<Sugar*> get_downstream_sugars(Sugar* sugar) {
             std::vector<Sugar*> downstream_sugars;
-            dfs(sugar, downstream_sugars, 0);
+            dfs_sugars(sugar, downstream_sugars, 0);
+            // downstream_sugars.erase(downstream_sugars.begin());
+            return downstream_sugars;
+        }
+
+        [[nodiscard]] std::vector<Sugar*> get_downstream_sugars(Glycosite& site) {
+            std::vector<Sugar*> downstream_sugars;
+            if (sugars.count(site) == 0) {
+                return {};
+            }
+            Sugar* sugar = sugars.at(site).get();
+            dfs_sugars(sugar, downstream_sugars, 0);
             // downstream_sugars.erase(downstream_sugars.begin());
             return downstream_sugars;
         }
@@ -569,7 +580,7 @@ namespace Sails {
          * @param terminal_sugars - A vector to store the terminal sugar molecules found.
          * @param depth - The depth of the current search
          */
-        [[maybe_unused]] void dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
+        [[maybe_unused]] void dfs_terminal(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
 
         /**
          * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
@@ -581,6 +592,16 @@ namespace Sails {
          */
         [[maybe_unused]] void dfs_sites(Sugar *current_sugar, std::vector<Glycosite> &sites, int depth);
 
+
+        /**
+         * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
+         * a given sugar and collecting terminal sugars.
+         *
+         * @param current_sugar - The current sugar molecule being visited.
+         * @param sites - A vector to store the sites
+         * @param depth - The depth of the current search
+         */
+        [[maybe_unused]] void dfs_sugars(Sugar *current_sugar, std::vector<Sugar *> &sugars, int depth);
 
         /**
          * @brief Get the structure associated with the glycan.

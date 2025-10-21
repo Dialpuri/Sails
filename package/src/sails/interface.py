@@ -208,6 +208,7 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
 
     cell = structure.cell()
     os.cell = gemmi.UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma)
+    os.spacegroup_hm = structure.spacegroup_hm
     os.connections = extract_sails_connections(structure.connections)
 
     return os

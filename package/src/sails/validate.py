@@ -20,7 +20,11 @@ def parse_args():
     group.add_argument("--modelin", type=str, required=True)
     group.add_argument("--modelout", type=str, default="sails-validate.cif")
     group.add_argument("--logout", type=str, default="sails-validate.log")
+    group.add_argument(
+        "--threshold", type=float, default=0.7, help="RSCC Threshold to use for removal"
+    )
     group.add_argument("--remove", action=argparse.BooleanOptionalAction, default=False)
+    group.add_argument("--print", action=argparse.BooleanOptionalAction, default=False)
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
     xray_parser = subparsers.add_parser(
@@ -53,10 +57,16 @@ def run():
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
     sails_mtz = interface.get_sails_mtz(args.mtzin, *labels)
 
-    result = validate(sails_structure, sails_mtz, args.remove, str(resource))
+    result = validate(
+        sails_structure, sails_mtz, args.remove, args.threshold, str(resource)
+    )
 
     structure = interface.extract_sails_structure(result.structure)
     structure.make_mmcif_block().write_file(args.modelout)
     log = json.loads(result.log)
+
+    if args.print:
+        print(json.dumps(log, indent=4))
+
     with open(args.logout, "w") as f:
-        json.dump(log, f)
+        json.dump(log, f, indent=4)

@@ -110,6 +110,19 @@ namespace Sails {
          */
 	    gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const;
 
+		/**
+		 * @brief Calculates the density for a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const;
+
         /**
          * @brief Calculates the RSCC (Real Space Correlation Coefficient) score for a given residue.
          *
@@ -135,7 +148,8 @@ namespace Sails {
          *
          * @return The RSCC between the observed and calculated values.
          */
-        static float calculate_rscc(std::vector<float> obs_values, std::vector<float> calc_values) ;
+		template <typename T>
+        static T calculate_rscc(std::vector<T> obs_values, std::vector<T> calc_values) ;
 
         /**
          * @brief Calculates the RSCC score for a given superposition result.

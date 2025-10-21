@@ -89,7 +89,7 @@ void Sails::Glycan::bfs(Sails::Sugar *root) {
     }
 }
 
-void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth = 0) {
+void Sails::Glycan::dfs_terminal(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth = 0) {
     std::set<Sugar *> &sugar_set = adjacency_list[current_sugar];
     if (sugar_set.empty()) {
         current_sugar->depth = depth;
@@ -98,7 +98,7 @@ void Sails::Glycan::dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sug
 
     for (Sugar *sugar: sugar_set) {
         sugar->depth = depth + 1;
-        dfs(sugar, terminal_sugars, depth + 1);
+        dfs_terminal(sugar, terminal_sugars, depth + 1);
     }
 }
 
@@ -110,6 +110,17 @@ void Sails::Glycan::dfs_sites(Sugar *current_sugar, std::vector<Glycosite> &site
     for (Sugar *sugar: sugar_set) {
         sugar->depth = depth + 1;
         dfs_sites(sugar, sites, depth + 1);
+    }
+}
+
+void Sails::Glycan::dfs_sugars(Sugar *current_sugar, std::vector<Sugar *> &sugars, int depth) {
+    const std::set<Sugar *> &sugar_set = adjacency_list[current_sugar];
+    current_sugar->depth = depth;
+    sugars.push_back(current_sugar);
+
+    for (Sugar *sugar: sugar_set) {
+        sugar->depth = depth + 1;
+        dfs_sugars(sugar, sugars, depth + 1);
     }
 }
 
@@ -133,7 +144,7 @@ std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Glycosite &root_s
         throw std::runtime_error("Root SeqId is not valid");
     }
     std::vector<Sugar *> terminal_sugars;
-    dfs(sugars[root_seq_id].get(), terminal_sugars);
+    dfs_terminal(sugars[root_seq_id].get(), terminal_sugars);
 
     // FUC has no links, but would be the terminal sugar in order, so add the sugar before FUC in that case
     std::vector<Sugar*> additional_sugars;

@@ -259,6 +259,20 @@ namespace Sails::Utils {
     std::vector<std::string> split(const std::string &string, char delimiter);
 
     gemmi::Model create_model(gemmi::Residue& residue);
+
+
+    template <typename T>
+    std::pair<std::vector<T>, std::vector<T>> split_pairs(const std::vector<std::pair<T, T>> &pairs) {
+        std::vector<T> firsts;
+        std::vector<T> seconds;
+        firsts.reserve(pairs.size());
+        seconds.reserve(pairs.size());
+        for (const auto& p : pairs) {
+            firsts.push_back(p.first);
+            seconds.push_back(p.second);
+        }
+        return {std::move(firsts), std::move(seconds)};
+    }
 } // namespace Sails::Utils
 
 

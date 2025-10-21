@@ -87,7 +87,24 @@ gemmi::Grid<> Sails::Density::calculate_density_for_grid(gemmi::Residue &residue
     return std::move(x);
 }
 
-float Sails::Density::calculate_rscc(std::vector<float> obs_values, std::vector<float> calc_values) {
+gemmi::Grid<> Sails::Density::calculate_density_for_structure(gemmi::Structure &structure) const {
+    gemmi::DensityCalculator<gemmi::C4322<float>, float> density_calculator;
+
+    density_calculator.grid.copy_metadata_from(*get_best_grid());
+    density_calculator.grid.spacing[0] = get_best_grid()->spacing[0];
+    density_calculator.grid.spacing[1] = get_best_grid()->spacing[1];
+    density_calculator.grid.spacing[2] = get_best_grid()->spacing[2];
+
+    density_calculator.d_min = get_resolution();
+    density_calculator.initialize_grid();
+    density_calculator.add_model_density_to_grid(structure.models[0]);
+    density_calculator.grid.symmetrize_sum();
+    auto x =  density_calculator.grid;
+    return std::move(x);
+}
+
+template <typename T>
+T Sails::Density::calculate_rscc(std::vector<T> obs_values, std::vector<T> calc_values) {
     if (obs_values.size() != calc_values.size())
         throw std::runtime_error("RSCC obs and calc lists are different sizes");
 
@@ -117,6 +134,8 @@ float Sails::Density::calculate_rscc(std::vector<float> obs_values, std::vector<
     if (denominator == 0.0f) throw std::runtime_error("RSCC Denominator is 0");
     return numerator / denominator;
 }
+template float Sails::Density::calculate_rscc<float>(std::vector<float> obs_values, std::vector<float> calc_values);
+template double Sails::Density::calculate_rscc<double>(std::vector<double> obs_values, std::vector<double> calc_values);
 
 
 float Sails::Density::rscc_score(gemmi::Residue &residue) const {
@@ -126,13 +145,13 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     for (auto &atom: residue.atoms) {
         box.extend(atom.pos);
     }
-    box.add_margin(1);
+    box.add_margin(2);
 
     // gemmi::Grid<> calc = calculate_density_for_box(residue, box);
     gemmi::Grid<> calc = calculate_density_for_grid(residue);
     gemmi::Model model = Utils::create_model(residue);
 
-    gemmi::NeighborSearch ns = {model, get_best_grid()->unit_cell, 1.5};
+    gemmi::NeighborSearch ns = {model, get_best_grid()->unit_cell, 2};
     ns.populate();
     // gemmi::Ccp4<> m;
     // m.grid = calc;
@@ -142,18 +161,17 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
     // std::vector rs = {residue};
     // Utils::save_residues_to_file(rs, "res.pdb");
 
-    const gemmi::Position max = box.maximum;
     const gemmi::Position min = box.minimum;
+    const gemmi::Position max = box.maximum;
 
     std::vector<float> obs_values = {};
     std::vector<float> calc_values = {};
 
-    const double step_size = get_best_grid()->spacing[0];
-    for (double x = min.x; x <= max.x; x += step_size) {
-        for (double y = min.y; y <= max.y; y += step_size) {
-            for (double z = min.z; z <= max.z; z += step_size) {
+    for (double x = min.x; x <= max.x; x += get_best_grid()->spacing[0]) {
+        for (double y = min.y; y <= max.y; y += get_best_grid()->spacing[1]) {
+            for (double z = min.z; z <= max.z; z += get_best_grid()->spacing[2]) {
                 gemmi::Position position = {x, y, z};
-                auto nearest_atom = ns.find_atoms(position, '*', 0, 1.5);
+                auto nearest_atom = ns.find_atoms(position, '*', 0, 2);
                 if (!nearest_atom.empty()) {
                     obs_values.emplace_back(get_best_grid()->interpolate_value(position));
                     calc_values.emplace_back(calc.interpolate_value(position));
@@ -162,7 +180,7 @@ float Sails::Density::rscc_score(gemmi::Residue &residue) const {
         }
     }
 
-    return calculate_rscc(obs_values, calc_values);
+    return calculate_rscc<float>(obs_values, calc_values);
 }
 
 float Sails::Density::rscc_score(SuperpositionResult &result) {
@@ -201,7 +219,7 @@ float Sails::Density::rscc_score(SuperpositionResult &result) {
         }
     }
 
-    return calculate_rscc(obs_values, calc_values);
+    return calculate_rscc<float>(obs_values, calc_values);
 }
 
 float Sails::Density::rsr_score(gemmi::Residue &residue) {
