@@ -98,6 +98,7 @@ NB_MODULE(sails_module, m) {
                                 return Sails::Cell(structure.cell);
                         })
                         .def_rw("connections", &gemmi::Structure::connections)
+                        .def_rw("spacegroup_hm", &gemmi::Structure::spacegroup_hm)
                         .def("set_cell", [](gemmi::Structure &structure, const Sails::Cell &cell) {
                                 structure.cell = gemmi::UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta,
                                                                  cell.gamma);
@@ -270,7 +271,7 @@ NB_MODULE(sails_module, m) {
     m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("morph", &morph, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
-    m.def("validate", &validate, "structure"_a, "mtz"_a, "remove"_a, "resource_dir"_a);
+    m.def("validate", &validate, "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

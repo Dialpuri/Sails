@@ -110,10 +110,10 @@ def create_single_snfg(args):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-model", type=str, required=True)
-    parser.add_argument("-snfgout", type=str, required=True)
-    parser.add_argument("-chain", type=str, required=False)
-    parser.add_argument("-seqid", type=int, required=False)
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--snfgout", type=str, required=True)
+    parser.add_argument("--chain", type=str, required=False)
+    parser.add_argument("--seqid", type=int, required=False)
     parser.add_argument("--all", action=argparse.BooleanOptionalAction, required=False)
     parser.add_argument(
         "--overwrite", action=argparse.BooleanOptionalAction, required=False
