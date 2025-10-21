@@ -5,9 +5,9 @@
 #include "sails-density.h"
 
 namespace Sails {
-    class EMDensity : public Density {
+    class EMDensity : public Density{
     public:
-        explicit EMDensity(gemmi::Grid<> &grid);
+        explicit EMDensity(gemmi::Grid<> &grid, float resolution);
 
         [[nodiscard]] const gemmi::Mtz *get_mtz() const override { return &m_mtz; }
 
@@ -17,13 +17,20 @@ namespace Sails {
 
         [[nodiscard]] const gemmi::Grid<> *get_difference_grid() const override { return &m_grid; }
 
-        [[nodiscard]] const double get_resolution() const override { return 2.0; }
+        [[nodiscard]] const double get_resolution() const override { return m_resolution; }
 
         [[nodiscard]] const DensityScoreMethod get_score_method() const override { return score_method; }
 
         [[nodiscard]] std::unordered_map<std::string, gemmi::Grid<> > *get_calculated_maps() override {
             return &calculated_maps;
         }
+
+        gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const override;
+
+        gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const override;
+
+        gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const override;
+
 
     private:
         /**
@@ -45,6 +52,8 @@ namespace Sails {
          * MTZ Object
          */
         gemmi::Mtz m_mtz;
+
+        float m_resolution;
 
         /**
          * Fc maps for residues in standard positions - used for fast RSCC calculations

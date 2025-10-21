@@ -24,13 +24,19 @@ namespace Sails {
 
         [[nodiscard]] const gemmi::Grid<> *get_difference_grid() const override { return &m_difference_grid; }
 
-        [[nodiscard]] const double get_resolution() const override { return 2.0; }
+        [[nodiscard]] const double get_resolution() const override { return m_mtz.resolution_high(); }
 
         [[nodiscard]] const DensityScoreMethod get_score_method() const override { return score_method;}
 
         [[nodiscard]] std::unordered_map <std::string, gemmi::Grid<>> *get_calculated_maps() override {
             return &calculated_maps;
         }
+
+    	gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const override;
+
+    	gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const override;
+
+    	gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const override;
 
         /**
          * @brief Recalculates the map based on the given structure.

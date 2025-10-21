@@ -243,22 +243,30 @@ NB_MODULE(sails_module, m) {
           "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("n_glycosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&n_glycosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&n_glycosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
     m.def("c_glycosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&c_glycosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&c_glycosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
     m.def("o_mannosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&o_mannosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&o_mannosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("auto_glycosylate",
       nb::overload_cast<gemmi::Structure &, Sails::MTZ &, gemmi::Grid<>&, gemmi::Grid<>&, int, std::string &, bool>(&auto_glycosylate), "structure"_a,
       "mtz"_a, "glycan_grid"_a, "protein_grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
+    m.def("auto_glycosylate",
+        nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, gemmi::Grid<>&, gemmi::Grid<>&, int, std::string &, bool>(&auto_glycosylate), "structure"_a,
+        "grid"_a, "resolution"_a, "glycan_grid"_a, "protein_grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
     m.def("glycosylate_site",
       nb::overload_cast<gemmi::Structure &, Sails::MTZ &, std::string&, int, int, std::string &, bool>(&glycosylate_site), "structure"_a,
       "mtz"_a, "chain"_a, "seqid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("glycosylate_site",
+      nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, std::string&, int, int, std::string &, bool>(&glycosylate_site), "structure"_a,
+      "grid"_a, "resolution"_a, "chain"_a, "seqid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
         "structure"_a, "glycan_grid"_a, "resource_dir"_a);
@@ -271,7 +279,12 @@ NB_MODULE(sails_module, m) {
     m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("morph", &morph, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
-    m.def("validate", &validate, "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+
+    // XRAY
+    m.def("validate", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, bool, float, std::string &>(&validate), "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+
+    // EM
+    m.def("validate", nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, bool, float, std::string &>(&validate), "structure"_a, "grid"_a, "resolution"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

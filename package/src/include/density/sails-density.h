@@ -46,6 +46,46 @@ namespace Sails {
 
 		[[nodiscard]] virtual const DensityScoreMethod get_score_method() const = 0;
 
+		/**
+		 * @brief Calculates the density for a given box based on a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density for the specified box
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 * @param box
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const = 0;
+
+		/**
+		 * @brief Calculates the density for a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const = 0;
+
+		/**
+		 * @brief Calculates the density for a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const = 0;
+
         /**
          * @brief Scores a residue based on the specified density score method.
          *
@@ -83,45 +123,7 @@ namespace Sails {
 		 */
         [[nodiscard]] float atomwise_score(const gemmi::Residue &residue) const;
 
-        /**
-         * @brief Calculates the density for a given box based on a gemmi::Residue object.
-         *
-         * This method takes a gemmi::Residue object and calculates the density for the specified box
-         * using the gemmi::DensityCalculator class. The density calculation is performed using the
-         * density score method specified in the constructor of the gemmi::DensityCalculator.
-         *
-         * @param residue The gemmi::Residue object for which the density is calculated.
-         * @param box
-         *
-         * @return The calculated density grid for the specified box.
-         */
-        gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const;
 
-	    /**
-         * @brief Calculates the density for a gemmi::Residue object.
-         *
-         * This method takes a gemmi::Residue object and calculates the density
-         * using the gemmi::DensityCalculator class. The density calculation is performed using the
-         * density score method specified in the constructor of the gemmi::DensityCalculator.
-         *
-         * @param residue The gemmi::Residue object for which the density is calculated.
-         *
-         * @return The calculated density grid for the specified box.
-         */
-	    gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const;
-
-		/**
-		 * @brief Calculates the density for a gemmi::Residue object.
-		 *
-		 * This method takes a gemmi::Residue object and calculates the density
-		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
-		 * density score method specified in the constructor of the gemmi::DensityCalculator.
-		 *
-		 * @param residue The gemmi::Residue object for which the density is calculated.
-		 *
-		 * @return The calculated density grid for the specified box.
-		 */
-		gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const;
 
         /**
          * @brief Calculates the RSCC (Real Space Correlation Coefficient) score for a given residue.

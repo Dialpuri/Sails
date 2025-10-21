@@ -161,6 +161,10 @@ def glycosylate_xtal(
 def glycosylate_em(
     structure: gemmi.Structure | Path | str,
     map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str,
+    preddirin: Path | str,
+    resolution: float,
+    chain: str,
+    seqid: int | str,
     cycles: int,
     type: Type = Type.n_glycosylate,
     verbose: bool = False,
@@ -169,8 +173,51 @@ def glycosylate_em(
     sails_grid = interface.get_sails_map(map)
     resource = importlib.resources.files("sails").joinpath("data")
 
-    func = map_type_to_function(type)
-    result = func(sails_structure, sails_grid, cycles, str(resource), verbose)
+    if chain and seqid:
+        result = glycosylate_site(
+            sails_structure,
+            sails_grid,
+            resolution,
+            chain,
+            int(seqid),
+            cycles,
+            str(resource),
+            verbose,
+        )
+        return (
+            interface.extract_sails_structure(result.structure),
+            json.loads(result.log),
+            result.snfgs,
+        )
+
+    if type == Type.auto:
+        if preddirin:
+            predictions = read_prediction_dir(
+                preddirin, model_type=ModelType.multiclass
+            )
+        else:
+            predictions = predict_map(
+                "multiclass", map, "output", nthreads=8, save_map=True
+            )
+        glycan, protein = predictions
+        sails_glycan = interface.get_sails_map(glycan)
+        sails_protein = interface.get_sails_map(protein)
+
+        result = auto_glycosylate(
+            sails_structure,
+            sails_grid,
+            resolution,
+            sails_glycan,
+            sails_protein,
+            cycles,
+            str(resource),
+            verbose,
+        )
+    else:
+        func = map_type_to_function(type)
+        result = func(
+            sails_structure, sails_grid, resolution, cycles, str(resource), verbose
+        )
 
     return (
         interface.extract_sails_structure(result.structure),
@@ -264,9 +311,19 @@ def xray(args):
 
 
 def em(args):
-    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    cycles = (
+        args.cycles if args.type == Type.n_glycosylate or args.type == Type.auto else 1
+    )
     structure, log, snfgs = glycosylate_em(
-        args.modelin, args.mapin, cycles, args.type, args.v
+        args.modelin,
+        args.mapin,
+        args.preddirin,
+        args.resolution,
+        args.chain,
+        args.seqid,
+        cycles,
+        args.type,
+        args.v,
     )
     structure.make_mmcif_block().write_file(args.modelout)
     save_log(log, args)
@@ -329,5 +386,6 @@ def parse_args():
     em_parser = subparsers.add_parser("em", parents=[parent], formatter_class=formatter)
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
     em_parser_group.add_argument("--mapin", type=str, required=True)
+    em_parser_group.add_argument("--resolution", type=float, required=True)
 
     return parser.parse_args()

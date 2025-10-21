@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 
 from .__version__ import __version__
 import importlib
@@ -48,9 +49,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def run():
-    args = parse_args()
-
+def xray(args):
     sails_structure = interface.get_sails_structure(args.modelin)
     resource = importlib.resources.files("sails").joinpath("data")
 
@@ -70,3 +69,38 @@ def run():
 
     with open(args.logout, "w") as f:
         json.dump(log, f, indent=4)
+
+
+def em(args):
+    sails_structure = interface.get_sails_structure(args.modelin)
+    sails_grid = interface.get_sails_map(args.mapin)
+    resource = importlib.resources.files("sails").joinpath("data")
+
+    result = validate(
+        sails_structure, sails_grid, args.remove, args.threshold, str(resource)
+    )
+
+    structure = interface.extract_sails_structure(result.structure)
+    structure.make_mmcif_block().write_file(args.modelout)
+    log = json.loads(result.log)
+
+    if args.print:
+        print(json.dumps(log, indent=4))
+
+    with open(args.logout, "w") as f:
+        json.dump(log, f, indent=4)
+
+
+def run():
+    t0 = time.time()
+    args = parse_args()
+
+    if args.mode == "xray":
+        xray(args)
+    elif args.mode == "em":
+        em(args)
+    else:
+        raise RuntimeError("Unknown mode")
+
+    t1 = time.time()
+    print(f"Sails Validate - Time Taken = {(t1 - t0)} seconds")
