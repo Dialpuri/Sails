@@ -27,6 +27,7 @@
 #include <src/include/sails-morph.h>
 
 #include "src/include/sails-predictions.h"
+#include "src/include/sails-score.h"
 
 
 void print_rejection_dds(const Sails::Glycosite& s1, const Sails::Glycosite& s2, gemmi::Structure* structure) {
@@ -47,11 +48,12 @@ void print_dds(const Sails::Glycosite &site, float dds, gemmi::Structure *struct
 }
 
 void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, bool strict,
-                             bool debug) {
+                             bool debug, Sails::ResidueDatabase &residue_database) {
     const float rscc_threshold = strict ? 0.65: 0.5;
     const float dds_threshold = strict ? 1.0: 1.1;
 
-    const std::pair<float, float> difference_density_stats = density->calculate_map_statistics(density->get_difference_grid());
+    // const std::pair<float, float> difference_density_stats = density->calculate_map_statistics(density->get_difference_grid());
+    std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(density, structure, residue_database);
 
     std::vector<Sails::Sugar *> to_remove;
     for (const auto &[fst, snd]: *glycan) {
@@ -63,16 +65,19 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         gemmi::Residue previous_residue = Sails::Utils::get_residue_from_glycosite(
             sugar_result.value()->site, structure);
 
-        // if (residue.name == "ASN") { continue; } // don't remove ASN
-        // if (residue.name == "TRP") { continue; } // don't remove TRP
+        snd->site.atom_idx = 0; // set atom index to 0 so can be used in comparisons on the residue level
 
         // remove cases with low rscc
-        const float rscc = density->rscc_score(residue);
-        print_rscc(snd->site, rscc, structure);
-        if (rscc < rscc_threshold) {
-            to_remove.emplace_back(snd.get()); // add pointer to
-            if (debug) print_removal_rscc(snd->site, rscc, structure);
-            continue;
+        if (rsccs.count(snd->site) != 0) {
+            const double rscc = rsccs.at(snd->site);
+            print_rscc(snd->site, rscc, structure);
+            if (rscc < rscc_threshold) {
+                to_remove.emplace_back(snd.get()); // add pointer to remove
+                if (debug) print_removal_rscc(snd->site, rscc, structure);
+            }
+        } else {
+            std::cout << Sails::Utils::format_site_key(fst) << " | " << Sails::Utils::format_site_key(snd->site) << std::endl;
+            throw std::runtime_error("Glycosite was not found in the RSCC calculation" + Sails::Utils::format_residue_from_site(snd->site, structure));
         }
 
         // remove cases with high difference density score
@@ -200,7 +205,7 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan old_glycan = glycan;
-            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose);
+            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose, residue_database);
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
@@ -286,7 +291,7 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
 
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan old_glycan = glycan;
-            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose);
+            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose, residue_database);
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
@@ -306,6 +311,7 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
+    Sails::add_links_to_structure(model.get_structure(), links);
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
 
     Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();
@@ -575,38 +581,7 @@ Sails::Output validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool 
     auto density = Sails::XtalDensity(mtz);
     density.load_map_coefficients();
 
-    gemmi::Grid<> calculated_density = density.calculate_density_for_structure(structure);
-
-    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure.models[0], structure.cell, 2);
-    ns.populate();
-
-    gemmi::Grid<> best_grid = *density.get_best_grid();
-    std::map<Sails::Glycosite, std::vector<std::pair<double, double>>> residue_pairs;
-
-    for (auto point: best_grid) {
-        gemmi::Position  position = best_grid.point_to_position(point);
-        auto mark = ns.find_nearest_atom(position, 2);
-        if (mark == nullptr) continue;
-
-        auto site = Sails::Glycosite(0, mark->chain_idx, mark->residue_idx, 0);
-        const gemmi::Residue* residue_ptr = &structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
-        if (residue_database.count(residue_ptr->name) == 0) continue;
-        const Sails::ResidueData& residue = residue_database.at(residue_ptr->name);
-        if (!residue.is_sugar) continue;
-
-        double obs = *point.value;
-        double calc = calculated_density.interpolate_value(position);
-        residue_pairs[site].emplace_back(obs, calc);
-
-    }
-    std::map<Sails::Glycosite, double> rsccs;
-
-    for (const auto& [site, data]: residue_pairs) {
-        auto [obs_values, calc_values] = Sails::Utils::split_pairs<double>(data);
-        if (obs_values.empty() || calc_values.empty()) continue;
-
-        rsccs[site] = Sails::Density::calculate_rscc<double>(obs_values, calc_values);
-    }
+    std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(&density, &structure, residue_database);
 
     std::vector<Sails::Glycosite> to_remove = {};
     std::vector<Sails::TelemetryFormat> log = {};
@@ -663,38 +638,7 @@ Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float r
 
     auto density = Sails::EMDensity(grid, resolution);
 
-    gemmi::Grid<> calculated_density = density.calculate_density_for_structure(structure);
-
-    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure.models[0], structure.cell, 2);
-    ns.populate();
-
-    gemmi::Grid<> best_grid = *density.get_best_grid();
-    std::map<Sails::Glycosite, std::vector<std::pair<double, double>>> residue_pairs;
-
-    for (auto point: best_grid) {
-        gemmi::Position  position = best_grid.point_to_position(point);
-        auto mark = ns.find_nearest_atom(position, 2);
-        if (mark == nullptr) continue;
-
-        auto site = Sails::Glycosite(0, mark->chain_idx, mark->residue_idx, 0);
-        const gemmi::Residue* residue_ptr = &structure.models[site.model_idx].chains[site.chain_idx].residues[site.residue_idx];
-        if (residue_database.count(residue_ptr->name) == 0) continue;
-        const Sails::ResidueData& residue = residue_database.at(residue_ptr->name);
-        if (!residue.is_sugar) continue;
-
-        double obs = *point.value;
-        double calc = calculated_density.interpolate_value(position);
-        residue_pairs[site].emplace_back(obs, calc);
-
-    }
-    std::map<Sails::Glycosite, double> rsccs;
-
-    for (const auto& [site, data]: residue_pairs) {
-        auto [obs_values, calc_values] = Sails::Utils::split_pairs<double>(data);
-        if (obs_values.empty() || calc_values.empty()) continue;
-
-        rsccs[site] = Sails::Density::calculate_rscc<double>(obs_values, calc_values);
-    }
+    std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(&density, &structure, residue_database);
 
     std::vector<Sails::Glycosite> to_remove = {};
     std::vector<Sails::TelemetryFormat> log = {};

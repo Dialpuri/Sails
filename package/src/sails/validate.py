@@ -45,6 +45,7 @@ def parse_args():
     em_parser = subparsers.add_parser("em", parents=[parent], formatter_class=formatter)
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
     em_parser_group.add_argument("--mapin", type=str, required=True)
+    em_parser_group.add_argument("--resolution", type=float, required=True)
 
     return parser.parse_args()
 
@@ -77,7 +78,12 @@ def em(args):
     resource = importlib.resources.files("sails").joinpath("data")
 
     result = validate(
-        sails_structure, sails_grid, args.remove, args.threshold, str(resource)
+        sails_structure,
+        sails_grid,
+        args.resolution,
+        args.remove,
+        args.threshold,
+        str(resource),
     )
 
     structure = interface.extract_sails_structure(result.structure)

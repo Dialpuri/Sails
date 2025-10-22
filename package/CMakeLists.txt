@@ -103,6 +103,7 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-wurcs.cpp
         ${WRK_DIR}/src/cpp/sails-predictions.cpp
         ${WRK_DIR}/src/cpp/sails-morph.cpp
+        ${WRK_DIR}/src/cpp/sails-score.cpp
 
         # Density
         ${WRK_DIR}/src/cpp/density/sails-density.cpp
