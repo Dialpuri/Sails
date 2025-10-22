@@ -2,6 +2,7 @@ import argparse
 import gemmi
 import json
 import numpy as np
+from pprint import pprint
 
 
 def load_data_file(filename):
@@ -20,11 +21,11 @@ def format_residue(chain: gemmi.Chain, residue: gemmi.Residue):
 
 
 def main(args):
-    data = load_data_file("package/data/data.json")
+    data = load_data_file("package/src/sails/data/data.json")
     structure = gemmi.read_structure(args.model)
     reference = gemmi.read_structure(args.reference)
 
-    ns = gemmi.NeighborSearch(structure, max_radius=1).populate()
+    ns = gemmi.NeighborSearch(structure, max_radius=1.5).populate()
 
     output = {}
 
@@ -83,6 +84,8 @@ def main(args):
 
     percentage_modelled = 100 * modelled / total_sugars
     print(f"Percentage Modelled {percentage_modelled:.2f}")
+
+    pprint(output)
 
 
 if __name__ == "__main__":
