@@ -14,6 +14,7 @@
 
 #include <string>
 #include <optional>
+#include <algorithm>
 #include <filesystem>
 #include <stack>
 
