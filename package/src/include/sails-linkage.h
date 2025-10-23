@@ -147,6 +147,8 @@ namespace Sails {
 
   void standardise_residue_names() const;
 
+  void remove_free_sites(std::set<Glycosite>& all_sites) const;
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -257,6 +259,10 @@ namespace Sails {
   template <typename T>
   static void move_acceptor_atomic_positions(std::vector<T> &atoms, double length,
                                              std::vector<double> &angles, std::vector<double> &torsions);
+
+
+  [[nodiscard]] std::set<Glycosite> get_all_glycosites() const;
+
 
   // /**
   //  * @brief Move the positions of acceptor atoms based on given parameters.

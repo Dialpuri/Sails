@@ -226,6 +226,17 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
     model.standardise_residue_names();
 
+    // find and remove any free sugars (likely due to something going wrong)
+    std::set<Sails::Glycosite> all_sites = {};
+    for (auto &glycosite: glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+        auto sites = glycan.get_sites();
+        all_sites.insert(sites.begin(), sites.end());
+    }
+
+    model.remove_free_sites(all_sites);
+    topology.set_structure(model.get_structure());
+
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);

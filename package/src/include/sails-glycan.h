@@ -364,6 +364,22 @@ namespace Sails {
             return &sugars;
         }
 
+
+        /**
+         * @brief Returns the sites in this glycan.
+         *
+         * @return A ptr to all sugars in this glycan.
+         */
+        [[nodiscard]] std::vector<Glycosite> get_sites() const {
+            std::vector<Glycosite> sites;
+            sites.reserve(sugars.size());
+            for(const auto&[fst, snd]: sugars) {
+                sites.emplace_back(fst);
+            }
+            return sites;
+        }
+
+
         /**
          * @brief Adds linkage between two sugars.
          *

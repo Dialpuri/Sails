@@ -49,6 +49,41 @@ void Sails::Model::standardise_residue_names() const {
     }
 }
 
+std::set<Sails::Glycosite> Sails::Model::get_all_glycosites() const {
+    std::set<Glycosite> sites = {};
+    for (auto & model : structure->models) {
+        for (int c = 0; c < model.chains.size(); c++) {
+            for (int r = 0; r < model.chains[c].residues.size(); r++) {
+                const gemmi::Residue* residue_ptr = &model.chains[c].residues[r];
+                if (residue_database.count(residue_ptr->name) > 0) {
+                    ResidueData residue_data = residue_database.at(residue_ptr->name);
+                    if (!residue_data.is_sugar) continue;
+                    Glycosite site = {0, c, r, 0};
+                    sites.insert(site);
+                }
+            }
+        }
+    }
+    return sites;
+}
+
+void Sails::Model::remove_free_sites(std::set<Glycosite> &all_sites) const {
+    std::set<Glycosite> all_sites_in_model = get_all_glycosites();
+    std::vector<Glycosite> free_sites;
+    std::set_difference(all_sites_in_model.begin(), all_sites_in_model.end(),
+                        all_sites.begin(), all_sites.end(),
+                        std::back_inserter(free_sites));
+
+    std::sort(free_sites.begin(), free_sites.end(), [](const Sails::Glycosite& a, const Sails::Glycosite& b) {
+        return !(a < b);
+    });
+
+    for (const auto& site: free_sites) {
+        const auto residues = &structure->models[site.model_idx].chains[site.chain_idx].residues;
+        residues->erase(residues->begin() + site.residue_idx);
+    }
+}
+
 
 // UTILITY FUNCTIONS
 std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monomer, bool remove_h) {
