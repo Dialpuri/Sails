@@ -224,7 +224,6 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
 
         auto new_chain = gemmi::Chain("");
         new_chain.name = Utils::get_next_string(max_it->name);
-        std::cout << "Last chain name is " << max_it->name << " next is " << new_chain.name << std::endl;
 
         model->chains.emplace_back(std::move(new_chain));
         chain_idx = static_cast<int>(model->chains.size() - 1);
