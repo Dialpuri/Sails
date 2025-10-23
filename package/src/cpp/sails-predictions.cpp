@@ -108,7 +108,14 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein(gemmi::
     if (!ns_optional.has_value()) {
         return potential_sites;
     }
+
+    std::optional<gemmi::NeighborSearch> glycan_ns_optional = create_neighbour_search(m_glycan_map, 0.1, structure.cell);
+    if (!glycan_ns_optional.has_value()) {
+        return potential_sites;
+    }
+
     gemmi::NeighborSearch ns = ns_optional.value();
+    gemmi::NeighborSearch glycan_ns = glycan_ns_optional.value();
 
     for (int m = 0; m < structure.models.size(); m++) {
         for (int c = 0; c < structure.models[m].chains.size(); c++) {
@@ -131,8 +138,9 @@ Sails::Glycosites Sails::Predictions::find_potential_sites_using_protein(gemmi::
                         continue;
                     }
                     auto nearby_points = ns.find_atoms(last_donor_atom->pos, '*', 0.1, 1);
+                    auto nearby_glycan_points = glycan_ns.find_atoms(last_donor_atom->pos, '*', 0, 2);
 
-                    if (nearby_points.empty()) {
+                    if (nearby_points.empty() || nearby_glycan_points.empty()) {
                         continue;
                     }
 
