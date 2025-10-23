@@ -207,15 +207,33 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
     int chain_idx = terminal_sugar->site.chain_idx;
 
     if (chain_type == protein) {
-        const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
-        chain_idx = static_cast<int>(last_chain_idx);
-        gemmi::Chain chain = gemmi::Chain("");
-        chain.name = Utils::get_next_string(
-            structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
-        structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
+        gemmi::Model* model = &structure->models[terminal_sugar->site.model_idx];
+        const std::vector<gemmi::Chain>* chains = &model->chains;
+
+        if (chains->empty()) {
+            throw std::runtime_error("No existing chains found in the model. Is it empty?");
+        }
+
+        const auto max_it = std::max_element(chains->begin(), chains->end(),
+            [](const gemmi::Chain& a, const gemmi::Chain& b) {
+                return a.name < b.name;
+            });
+
+        auto new_chain = gemmi::Chain("");
+        new_chain.name = Utils::get_next_string(max_it->name);
+
+        model->chains.emplace_back(std::move(new_chain));
+        chain_idx = static_cast<int>(model->chains.size() - 1);
+
+        // const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
+        // chain_idx = static_cast<int>(last_chain_idx);
+        // gemmi::Chain chain = gemmi::Chain("");
+        // chain.name = Utils::get_next_string(
+        //     structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
+        // structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
     }
 
-    auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
+    const auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
     favoured_addition.new_residue.seqid = gemmi::SeqId(static_cast<int>(all_residues->size()) + 1, '?');
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }

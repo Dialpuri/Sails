@@ -369,7 +369,18 @@ Sails::Output o_mannosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, 
 
 Sails::Output auto_glycosylate(gemmi::Structure &structure, Sails::MTZ &sails_mtz, gemmi::Grid<>& glycan_grid, gemmi::Grid<>& protein_grid, int cycles, std::string &resource_dir,
                             bool verbose) {
-    Sails::Glycosites glycosites = identify_predicted_sites(structure, glycan_grid, protein_grid, true, resource_dir);
+    Sails::Glycosites predicted_glycosites = identify_predicted_sites(structure, glycan_grid, protein_grid, true, resource_dir);
+    std::cout << "Found " << predicted_glycosites.size() << " potential sites using deep learning models" << std::endl;
+    Sails::Glycosites n_glycosites = Sails::find_n_glycosylation_sites(structure);
+    Sails::Glycosites c_glycosites = Sails::find_c_glycosylation_sites(structure);
+
+    std::set<Sails::Glycosite> glycosites_set = {predicted_glycosites.begin(), predicted_glycosites.end()};
+    glycosites_set.insert(n_glycosites.begin(), n_glycosites.end());
+    glycosites_set.insert(c_glycosites.begin(), c_glycosites.end());
+    Sails::Glycosites glycosites = {glycosites_set.begin(), glycosites_set.end()};
+    int diff = static_cast<int>(glycosites.size()) - static_cast<int>(predicted_glycosites.size());
+    std::cout << "Supplemented with " << diff << " sites from the sequence" << std::endl;
+
     return run_cycle(glycosites, structure, sails_mtz, cycles, resource_dir, false, verbose);
 }
 
