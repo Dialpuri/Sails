@@ -222,9 +222,10 @@ namespace Sails {
    * SuperpositionResult. Nearby atoms are found using a NeighborSearch with a given radius.
    *
    * @param result The SuperpositionResult from which to calculate the clash score.
+   * @param donor_atom
    * @return The calculated clash score.
    */
-  [[nodiscard]] double calculate_clash_score(const SuperpositionResult &result) const;
+  [[nodiscard]] double calculate_clash_score(const SuperpositionResult &result, gemmi::Atom *donor_atom) const;
 
 
   /**

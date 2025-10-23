@@ -271,12 +271,34 @@ Sails::Model::ChainType Sails::Model::find_chain_type(std::vector<Sugar *> sugar
     return result ? non_protein : protein;
 }
 
-double Sails::Model::calculate_clash_score(const SuperpositionResult &result) const {
-    constexpr double radius = 1;
-    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius).populate();
+double Sails::Model::calculate_clash_score(const SuperpositionResult &result, gemmi::Atom *donor_atom) const {
+    constexpr double radius = 1.5;
+    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
+
+    for (auto & model : structure->models) {
+        for (int c = 0; c < model.chains.size(); c++) {
+            for (int r = 0; r < model.chains[c].residues.size(); r++) {
+                const gemmi::Residue* residue_ptr = &model.chains[c].residues[r];
+                gemmi::ResidueInfo residue_info = gemmi::find_tabulated_residue(residue_ptr->name);
+                if (residue_info.is_amino_acid() || residue_database.count(residue_ptr->name) > 0 ) {
+                    for (int a = 0; a < model.chains[c].residues[r].atoms.size(); a++) {
+                        gemmi::Atom* current_atom_ptr = &model.chains[c].residues[r].atoms[a];
+                        if (donor_atom != current_atom_ptr) ns.add_atom(*current_atom_ptr, c, r, a);
+                    }
+                }
+            }
+        }
+    }
+
+    // ns.populate();
+
+
     double clash_score = 0;
     for (auto &atom: result.new_residue.atoms) {
         auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
+        // for (auto& x: nearest_atoms) {
+        //      std::cout << "Clash between atom " << atom.name << " " << Utils::format_residue_from_site(Glycosite(*x), structure) << x->to_cra(structure->models[0]).atom->name << std::endl;
+        // }
         clash_score += static_cast<double>(nearest_atoms.size());
     }
     return clash_score;
@@ -357,7 +379,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
         }
 
         // calculate clash score
-        double clash_score = calculate_clash_score(result);
+        double clash_score = calculate_clash_score(result, atoms[2]);
+        // std::cout << std::endl << clash_score << std::endl;
         if (clash_score > 1) {
             continue;
         }
@@ -433,7 +456,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Resid
         SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
 
         // calculate clash score
-        double clash_score = calculate_clash_score(result);
+        double clash_score = calculate_clash_score(result, &atoms[2]);
         if (clash_score < best_clash) {
             best_clash = clash_score;
             best_result = std::move(result);
