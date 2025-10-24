@@ -316,6 +316,12 @@ def run():
         help="Path to output file",
     )
     em_parser.add_argument(
+        "--preddirin",
+        required=False,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    em_parser.add_argument(
         "--modeltype",
         required=True,
         choices=[type.name for type in ModelType],
