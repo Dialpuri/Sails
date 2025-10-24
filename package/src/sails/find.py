@@ -204,16 +204,33 @@ def em(args):
     model = ModelType[args.modeltype]
 
     if args.preddirin:
-        predicted_map = read_prediction_dir(args.preddirin, model)
+        predictions = read_prediction_dir(args.preddirin, model)
     else:
-        predicted_map = predict_map(
-            "binary", args.mapin, "output", nthreads=8, save_map=True
+        predictions = predict_map(
+            model.name,
+            args.mapin,
+            "output",
+            nthreads=8,
+            save_map=True,
         )
 
-    sails_predicted_grid = get_sails_map(predicted_map)
-    result = identify_predicted_sites(
-        sails_structure, sails_predicted_grid, str(resource)
-    )
+    if model == ModelType.binary:
+        glycan_predicted_map = predictions
+        sails_grid = get_sails_map(glycan_predicted_map)
+        result = identify_predicted_sites(sails_structure, sails_grid, str(resource))
+    else:
+        glycan_predicted_map, protein_predicted_map = predictions
+        sails_glycan_grid = get_sails_map(glycan_predicted_map)
+        sails_protein_grid = get_sails_map(protein_predicted_map)
+        searchtype = args.searchtype
+        result = identify_predicted_sites(
+            sails_structure,
+            sails_glycan_grid,
+            sails_protein_grid,
+            searchtype == "glycan",
+            str(resource),
+        )
+
     log = convert_glycosites_to_log(result, args.modelin)
     save_log(log, args)
 
