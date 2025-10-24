@@ -321,6 +321,12 @@ def run():
         choices=[type.name for type in ModelType],
         help="Binary or Multiclass model",
     )
+    em_parser.add_argument(
+        "--searchtype",
+        required=True,
+        choices=["protein", "glycan"],
+        help="Search for protein or glycan, only used if modeltype is multiclass",
+    )
 
     args = parser.parse_args()
     if args.mode == "seq":
