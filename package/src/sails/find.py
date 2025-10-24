@@ -201,9 +201,10 @@ def xray(args):
 def em(args):
     sails_structure = get_sails_structure(args.modelin)
     resource = importlib.resources.files("sails").joinpath("data")
+    model = ModelType[args.modeltype]
 
     if args.preddirin:
-        predicted_map = read_prediction_dir(args.preddirin)
+        predicted_map = read_prediction_dir(args.preddirin, model)
     else:
         predicted_map = predict_map(
             "binary", args.mapin, "output", nthreads=8, save_map=True
