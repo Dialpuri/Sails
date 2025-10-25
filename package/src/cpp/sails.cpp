@@ -110,9 +110,7 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         return !(a->site < b->site);
     });
 
-    for (auto &sugar: to_remove) {
-            std::cout << "REMOVING: " << Sails::Utils::format_residue_from_site(sugar->site, structure) << std::endl;
-
+    for (const auto &sugar: to_remove) {
         glycan->remove_sugar(sugar);
     }
 }
@@ -282,9 +280,9 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
         std::cout << std::flush;
         if (verbose) std::cout << "\rCycle #" << i << std::endl;
 
+        std::cout << "Attempting to model at " << glycosites.size() << " sites." << std::endl;
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            // if (glycan.empty()) { continue; }
 
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
@@ -296,16 +294,21 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
         }
 
         // remove erroneous sugars
+        std::set<Sails::Glycosite> unmodellable_sites = {};
         for (auto &glycosite: glycosites) {
             Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
-            if (glycan.empty()) { continue; }
 
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan old_glycan = glycan;
             remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose, residue_database);
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
+
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+            if (new_glycan.empty()) {
+                unmodellable_sites.insert(glycosite);
+                continue;
+            }
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
@@ -315,10 +318,29 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
             telemetry.save_snfg(i, glycosite_key, snfg_string);
         }
 
+        // sort removal in decsending order so removed indices don't cause later array overflow
+        glycosites.erase(
+            std::remove_if(glycosites.begin(), glycosites.end(),[&](const Sails::Glycosite &site) {
+                return unmodellable_sites.count(site) > 0;
+            }),glycosites.end()
+        );
+
         telemetry.save_state(i);
     }
 
     std::cout << std::endl;
+    model.standardise_residue_names();
+
+    // find and remove any free sugars (likely due to something going wrong)
+    std::set<Sails::Glycosite> all_sites = {};
+    for (auto &glycosite: glycosites) {
+        Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
+        auto sites = glycan.get_sites();
+        all_sites.insert(sites.begin(), sites.end());
+    }
+
+    model.remove_free_sites(all_sites);
+    topology.set_structure(model.get_structure());
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
