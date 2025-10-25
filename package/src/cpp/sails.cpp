@@ -683,13 +683,14 @@ Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float r
     auto density = Sails::EMDensity(grid, resolution);
 
     std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(&density, &structure, residue_database);
+    std::map<Sails::Glycosite, double> qscores = Sails::Score::calculate_qscores(&density, &structure, residue_database);
 
     std::vector<Sails::Glycosite> to_remove = {};
     std::vector<Sails::TelemetryFormat> log = {};
 
     for (auto& [site, rscc]: rsccs) {
         std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
-        log.emplace_back(residue_key, rscc);
+        log.emplace_back(residue_key, rscc, qscores.at(site));
         if (rscc > threshold) {
                 continue;
         }

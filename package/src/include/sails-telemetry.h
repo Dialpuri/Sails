@@ -18,22 +18,27 @@ namespace Sails {
     struct TelemetryFormat {
         TelemetryFormat() = default;
 
-        TelemetryFormat(const std::string &residue_id, double rscc_score, double rsr_score, double dds_score)
+        TelemetryFormat(const std::string &residue_id, double rscc_score, double rsr_score, double q_score)
             : residue_id(residue_id),
               rscc_score(rscc_score),
               rsr_score(rsr_score),
-              dds_score(dds_score) {
+              q_score(q_score) {
         }
 
         TelemetryFormat(const std::string &residue_id, double rscc_score)
             : residue_id(residue_id),
-              rscc_score(rscc_score), rsr_score(0), dds_score(0) {
+              rscc_score(rscc_score), rsr_score(0), q_score(0) {
+        }
+
+        TelemetryFormat(const std::string &residue_id, double rscc_score, double q_score)
+            : residue_id(residue_id),
+              rscc_score(rscc_score), rsr_score(0), q_score(q_score) {
         }
 
         std::string residue_id;
         double rscc_score;
         double rsr_score;
-        double dds_score;
+        double q_score;
     };
     typedef std::map<int, std::vector<TelemetryFormat>> TelemetryLog;
 

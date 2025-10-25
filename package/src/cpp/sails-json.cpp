@@ -160,7 +160,7 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
         for (int i = 0; i < entries.size(); ++i) {
             stream << "\t\t\t\t\"" << entries[i].residue_id << "\": {\"rscc\": " << entries[i].rscc_score <<
                     ", \"rsr\": " << entries[i].rsr_score <<
-                    ", \"dds\": " << entries[i].dds_score << "}";
+                    ", \"qscore\": " << entries[i].q_score << "}";
             if (i < entries.size() - 1) {
                 stream << ",";
             }
