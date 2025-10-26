@@ -5,6 +5,8 @@
 
 #include "../include/sails-score.h"
 
+#include <gemmi/resinfo.hpp>
+
 #include "src/include/sails-utils.h"
 
 std::map<Sails::Glycosite, double> Sails::Score::calculate_rsccs(Density *density, gemmi::Structure *structure, ResidueDatabase &residue_database) {
@@ -88,6 +90,19 @@ std::map<Sails::Glycosite, double> Sails::Score::calculate_qscores(Sails::Densit
     return qscores;
 }
 
+double Sails::Score::calculate_clash_score(gemmi::Residue *residue, gemmi::Structure *structure) {
+    constexpr double radius = 1;
+    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
+    ns.populate();
+
+    double clash_score = 0;
+    for (auto &atom: residue->atoms) {
+        auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
+        clash_score += static_cast<double>(nearest_atoms.size());
+    }
+    return clash_score;
+}
+
 std::vector<gemmi::Position> Sails::Score::QScore::fibonacci_sphere(int samples, float radius, const gemmi::Position &center) {
     std::vector<gemmi::Position> positions;
     const double offset = 2.0 / samples;
@@ -119,11 +134,11 @@ std::vector<gemmi::Position> Sails::Score::QScore::get_radial_points(const gemmi
     for (int i = 0 ; i < max_iter ; i++) {
         std::vector<gemmi::Position> sampled_sphere = fibonacci_sphere(N+i, radius, position);
         for (const auto& sampled_position: sampled_sphere) {
-            const gemmi::NeighborSearch::Mark* nearest_atom = ns.find_nearest_atom(sampled_position);
-            auto nearest_site = Glycosite(*nearest_atom);
-            if (nearest_site == site) {
-                positions.emplace_back(sampled_position);
-            }
+            // const gemmi::NeighborSearch::Mark* nearest_atom = ns.find_nearest_atom(sampled_position);
+            // auto nearest_site = Glycosite(*nearest_atom);
+            // if (nearest_site == site) {
+            positions.emplace_back(sampled_position);
+            // }
 
             if (positions.size() >= N) {
                 break;

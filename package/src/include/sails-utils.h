@@ -273,6 +273,20 @@ namespace Sails::Utils {
         }
         return {std::move(firsts), std::move(seconds)};
     }
+
+    double calculate_average_bfactor(const Glycosite &site, gemmi::Structure * structure) {
+        gemmi::Residue* residue_ptr = get_residue_ptr_from_glycosite(site, structure);
+        const double sum = std::accumulate(residue_ptr->atoms.begin(), residue_ptr->atoms.end(), 0.0, [](const double current, gemmi::Atom& atom) {
+            return current + atom.b_iso;
+        });
+        return sum / residue_ptr->atoms.size();
+    }
+
+    void set_all_bfactors(gemmi::Residue * residue, double b_factor) {
+        for (auto & atom : residue->atoms) {
+            atom.b_iso = b_factor;
+        }
+    }
 } // namespace Sails::Utils
 
 

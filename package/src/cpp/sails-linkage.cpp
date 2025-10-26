@@ -240,7 +240,6 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
                                           ChainType &chain_type) {
     int chain_idx = terminal_sugar->site.chain_idx;
-
     if (chain_type == protein) {
         gemmi::Model* model = &structure->models[terminal_sugar->site.model_idx];
         const std::vector<gemmi::Chain>* chains = &model->chains;
@@ -270,6 +269,9 @@ void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, Superposi
         //     structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
         // structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
     }
+
+    double average_donor_bfactor = Utils::calculate_average_bfactor(terminal_sugar->site, structure);
+    Utils::set_all_bfactors(&favoured_addition.new_residue, average_donor_bfactor);
 
     const auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
     favoured_addition.new_residue.seqid = gemmi::SeqId(static_cast<int>(all_residues->size()) + 1, '?');
@@ -328,6 +330,10 @@ Sails::Model::ChainType Sails::Model::find_chain_type(std::vector<Sugar *> sugar
 }
 
 double Sails::Model::calculate_clash_score(const SuperpositionResult &result, gemmi::Atom *donor_atom) const {
+    return calculate_clash_score(result.new_residue, donor_atom);
+}
+
+double Sails::Model::calculate_clash_score(const gemmi::Residue &residue, gemmi::Atom *donor_atom) const {
     constexpr double radius = 1.5;
     gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
 
@@ -346,15 +352,9 @@ double Sails::Model::calculate_clash_score(const SuperpositionResult &result, ge
         }
     }
 
-    // ns.populate();
-
-
     double clash_score = 0;
-    for (auto &atom: result.new_residue.atoms) {
+    for (auto &atom: residue.atoms) {
         auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
-        // for (auto& x: nearest_atoms) {
-        //      std::cout << "Clash between atom " << atom.name << " " << Utils::format_residue_from_site(Glycosite(*x), structure) << x->to_cra(structure->models[0]).atom->name << std::endl;
-        // }
         clash_score += static_cast<double>(nearest_atoms.size());
     }
     return clash_score;

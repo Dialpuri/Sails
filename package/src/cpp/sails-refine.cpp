@@ -37,6 +37,8 @@ double Sails::TorsionAngleRefiner::calculate_penalty_factor() const {
             return 1e-2;
         case rscc:
             return 1e-5;
+        case q:
+            return 1e-5;
         default:
             return 0;
     }
@@ -65,7 +67,6 @@ double Sails::TorsionAngleRefiner::score_function(std::vector<double> &all_angle
     if (bond_length_delta > 0.3) {
         penalty += bond_length_delta * 1e5;
     }
-    // std::cout << penalty << " " << score << " " << penalty_factor << std::endl;
 
     return score + penalty;
 }

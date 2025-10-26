@@ -13,6 +13,8 @@ namespace Sails::Score {
 
     std::map<Glycosite, double> calculate_qscores(Sails::Density* density, gemmi::Structure* structure, ResidueDatabase &residue_database);
 
+    double calculate_clash_score(gemmi::Residue* residue, gemmi::Structure* structure);
+
     namespace QScore {
         std::vector<gemmi::Position> fibonacci_sphere(int samples, float radius, const gemmi::Position &center);
 

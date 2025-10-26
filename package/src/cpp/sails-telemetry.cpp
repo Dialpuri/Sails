@@ -39,12 +39,12 @@ Sails::TelemetryLog Sails::Telemetry::calculate_log(gemmi::Structure *structure,
             if (residue.atoms.empty()) {continue;}
             const double rscc_score = density->score_residue(residue, rscc);
             const double rsr_score = density->score_residue(residue, rsr);
-            const double dds_score = density->score_residue(residue, dds);
+            const double q_score = density->score_residue(residue, q);
             log[cycle].emplace_back(
                 Utils::format_residue_from_site(site, structure),
                 rscc_score,
                 rsr_score,
-                dds_score);
+                q_score);
         }
     }
     return log;

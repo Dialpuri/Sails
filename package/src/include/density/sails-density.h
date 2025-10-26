@@ -25,7 +25,7 @@ namespace Sails {
 	typedef clipper::HKL_info::HKL_reference_index HRI;
 
 	enum DensityScoreMethod {
-		atomwise, rscc, rsr, dds
+		atomwise, rscc, rsr, q
 	};
 
 	class Density {
@@ -45,6 +45,8 @@ namespace Sails {
         [[nodiscard]] virtual std::unordered_map<std::string, gemmi::Grid<>>* get_calculated_maps()  = 0;
 
 		[[nodiscard]] virtual const DensityScoreMethod get_score_method() const = 0;
+
+		[[nodiscard]] virtual std::pair<float, float> get_map_stats() = 0;
 
 		/**
 		 * @brief Calculates the density for a given box based on a gemmi::Residue object.
@@ -243,6 +245,8 @@ namespace Sails {
 
 
 		[[nodiscard]] std::pair<float, float> calculate_map_statistics(const gemmi::Grid<> *grid) const;
+
+		[[nodiscard]] double q_score(gemmi::Residue &residue);
 
     };
 

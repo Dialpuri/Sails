@@ -43,6 +43,10 @@ void print_rscc(const Sails::Glycosite &site, float rscc, gemmi::Structure *stru
     std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - RSCC = " << rscc << std::endl;
 }
 
+void print_removal_clash(const Sails::Glycosite &site, float rscc, gemmi::Structure *structure) {
+    std::cout << "Removing " << Sails::Utils::format_residue_from_site(site, structure) << " because of clashes (Clash score = " << rscc << ")" << std::endl;
+}
+
 void print_dds(const Sails::Glycosite &site, float dds, gemmi::Structure *structure) {
     std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - DDS = " << dds << std::endl;
 }
@@ -54,6 +58,7 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
 
     // const std::pair<float, float> difference_density_stats = density->calculate_map_statistics(density->get_difference_grid());
     std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(density, structure, residue_database);
+    std::map<Sails::Glycosite, double> qscores = Sails::Score::calculate_qscores(density, structure, residue_database);
 
     std::vector<Sails::Sugar *> to_remove;
     for (const auto &[fst, snd]: *glycan) {
@@ -61,6 +66,15 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
 
         std::optional<Sails::Sugar *> sugar_result = glycan->find_previous_sugar(snd.get());
         if (!sugar_result.has_value()) continue; // if there is nothing previous, it must be a protein residue
+
+        if (residue.name == "FUC") {
+            double clash_score = Sails::Score::calculate_clash_score(&residue, structure);
+            if (clash_score > 2) {
+                print_removal_clash(snd->site, clash_score, structure) ;
+                to_remove.push_back(snd.get());
+                continue;
+            }
+        }
 
         gemmi::Residue previous_residue = Sails::Utils::get_residue_from_glycosite(
             sugar_result.value()->site, structure);
@@ -319,6 +333,10 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
         }
 
         // sort removal in decsending order so removed indices don't cause later array overflow
+        if (verbose && !unmodellable_sites.empty()) {
+            std::cout << "Stopping trials at " << unmodellable_sites.size() << " sites." << std::endl;
+        }
+
         glycosites.erase(
             std::remove_if(glycosites.begin(), glycosites.end(),[&](const Sails::Glycosite &site) {
                 return unmodellable_sites.count(site) > 0;

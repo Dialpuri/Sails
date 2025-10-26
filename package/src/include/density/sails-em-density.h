@@ -25,6 +25,16 @@ namespace Sails {
             return &calculated_maps;
         }
 
+        [[nodiscard]]  std::pair<float, float> get_map_stats() override {
+            if (map_mean == INT_MIN || map_stddev == INT_MIN ) {
+                auto [mean, stddev] = calculate_map_statistics(get_work_grid());
+                map_mean = mean;
+                map_stddev = stddev;
+                return std::make_pair(map_mean, map_stddev);
+            }
+            return std::make_pair(map_mean, map_stddev);
+        }
+
         gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const override;
 
         gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const override;
@@ -65,6 +75,9 @@ namespace Sails {
         *
         * The DensityScoreMethod class is used to represent the score method for scoring residues to density
         */
-        DensityScoreMethod score_method = rscc;
+        DensityScoreMethod score_method = atomwise;
+
+        float map_mean = INT_MIN;
+        float map_stddev = INT_MIN;
     };
 }

@@ -8,6 +8,8 @@
 #include <clipper/contrib/sfweight.h>
 #include <clipper/minimol/minimol.h>
 
+#include "src/include/sails-score.h"
+
 
 double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScoreMethod &method) {
     switch (method) {
@@ -32,8 +34,8 @@ double Sails::Density::score_result(SuperpositionResult& result) {
             return rscc_score(result);
         case rsr:
             return rsr_score(result);
-        // case dds:
-        //     return check_difference_density(result.new_residue, TODO);
+        case q:
+            return q_score(result.new_residue);
         default:
             return -1;
     }
@@ -355,4 +357,31 @@ std::pair<float, float> Sails::Density::calculate_map_statistics(const gemmi::Gr
     float stdev = std::sqrt(sq_sum / grid->data.size());
 
     return std::make_pair(mean, stdev);
+}
+
+double Sails::Density::q_score(gemmi::Residue &residue) {
+    auto [mean, stddev] = get_map_stats();
+
+    const float A = mean + (10 * stddev);
+    const float B = mean - stddev;
+    constexpr float sigma = 0.6;
+    constexpr int N = 8;
+
+    gemmi::Model model = Utils::create_model(residue);
+    gemmi::NeighborSearch ns = {model, get_best_grid()->unit_cell, 2};
+    ns.populate();
+
+    std::vector<double> residue_q_scores = {};
+
+    for (int a = 0; a < residue.atoms.size(); a++) {
+        Glycosite atom_site = {0, 0, 0, a};
+        double atom_q = Score::QScore::calculate_q_score(residue.atoms[a].pos, atom_site, get_work_grid(),
+            ns, A, B, sigma, N);
+        residue_q_scores.emplace_back(atom_q);
+    }
+
+    const double mean_residue_q_score = std::accumulate(residue_q_scores.begin(), residue_q_scores.end(), 0.0)
+                                        / static_cast<int>(residue.atoms.size());
+
+    return mean_residue_q_score;
 }
