@@ -46,6 +46,9 @@ def parse_args():
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
     em_parser_group.add_argument("--mapin", type=str, required=True)
     em_parser_group.add_argument("--resolution", type=float, required=True)
+    em_parser_group.add_argument(
+        "--score", choices=["q", "rscc"], required=False, default="q"
+    )
 
     return parser.parse_args()
 
@@ -83,6 +86,7 @@ def em(args):
         args.resolution,
         args.remove,
         args.threshold,
+        args.score == "q",
         str(resource),
     )
 

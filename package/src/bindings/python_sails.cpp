@@ -284,7 +284,7 @@ NB_MODULE(sails_module, m) {
     m.def("validate", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, bool, float, std::string &>(&validate), "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
 
     // EM
-    m.def("validate", nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, bool, float, std::string &>(&validate), "structure"_a, "grid"_a, "resolution"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+    m.def("validate", nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, bool, float, bool, std::string &>(&validate), "structure"_a, "grid"_a, "resolution"_a, "remove"_a, "threshold"_a, "use_q"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

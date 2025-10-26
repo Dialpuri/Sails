@@ -692,7 +692,7 @@ Sails::Output validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool 
     };
 }
 
-Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float resolution, bool remove, float threshold, std::string& resource_dir) {
+Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float resolution, bool remove, float threshold, bool use_q, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};
     Sails::ResidueDatabase residue_database = loader.load_residue_database();
@@ -700,16 +700,19 @@ Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float r
 
     auto density = Sails::EMDensity(grid, resolution);
 
+
     std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(&density, &structure, residue_database);
     std::map<Sails::Glycosite, double> qscores = Sails::Score::calculate_qscores(&density, &structure, residue_database);
+    std::map<Sails::Glycosite, double> scores = use_q ? qscores : rsccs;
+
 
     std::vector<Sails::Glycosite> to_remove = {};
     std::vector<Sails::TelemetryFormat> log = {};
 
-    for (auto& [site, rscc]: rsccs) {
+    for (auto& [site, score]: scores) {
         std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
-        log.emplace_back(residue_key, rscc, qscores.at(site));
-        if (rscc > threshold) {
+        log.emplace_back(residue_key, rsccs.at(site), qscores.at(site));
+        if (score > threshold) {
                 continue;
         }
         to_remove.emplace_back(site);
@@ -724,7 +727,7 @@ Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float r
             auto glycan = topology.find_glycan_topology(site);
             std::vector<Sails::Sugar*> downstream_sugars = glycan.get_downstream_sugars(site);
             for (auto& downstream_sugar: downstream_sugars) {
-                if (std::find(removal_set.begin(), removal_set.end(), downstream_sugar->site) != removal_set.end()) continue;
+                if (removal_set.count(downstream_sugar->site) > 0) continue;
                 downstream_sugar->site.atom_idx = 0; // remove atom site from site to allow sorting
                 removal_set.insert(downstream_sugar->site);
             }
