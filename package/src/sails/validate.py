@@ -22,7 +22,7 @@ def parse_args():
     group.add_argument("--modelout", type=str, default="sails-validate.cif")
     group.add_argument("--logout", type=str, default="sails-validate.log")
     group.add_argument(
-        "--threshold", type=float, default=0.7, help="RSCC Threshold to use for removal"
+        "--threshold", type=float, default=0.8, help="RSCC Threshold to use for removal"
     )
     group.add_argument("--remove", action=argparse.BooleanOptionalAction, default=False)
     group.add_argument("--print", action=argparse.BooleanOptionalAction, default=False)

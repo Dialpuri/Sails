@@ -705,14 +705,21 @@ Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float r
     std::map<Sails::Glycosite, double> qscores = Sails::Score::calculate_qscores(&density, &structure, residue_database);
     std::map<Sails::Glycosite, double> scores = use_q ? qscores : rsccs;
 
+    // equation from https://doi.org/10.1107/S2059798325005923
+    double q_score_threshold = -0.0016*pow(resolution,2) + 0.0434*pow(resolution,2)-0.3956*resolution + 1.3366;
 
+    double applied_threshold = use_q ? q_score_threshold : threshold ;
+
+    if (remove) {
+        std::cout << "Enforcing score limit of " << applied_threshold << std::endl;
+    }
     std::vector<Sails::Glycosite> to_remove = {};
     std::vector<Sails::TelemetryFormat> log = {};
 
     for (auto& [site, score]: scores) {
         std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
         log.emplace_back(residue_key, rsccs.at(site), qscores.at(site));
-        if (score > threshold) {
+        if (score > applied_threshold) {
                 continue;
         }
         to_remove.emplace_back(site);
