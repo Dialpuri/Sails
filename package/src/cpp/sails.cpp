@@ -68,7 +68,7 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         if (!sugar_result.has_value()) continue; // if there is nothing previous, it must be a protein residue
 
         if (residue.name == "FUC") {
-            double clash_score = Sails::Score::calculate_clash_score(&residue, structure);
+            double clash_score = Sails::Score::calculate_clash_score(snd->site, structure);
             if (clash_score > 2) {
                 print_removal_clash(snd->site, clash_score, structure) ;
                 to_remove.push_back(snd.get());

@@ -90,15 +90,24 @@ std::map<Sails::Glycosite, double> Sails::Score::calculate_qscores(Sails::Densit
     return qscores;
 }
 
-double Sails::Score::calculate_clash_score(gemmi::Residue *residue, gemmi::Structure *structure) {
+double Sails::Score::calculate_clash_score(Sails::Glycosite &site, gemmi::Structure *structure) {
     constexpr double radius = 1;
-    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
+    auto ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
     ns.populate();
 
+    gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(site, structure);
+    site.atom_idx = 0;
+
     double clash_score = 0;
-    for (auto &atom: residue->atoms) {
+    for (auto &atom: residue.atoms) {
         auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
-        clash_score += static_cast<double>(nearest_atoms.size());
+        for (const auto& nearest_atom: nearest_atoms) {
+            Glycosite atom_site = {0, nearest_atom->chain_idx, nearest_atom->residue_idx, 0};
+            if (atom_site == site) continue;
+            clash_score += 1;
+
+        }
+        // clash_score += static_cast<double>(nearest_atoms.size());
     }
     return clash_score;
 }
