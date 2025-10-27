@@ -143,11 +143,11 @@ std::vector<gemmi::Position> Sails::Score::QScore::get_radial_points(const gemmi
     for (int i = 0 ; i < max_iter ; i++) {
         std::vector<gemmi::Position> sampled_sphere = fibonacci_sphere(N+i, radius, position);
         for (const auto& sampled_position: sampled_sphere) {
-            // const gemmi::NeighborSearch::Mark* nearest_atom = ns.find_nearest_atom(sampled_position);
-            // auto nearest_site = Glycosite(*nearest_atom);
-            // if (nearest_site == site) {
-            positions.emplace_back(sampled_position);
-            // }
+            const gemmi::NeighborSearch::Mark* nearest_atom = ns.find_nearest_atom(sampled_position);
+            auto nearest_site = Glycosite(*nearest_atom);
+            if (nearest_site == site) {
+                positions.emplace_back(sampled_position);
+            }
 
             if (positions.size() >= N) {
                 break;
