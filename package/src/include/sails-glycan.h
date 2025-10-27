@@ -374,7 +374,9 @@ namespace Sails {
             std::vector<Glycosite> sites;
             sites.reserve(sugars.size());
             for(const auto&[fst, snd]: sugars) {
-                sites.emplace_back(fst);
+                Glycosite site = fst;
+                site.atom_idx = 0; // set to 0 for later comparisons
+                sites.emplace_back(site);
             }
             return sites;
         }

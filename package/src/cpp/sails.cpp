@@ -176,10 +176,15 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
     Sails::Telemetry telemetry = Sails::Telemetry("");
 
+    Sails::Glycosites original_glycosites = glycosites;
+
     for (int i = 1; i <= cycles; i++) {
         if (!verbose) std::cout << "\rCycle #" << i;
         std::cout << std::flush;
         if (verbose) std::cout << "\rCycle #" << i << std::endl;
+
+        if (glycosites.empty()) break;
+        std::set<Sails::Glycosite> unmodellable_sites = {};
 
         for (auto &glycosite: glycosites) {
             // auto c = Sails::Utils::get_chain_from_glycosite(glycosite, &structure);
@@ -192,6 +197,12 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
             // find terminal sugars
             Sails::Glycan new_glycan = model.extend(glycan, glycosite, density, verbose);
+
+            // if nothing was added, add site to unmodellable list
+            if (new_glycan.size() == glycan.size()) {
+                std::cout << "Nothing new modelled at site:" << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
+                unmodellable_sites.insert(glycosite);
+            }
 
             std::set<Sails::Glycosite> differences = new_glycan - glycan;
             telemetry << differences;
@@ -221,6 +232,12 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+
+            if (new_glycan.empty()) {
+                unmodellable_sites.insert(glycosite);
+                continue;
+            }
+
             new_glycan.renumber();
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
@@ -231,6 +248,19 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
             telemetry.save_snfg(i, glycosite_key, snfg_string);
         }
 
+        if (verbose && !unmodellable_sites.empty()) {
+            std::cout << "Stopping trials at " << unmodellable_sites.size() << " sites." << std::endl;
+            for (const auto& site: unmodellable_sites) {
+                std::cout << "\tSite:" << Sails::Utils::format_residue_from_site(site, &structure) << std::endl;
+            }
+        }
+
+        glycosites.erase(
+            std::remove_if(glycosites.begin(), glycosites.end(),[&](const Sails::Glycosite &site) {
+                return unmodellable_sites.count(site) > 0;
+            }),glycosites.end()
+        );
+
         telemetry.save_state(i);
     }
 
@@ -240,15 +270,15 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
 
     // find and remove any free sugars (likely due to something going wrong)
     std::set<Sails::Glycosite> all_sites = {};
-    for (auto &glycosite: glycosites) {
+    for (auto &glycosite: original_glycosites) {
         Sails::Glycan glycan = topology.find_glycan_topology(glycosite);
         auto sites = glycan.get_sites();
         all_sites.insert(sites.begin(), sites.end());
     }
 
+
     model.remove_free_sites(all_sites);
     topology.set_structure(model.get_structure());
-
 
     // add links and write files
     std::vector<Sails::LinkRecord> links = generate_link_records(&structure, &glycosites, &topology);
@@ -319,10 +349,13 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
 
             Sails::Glycan new_glycan = topology.find_glycan_topology(glycosite);
+
             if (new_glycan.empty()) {
                 unmodellable_sites.insert(glycosite);
                 continue;
             }
+
+            new_glycan.renumber();
 
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
@@ -335,6 +368,9 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
         // sort removal in decsending order so removed indices don't cause later array overflow
         if (verbose && !unmodellable_sites.empty()) {
             std::cout << "Stopping trials at " << unmodellable_sites.size() << " sites." << std::endl;
+            for (const auto& site: unmodellable_sites) {
+                std::cout << "\tSITE:" << Sails::Utils::format_residue_from_site(site, &structure) << std::endl;
+            }
         }
 
         glycosites.erase(
