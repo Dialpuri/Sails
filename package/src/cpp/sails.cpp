@@ -591,7 +591,31 @@ Sails::Output o_mannosylate(gemmi::Structure &structure, gemmi::Grid<>& grid, fl
 
 Sails::Output auto_glycosylate(gemmi::Structure &structure, gemmi::Grid<>& grid, float resolution, gemmi::Grid<>& glycan_grid, gemmi::Grid<>& protein_grid, int cycles, std::string &resource_dir,
                             bool verbose) {
-    Sails::Glycosites glycosites = identify_predicted_sites(structure, glycan_grid, protein_grid, true, resource_dir);
+    Sails::Glycosites predicted_glycosites = identify_predicted_sites(structure, glycan_grid, protein_grid, false, resource_dir);
+    std::cout << "Found " << predicted_glycosites.size() << " potential sites using deep learning models" << std::endl;
+    Sails::Glycosites n_glycosites = Sails::find_n_glycosylation_sites(structure);
+    Sails::Glycosites c_glycosites = Sails::find_c_glycosylation_sites(structure);
+
+    std::set<Sails::Glycosite> glycosites_set = {predicted_glycosites.begin(), predicted_glycosites.end()};
+    glycosites_set.insert(n_glycosites.begin(), n_glycosites.end());
+    glycosites_set.insert(c_glycosites.begin(), c_glycosites.end());
+    Sails::Glycosites glycosites = {glycosites_set.begin(), glycosites_set.end()};
+    int diff = static_cast<int>(glycosites.size()) - static_cast<int>(predicted_glycosites.size());
+    std::cout << "Supplemented with " << diff << " sites from the sequence" << std::endl;
+
+    // prefer to glycosylate N first, then C, then O.
+    std::sort(glycosites.begin(), glycosites.end(),
+            [&](const Sails::Glycosite& a, const Sails::Glycosite& b) {
+                auto rank = [&](const Sails::Glycosite& s) {
+                    gemmi::Residue* residue = Sails::Utils::get_residue_ptr_from_glycosite(s, &structure);
+                    if (residue->name == "ASN") return 0;
+                    if (residue->name == "TRP") return 1;
+                    if (residue->name == "SER" || residue->name == "THR") return 2;
+                    return 3;
+                };
+                return rank(a) < rank(b);
+            });
+
     return run_em_cycle(glycosites, structure, grid, resolution, cycles, resource_dir, false, verbose);
 }
 
