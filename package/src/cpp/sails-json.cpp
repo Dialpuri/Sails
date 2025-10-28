@@ -153,6 +153,7 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
     stream << "{\n";
     stream << "\t\"date\": \"" << strtok(ctime(&t_c), "\n") << "\",\n";
     stream << "\t\"cycles\":[\n\t\t";
+    int cycle_index = 0;
     for (const auto &[cycle, entries]: log) {
         stream << "{\n";
         stream << "\t\t\t\"cycle\": " << cycle << ",\n";
@@ -167,7 +168,7 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
             stream << "\n";
         }
         stream << "\t\t\t}\n\t\t}";
-        if (cycle < log.size()) stream << ",";
+        if (++cycle_index < log.size()) stream << ",";
     }
     stream << "]\n}";
 }

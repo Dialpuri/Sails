@@ -19,8 +19,8 @@ double Sails::Density::score_residue(gemmi::Residue &residue, const DensityScore
             return rscc_score(residue);
         case rsr:
             return rsr_score(residue);
-        // case dds:
-        //     return check_difference_density(residue, TODO);
+        case q:
+            return q_score(residue);
         default:
             return -1;
     }

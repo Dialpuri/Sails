@@ -39,8 +39,16 @@ void print_removal_rscc(const Sails::Glycosite &site, float rscc, gemmi::Structu
     std::cout << "Removing " << Sails::Utils::format_residue_from_site(site, structure) << " because of low RSCC =" << rscc << std::endl;
 }
 
+void print_removal_qscore(const Sails::Glycosite &site, float qscore, gemmi::Structure *structure) {
+    std::cout << "Removing " << Sails::Utils::format_residue_from_site(site, structure) << " because of low Q score =" << qscore << std::endl;
+}
+
 void print_rscc(const Sails::Glycosite &site, float rscc, gemmi::Structure *structure) {
     std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - RSCC = " << rscc << std::endl;
+}
+
+void print_qscore(const Sails::Glycosite &site, float qscore, gemmi::Structure *structure) {
+    std::cout << Sails::Utils::format_residue_from_site(site, structure) << " - Q score = " << qscore << std::endl;
 }
 
 void print_removal_clash(const Sails::Glycosite &site, float rscc, gemmi::Structure *structure) {
@@ -128,6 +136,70 @@ void remove_erroneous_sugars(gemmi::Structure *structure, Sails::Density *densit
         glycan->remove_sugar(sugar);
     }
 }
+
+void remove_erroneous_sugars_em(gemmi::Structure *structure, Sails::Density *density, Sails::Glycan *glycan, float resolution,
+                                bool debug, Sails::ResidueDatabase &residue_database) {
+
+    std::map<Sails::Glycosite, double> qscores = Sails::Score::calculate_qscores(density, structure, residue_database);
+    double qscore_threshold = -0.0016*pow(resolution,2) + 0.0434*pow(resolution,2)-0.3956*resolution + 1.3366;
+
+    std::vector<Sails::Sugar *> to_remove;
+    for (const auto &[fst, snd]: *glycan) {
+        gemmi::Residue residue = Sails::Utils::get_residue_from_glycosite(snd->site, structure);
+
+        std::optional<Sails::Sugar *> sugar_result = glycan->find_previous_sugar(snd.get());
+        if (!sugar_result.has_value()) continue; // if there is nothing previous, it must be a protein residue
+
+        if (residue.name == "FUC") {
+            double clash_score = Sails::Score::calculate_clash_score(snd->site, structure);
+            if (clash_score > 2) {
+                print_removal_clash(snd->site, clash_score, structure) ;
+                to_remove.push_back(snd.get());
+                continue;
+            }
+        }
+
+        gemmi::Residue previous_residue = Sails::Utils::get_residue_from_glycosite(
+            sugar_result.value()->site, structure);
+
+        snd->site.atom_idx = 0; // set atom index to 0 so can be used in comparisons on the residue level
+
+        // remove cases with low rscc
+        if (qscores.count(snd->site) != 0) {
+            const double qscore = qscores.at(snd->site);
+            print_qscore(snd->site, qscore, structure);
+            if (qscore < qscore_threshold) {
+                to_remove.emplace_back(snd.get()); // add pointer to remove
+                if (debug) print_removal_rscc(snd->site, qscore, structure);
+            }
+        } else {
+            std::cout << Sails::Utils::format_site_key(fst) << " | " << Sails::Utils::format_site_key(snd->site) << std::endl;
+            throw std::runtime_error("Glycosite was not found in the RSCC calculation" + Sails::Utils::format_residue_from_site(snd->site, structure));
+        }
+    }
+
+    // add linked sugars to removal list
+    std::set<Sails::Sugar *> additional_sugars;
+    for (auto &sugar: to_remove) {
+        std::vector<Sails::Sugar*> downstream_sugars = glycan->get_downstream_sugars(sugar);
+
+        for (auto& downstream_sugar: downstream_sugars) {
+            if (std::find(to_remove.begin(), to_remove.end(), downstream_sugar) != to_remove.end()) continue;
+            additional_sugars.insert(downstream_sugar);
+        }
+    }
+    to_remove.insert(to_remove.end(), additional_sugars.begin(), additional_sugars.end());
+
+    // sort removal in decsending order so removed indices don't cause later array overflow
+    std::sort(to_remove.begin(), to_remove.end(), [](const Sails::Sugar *a, const Sails::Sugar *b) {
+        return !(a->site < b->site);
+    });
+
+    for (const auto &sugar: to_remove) {
+        glycan->remove_sugar(sugar);
+    }
+}
+
 
 Sails::Glycan get_glycan_topology(gemmi::Structure &structure, Sails::Glycosite &glycosite) {
     Sails::JSONLoader loader = {"package/data/data.json"};
@@ -285,7 +357,6 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
     Sails::add_links_to_structure(model.get_structure(), links);
     Sails::MTZ output_mtz = Sails::form_sails_mtz(*density.get_mtz(), "FP", "SIGFP");
     std::string log_string = telemetry.format_log(&structure, &density, false).value();
-
     Sails::Telemetry::SNFGCycleData snfgs = telemetry.get_snfgs();
     return {
         *model.get_structure(),
@@ -344,7 +415,7 @@ Sails::Output run_em_cycle(Sails::Glycosites &glycosites, gemmi::Structure &stru
 
             // std::cout << "Attempting removal at " << Sails::Utils::format_residue_from_site(glycosite, &structure) << std::endl;
             Sails::Glycan old_glycan = glycan;
-            remove_erroneous_sugars(&structure, &density, &glycan, strict, verbose, residue_database);
+            remove_erroneous_sugars_em(&structure, &density, &glycan, resolution, verbose, residue_database);
 
             topology.set_structure(&structure); // need to update neighbor search after removing n residues
 
