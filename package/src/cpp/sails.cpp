@@ -837,6 +837,81 @@ Sails::Output validate(gemmi::Structure& structure, Sails::MTZ &sails_mtz, bool 
     };
 }
 
+Sails::Output validate_site(gemmi::Structure& structure, Sails::MTZ &sails_mtz, std::string& chain, int seqid, bool remove, float threshold, std::string& resource_dir) {
+    std::string data_file = resource_dir + "/data.json";
+    Sails::JSONLoader loader = {data_file};
+    Sails::ResidueDatabase residue_database = loader.load_residue_database();
+    Sails::LinkageDatabase linkage_database = loader.load_linkage_database();
+
+    gemmi::Mtz mtz = form_gemmi_mtz(sails_mtz);
+    check_spacegroup(&mtz, &structure); // check to ensure the MTZ has a spacegroup
+
+    auto density = Sails::XtalDensity(mtz);
+    density.load_map_coefficients();
+
+    std::vector<Sails::Glycosite> to_remove = {};
+    std::vector<Sails::TelemetryFormat> log = {};
+
+    std::optional<Sails::Glycosite> potential_site = Sails::find_site(structure, chain, seqid);
+    if (!potential_site.has_value()) {
+        throw std::runtime_error("Could not find potential site");
+    }
+    std::cout << "Validating glycans at " << Sails::Utils::format_residue_from_site(potential_site.value(), &structure) << std::endl;
+
+    Sails::Topology topology = {&structure, residue_database};
+    auto glycan = topology.find_glycan_topology(potential_site.value());
+    auto glycan_sites = glycan.get_sites();
+
+    std::cout << "Found " << glycan_sites.size() << " sites" << std::endl;
+
+    std::map<Sails::Glycosite, double> rsccs = Sails::Score::calculate_rsccs(&density, &structure, residue_database);
+
+    for (auto& [site, rscc]: rsccs) {
+        if (std::find(glycan_sites.begin(), glycan_sites.end(), site) == glycan_sites.end()) continue;
+
+        std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
+        log.emplace_back(residue_key, rscc);
+        if (rscc > threshold) {
+                continue;
+        }
+        to_remove.emplace_back(site);
+    }
+
+    if (remove) {
+        Sails::Topology topology = {&structure, residue_database};
+
+        std::set<Sails::Glycosite> removal_set = {to_remove.begin(), to_remove.end()};
+
+        for (auto &site: to_remove) {
+            auto glycan = topology.find_glycan_topology(site);
+            std::vector<Sails::Sugar*> downstream_sugars = glycan.get_downstream_sugars(site);
+            for (auto& downstream_sugar: downstream_sugars) {
+                if (std::find(removal_set.begin(), removal_set.end(), downstream_sugar->site) != removal_set.end()) continue;
+                downstream_sugar->site.atom_idx = 0; // remove atom site from site to allow sorting
+                removal_set.insert(downstream_sugar->site);
+            }
+        }
+
+        std::vector<Sails::Glycosite> removal_list = {removal_set.begin(), removal_set.end()};
+
+        std::sort(removal_list.begin(), removal_list.end(), [](const Sails::Glycosite& a, const Sails::Glycosite& b) {
+            return !(a < b);
+        });
+
+        for (auto &site: removal_list) {
+            const auto residue_ptr = &structure.models[site.model_idx].chains[site.chain_idx].residues;
+            residue_ptr->erase(residue_ptr->begin() + site.residue_idx);
+        }
+    }
+
+
+    std::string log_string = Sails::Telemetry::format_log(log, false, "").value();
+    return {
+        structure,
+        log_string
+    };
+}
+
 Sails::Output validate(gemmi::Structure& structure, gemmi::Grid<>& grid, float resolution, bool remove, float threshold, bool use_q, std::string& resource_dir) {
     std::string data_file = resource_dir + "/data.json";
     Sails::JSONLoader loader = {data_file};

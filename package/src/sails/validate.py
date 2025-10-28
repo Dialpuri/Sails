@@ -4,7 +4,7 @@ import time
 
 from .__version__ import __version__
 import importlib
-from sails import validate, interface
+from sails import validate, validate_site, interface
 
 from .glycosylate import get_column_labels
 
@@ -41,6 +41,8 @@ def parse_args():
     xray_parser_group.add_argument(
         "--colin-fwt", type=str, required=False, default="FWT,PHWT"
     )
+    xray_parser_group.add_argument("--chain", type=str, required=False)
+    xray_parser_group.add_argument("--seqid", type=str, required=False)
 
     em_parser = subparsers.add_parser("em", parents=[parent], formatter_class=formatter)
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
@@ -60,9 +62,20 @@ def xray(args):
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
     sails_mtz = interface.get_sails_mtz(args.mtzin, *labels)
 
-    result = validate(
-        sails_structure, sails_mtz, args.remove, args.threshold, str(resource)
-    )
+    if args.chain and args.seqid:
+        result = validate_site(
+            sails_structure,
+            sails_mtz,
+            args.chain,
+            args.seqid,
+            args.remove,
+            args.threshold,
+            str(resource),
+        )
+    else:
+        result = validate(
+            sails_structure, sails_mtz, args.remove, args.threshold, str(resource)
+        )
 
     structure = interface.extract_sails_structure(result.structure)
     structure.make_mmcif_block().write_file(args.modelout)

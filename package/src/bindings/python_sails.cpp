@@ -282,6 +282,7 @@ NB_MODULE(sails_module, m) {
 
     // XRAY
     m.def("validate", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, bool, float, std::string &>(&validate), "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+    m.def("validate_site", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, std::string&, int, bool, float, std::string &>(&validate_site), "structure"_a, "mtz"_a, "chain"_a, "seqid"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
 
     // EM
     m.def("validate", nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, bool, float, bool, std::string &>(&validate), "structure"_a, "grid"_a, "resolution"_a, "remove"_a, "threshold"_a, "use_q"_a, "resource_dir"_a);
