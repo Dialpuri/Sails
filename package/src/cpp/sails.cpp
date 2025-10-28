@@ -170,7 +170,7 @@ void remove_erroneous_sugars_em(gemmi::Structure *structure, Sails::Density *den
             print_qscore(snd->site, qscore, structure);
             if (qscore < qscore_threshold) {
                 to_remove.emplace_back(snd.get()); // add pointer to remove
-                if (debug) print_removal_rscc(snd->site, qscore, structure);
+                if (debug) print_removal_qscore(snd->site, qscore, structure);
             }
         } else {
             std::cout << Sails::Utils::format_site_key(fst) << " | " << Sails::Utils::format_site_key(snd->site) << std::endl;
@@ -872,8 +872,9 @@ Sails::Output validate_site(gemmi::Structure& structure, Sails::MTZ &sails_mtz, 
         std::string residue_key = Sails::Utils::format_residue_from_site(site, &structure);
         log.emplace_back(residue_key, rscc);
         if (rscc > threshold) {
-                continue;
+            continue;
         }
+        std::cout << "Scheduling " << Sails::Utils::format_residue_from_site(site, &structure) << " for removal because RSCC " <<  rscc << "<" << threshold << std::endl;
         to_remove.emplace_back(site);
     }
 
