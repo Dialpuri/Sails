@@ -181,7 +181,8 @@
             "snfgColour": "#0090bc",
             "preferredDepths": [
                 1,
-                2
+                2,
+                7
             ],
             "anomer": "β",
             "wurcsCode": "a2122h-1b_1-5_2*NCC/3=O",
@@ -311,38 +312,79 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 122.28,
-                        "alphaStdDev": 5.253,
-                        "betaMean": 109.788,
-                        "betaStdDev": 5.253,
-                        "gammaMean": 113.963,
-                        "gammaStdDev": 1.54
+                        "alphaMean": 129.837,
+                        "alphaStdDev": 13.616,
+                        "betaMean": 110.011,
+                        "betaStdDev": 13.616,
+                        "gammaMean": 113.524,
+                        "gammaStdDev": 2.266
                     },
                     "torsions": {
-                        "phiMean": -106.706,
-                        "phiStdDev": 30.219,
-                        "psiMean": 179.446,
-                        "psiStdDev": 28.245,
-                        "omegaMean": 176.266,
-                        "omegaStdDev": 7.108
-                    }
-                },{
+                        "phiMean": 66.501,
+                        "phiStdDev": 101.828,
+                        "psiMean": 180.67,
+                        "psiStdDev": 73.142,
+                        "omegaMean": 161.983,
+                        "omegaStdDev": 18.148
+                    },
+                    "priority": false
+                },
+                {
                     "angles": {
-                        "alphaMean": 127.765,
-                        "alphaStdDev": 8.153,
-                        "betaMean": 112.241,
-                        "betaStdDev": 8.153,
-                        "gammaMean": 113.442,
-                        "gammaStdDev": 1.689
+                        "alphaMean": 127.742,
+                        "alphaStdDev": 5.725,
+                        "betaMean": 109.106,
+                        "betaStdDev": 5.725,
+                        "gammaMean": 114.671,
+                        "gammaStdDev": 1.942
                     },
                     "torsions": {
-                        "phiMean": 54.086,
-                        "phiStdDev": 36.298,
-                        "psiMean": -179.512,
-                        "psiStdDev": 53.054,
-                        "omegaMean": 167.981,
-                        "omegaStdDev": 11.815
-                    }
+                        "phiMean": -97.7,
+                        "phiStdDev": 27.286,
+                        "psiMean": 359.451,
+                        "psiStdDev": 6.833,
+                        "omegaMean": -179.573,
+                        "omegaStdDev": 8.716
+                    },
+                    "priority": false
+                },
+                {
+                    "angles": {
+                        "alphaMean": 121.376,
+                        "alphaStdDev": 4.178,
+                        "betaMean": 109.598,
+                        "betaStdDev": 4.178,
+                        "gammaMean": 113.848,
+                        "gammaStdDev": 1.686
+                    },
+                    "torsions": {
+                        "phiMean": -102.636,
+                        "phiStdDev": 25.777,
+                        "psiMean": 179.124,
+                        "psiStdDev": 6.129,
+                        "omegaMean": 176.271,
+                        "omegaStdDev": 6.38
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 125.118,
+                        "alphaStdDev": 4.63,
+                        "betaMean": 112.176,
+                        "betaStdDev": 4.63,
+                        "gammaMean": 113.306,
+                        "gammaStdDev": 2.018
+                    },
+                    "torsions": {
+                        "phiMean": 57.633,
+                        "phiStdDev": 16.731,
+                        "psiMean": 180.055,
+                        "psiStdDev": 4.686,
+                        "omegaMean": 168.839,
+                        "omegaStdDev": 8.195
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -355,21 +397,22 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 127.838,
-                        "alphaStdDev": 5.582,
-                        "betaMean": 109.84,
-                        "betaStdDev": 5.582,
-                        "gammaMean": 116.699,
-                        "gammaStdDev": 2.541
+                        "alphaMean": 125.332,
+                        "alphaStdDev": 3.684,
+                        "betaMean": 109.285,
+                        "betaStdDev": 3.684,
+                        "gammaMean": 117.773,
+                        "gammaStdDev": 1.929
                     },
                     "torsions": {
-                        "phiMean": 116.884,
-                        "phiStdDev": 25.889,
-                        "psiMean": -176.651,
-                        "psiStdDev": 11.025,
-                        "omegaMean": 162.145,
-                        "omegaStdDev": 35.401
-                    }
+                        "phiMean": 120.063,
+                        "phiStdDev": 13.997,
+                        "psiMean": 183.105,
+                        "psiStdDev": 5.923,
+                        "omegaMean": 166.487,
+                        "omegaStdDev": 27.968
+                    },
+                    "priority": true
                 }
             ]
         },
@@ -382,21 +425,22 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 113.548,
-                        "alphaStdDev": 5.876,
-                        "betaMean": 111.95,
-                        "betaStdDev": 5.876,
-                        "gammaMean": 114.725,
-                        "gammaStdDev": 1.774
+                        "alphaMean": 113.152,
+                        "alphaStdDev": 4.541,
+                        "betaMean": 112.019,
+                        "betaStdDev": 4.541,
+                        "gammaMean": 114.806,
+                        "gammaStdDev": 1.708
                     },
                     "torsions": {
-                        "phiMean": 72.866,
-                        "phiStdDev": 28.094,
-                        "psiMean": 175.3,
-                        "psiStdDev": 33.92,
-                        "omegaMean": 60.137,
-                        "omegaStdDev": 10.249
-                    }
+                        "phiMean": 69.173,
+                        "phiStdDev": 21.872,
+                        "psiMean": 172.894,
+                        "psiStdDev": 30.103,
+                        "omegaMean": 60.268,
+                        "omegaStdDev": 9.139
+                    },
+                    "priority": true
                 }
             ]
         },
@@ -409,21 +453,22 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 113.367,
-                        "alphaStdDev": 6.634,
-                        "betaMean": 111.89,
-                        "betaStdDev": 6.634,
-                        "gammaMean": 114.592,
-                        "gammaStdDev": 2.038
+                        "alphaMean": 112.707,
+                        "alphaStdDev": 5.556,
+                        "betaMean": 111.711,
+                        "betaStdDev": 5.556,
+                        "gammaMean": 114.497,
+                        "gammaStdDev": 1.981
                     },
                     "torsions": {
-                        "phiMean": 86.251,
-                        "phiStdDev": 27.802,
-                        "psiMean": 130.215,
-                        "psiStdDev": 25.722,
-                        "omegaMean": 61.975,
-                        "omegaStdDev": 11.282
-                    }
+                        "phiMean": 88.006,
+                        "phiStdDev": 28.579,
+                        "psiMean": 129.928,
+                        "psiStdDev": 25.827,
+                        "omegaMean": 62.706,
+                        "omegaStdDev": 10.134
+                    },
+                    "priority": true
                 }
             ]
         },
@@ -436,39 +481,79 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 117.289,
-                        "alphaStdDev": 7.737,
-                        "betaMean": 110.997,
-                        "betaStdDev": 7.737,
-                        "gammaMean": 113.811,
-                        "gammaStdDev": 1.418
+                        "alphaMean": 124.537,
+                        "alphaStdDev": 9.917,
+                        "betaMean": 109.82,
+                        "betaStdDev": 9.917,
+                        "gammaMean": 113.801,
+                        "gammaStdDev": 2.256
                     },
                     "torsions": {
-                        "phiMean": 30.089,
-                        "phiStdDev": 51.985,
-                        "psiMean": -124.86,
-                        "psiStdDev": 27.34,
-                        "omegaMean": 175.963,
-                        "omegaStdDev": 7.299
-                    }
+                        "phiMean": 66.225,
+                        "phiStdDev": 110.625,
+                        "psiMean": -138.585,
+                        "psiStdDev": 60.914,
+                        "omegaMean": 172.277,
+                        "omegaStdDev": 11.969
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 112.665,
-                        "alphaStdDev": 4.676,
-                        "betaMean": 111.191,
-                        "betaStdDev": 4.676,
-                        "gammaMean": 113.81,
-                        "gammaStdDev": 1.316
+                        "alphaMean": 118.5,
+                        "alphaStdDev": 4.218,
+                        "betaMean": 110.849,
+                        "betaStdDev": 4.218,
+                        "gammaMean": 114.828,
+                        "gammaStdDev": 1.339
                     },
                     "torsions": {
-                        "phiMean": -80.049,
-                        "phiStdDev": 17.934,
-                        "psiMean": -127.513,
-                        "psiStdDev": 24.467,
-                        "omegaMean": 179.044,
-                        "omegaStdDev": 4.33
-                    }
+                        "phiMean": -92.052,
+                        "phiStdDev": 13.796,
+                        "psiMean": 61.167,
+                        "psiStdDev": 15.518,
+                        "omegaMean": -178.618,
+                        "omegaStdDev": 6.176
+                    },
+                    "priority": false
+                },
+                {
+                    "angles": {
+                        "alphaMean": 113.04,
+                        "alphaStdDev": 3.917,
+                        "betaMean": 111.017,
+                        "betaStdDev": 3.917,
+                        "gammaMean": 113.571,
+                        "gammaStdDev": 1.718
+                    },
+                    "torsions": {
+                        "phiMean": -79.724,
+                        "phiStdDev": 16.764,
+                        "psiMean": -127.925,
+                        "psiStdDev": 15.296,
+                        "omegaMean": 178.681,
+                        "omegaStdDev": 4.643
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 120.232,
+                        "alphaStdDev": 3.25,
+                        "betaMean": 109.47,
+                        "betaStdDev": 3.25,
+                        "gammaMean": 114.125,
+                        "gammaStdDev": 2.327
+                    },
+                    "torsions": {
+                        "phiMean": 85.744,
+                        "phiStdDev": 12.098,
+                        "psiMean": -109.446,
+                        "psiStdDev": 7.651,
+                        "omegaMean": 172.163,
+                        "omegaStdDev": 6.743
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -481,39 +566,60 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 112.045,
-                        "alphaStdDev": 5.979,
-                        "betaMean": 111.561,
-                        "betaStdDev": 5.979,
-                        "gammaMean": 114.921,
-                        "gammaStdDev": 1.979
+                        "alphaMean": 112.17,
+                        "alphaStdDev": 6.577,
+                        "betaMean": 110.888,
+                        "betaStdDev": 6.577,
+                        "gammaMean": 115.115,
+                        "gammaStdDev": 2.084
                     },
                     "torsions": {
-                        "phiMean": -83.971,
-                        "phiStdDev": 30.056,
-                        "psiMean": -159.668,
-                        "psiStdDev": 27.959,
-                        "omegaMean": -63.8,
-                        "omegaStdDev": 8.514
-                    }
+                        "phiMean": -84.596,
+                        "phiStdDev": 30.324,
+                        "psiMean": 169.536,
+                        "psiStdDev": 49.974,
+                        "omegaMean": -64.177,
+                        "omegaStdDev": 10.422
+                    },
+                    "priority": true
                 },
                 {
                     "angles": {
-                        "alphaMean": 111.376,
-                        "alphaStdDev": 3.955,
-                        "betaMean": 112.227,
-                        "betaStdDev": 3.955,
-                        "gammaMean": 115.159,
-                        "gammaStdDev": 2.054
+                        "alphaMean": 111.943,
+                        "alphaStdDev": 3.334,
+                        "betaMean": 111.523,
+                        "betaStdDev": 3.334,
+                        "gammaMean": 115.16,
+                        "gammaStdDev": 1.963
                     },
                     "torsions": {
-                        "phiMean": -81.232,
-                        "phiStdDev": 30.292,
-                        "psiMean": 125.964,
-                        "psiStdDev": 23.346,
-                        "omegaMean": -65.062,
-                        "omegaStdDev": 8.861
-                    }
+                        "phiMean": -73.943,
+                        "phiStdDev": 8.372,
+                        "psiMean": -174.486,
+                        "psiStdDev": 11.471,
+                        "omegaMean": -62.223,
+                        "omegaStdDev": 4.214
+                    },
+                    "priority": false
+                },
+                {
+                    "angles": {
+                        "alphaMean": 111.501,
+                        "alphaStdDev": 2.805,
+                        "betaMean": 112.175,
+                        "betaStdDev": 2.805,
+                        "gammaMean": 115.277,
+                        "gammaStdDev": 1.588
+                    },
+                    "torsions": {
+                        "phiMean": -72.707,
+                        "phiStdDev": 5.713,
+                        "psiMean": 125.347,
+                        "psiStdDev": 17.233,
+                        "omegaMean": -62.404,
+                        "omegaStdDev": 3.752
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -526,39 +632,22 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 114.468,
-                        "alphaStdDev": 3.421,
-                        "betaMean": 113.049,
-                        "betaStdDev": 3.421,
-                        "gammaMean": 115.227,
-                        "gammaStdDev": 2.164
+                        "alphaMean": 114.315,
+                        "alphaStdDev": 4.321,
+                        "betaMean": 113.357,
+                        "betaStdDev": 4.321,
+                        "gammaMean": 114.783,
+                        "gammaStdDev": 2.161
                     },
                     "torsions": {
-                        "phiMean": -67.902,
-                        "phiStdDev": 13.039,
-                        "psiMean": 139.754,
-                        "psiStdDev": 8.787,
-                        "omegaMean": -65.706,
-                        "omegaStdDev": 7.385
-                    }
-                },
-                {
-                    "angles": {
-                        "alphaMean": 120.567,
-                        "alphaStdDev": 5.481,
-                        "betaMean": 110.511,
-                        "betaStdDev": 5.481,
-                        "gammaMean": 115.25,
-                        "gammaStdDev": 2.348
+                        "phiMean": -70.877,
+                        "phiStdDev": 12.529,
+                        "psiMean": 137.662,
+                        "psiStdDev": 14.607,
+                        "omegaMean": -63.846,
+                        "omegaStdDev": 6.328
                     },
-                    "torsions": {
-                        "phiMean": -108.059,
-                        "phiStdDev": 44.452,
-                        "psiMean": 10.613,
-                        "psiStdDev": 44.212,
-                        "omegaMean": -75.286,
-                        "omegaStdDev": 13.871
-                    }
+                    "priority": true
                 }
             ]
         },
@@ -571,39 +660,79 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 112.963,
-                        "alphaStdDev": 4.496,
-                        "betaMean": 111.259,
-                        "betaStdDev": 4.496,
-                        "gammaMean": 113.771,
-                        "gammaStdDev": 1.62
+                        "alphaMean": 120.117,
+                        "alphaStdDev": 6.809,
+                        "betaMean": 114.207,
+                        "betaStdDev": 6.809,
+                        "gammaMean": 113.329,
+                        "gammaStdDev": 2.424
                     },
                     "torsions": {
-                        "phiMean": -83.669,
-                        "phiStdDev": 38.257,
-                        "psiMean": -131.478,
-                        "psiStdDev": 14.602,
-                        "omegaMean": 178.472,
-                        "omegaStdDev": 6.132
-                    }
+                        "phiMean": 117.475,
+                        "phiStdDev": 112.234,
+                        "psiMean": -152.707,
+                        "psiStdDev": 45.381,
+                        "omegaMean": 169.41,
+                        "omegaStdDev": 19.467
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 118.402,
-                        "alphaStdDev": 5.23,
-                        "betaMean": 111.058,
-                        "betaStdDev": 5.23,
-                        "gammaMean": 114.405,
-                        "gammaStdDev": 1.96
+                        "alphaMean": 118.887,
+                        "alphaStdDev": 3.828,
+                        "betaMean": 110.238,
+                        "betaStdDev": 3.828,
+                        "gammaMean": 115.762,
+                        "gammaStdDev": 2.336
                     },
                     "torsions": {
-                        "phiMean": -110.737,
-                        "phiStdDev": 41.555,
-                        "psiMean": 78.36,
-                        "psiStdDev": 25.132,
-                        "omegaMean": 179.908,
-                        "omegaStdDev": 8.293
-                    }
+                        "phiMean": -117.12,
+                        "phiStdDev": 17.269,
+                        "psiMean": 69.913,
+                        "psiStdDev": 15.995,
+                        "omegaMean": -177.385,
+                        "omegaStdDev": 10.382
+                    },
+                    "priority": false
+                },
+                {
+                    "angles": {
+                        "alphaMean": 112.92,
+                        "alphaStdDev": 3.717,
+                        "betaMean": 110.727,
+                        "betaStdDev": 3.717,
+                        "gammaMean": 113.734,
+                        "gammaStdDev": 1.855
+                    },
+                    "torsions": {
+                        "phiMean": -84.638,
+                        "phiStdDev": 16.181,
+                        "psiMean": -131.408,
+                        "psiStdDev": 14.169,
+                        "omegaMean": 179.148,
+                        "omegaStdDev": 5.325
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 117.773,
+                        "alphaStdDev": 3.189,
+                        "betaMean": 113.615,
+                        "betaStdDev": 3.189,
+                        "gammaMean": 111.687,
+                        "gammaStdDev": 1.326
+                    },
+                    "torsions": {
+                        "phiMean": 51.356,
+                        "phiStdDev": 9.507,
+                        "psiMean": -121.891,
+                        "psiStdDev": 7.708,
+                        "omegaMean": 171.466,
+                        "omegaStdDev": 3.746
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -616,39 +745,60 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 112.696,
-                        "alphaStdDev": 4.802,
-                        "betaMean": 111.185,
-                        "betaStdDev": 4.802,
-                        "gammaMean": 114.511,
-                        "gammaStdDev": 1.534
+                        "alphaMean": 122.303,
+                        "alphaStdDev": 8.282,
+                        "betaMean": 112.715,
+                        "betaStdDev": 8.282,
+                        "gammaMean": 114.869,
+                        "gammaStdDev": 3.104
                     },
                     "torsions": {
-                        "phiMean": 124.141,
-                        "phiStdDev": 27.455,
-                        "psiMean": 167.284,
-                        "psiStdDev": 52.376,
-                        "omegaMean": 62.53,
-                        "omegaStdDev": 6.109
-                    }
+                        "phiMean": -103.923,
+                        "phiStdDev": 133.36,
+                        "psiMean": -178.019,
+                        "psiStdDev": 111.488,
+                        "omegaMean": 72.846,
+                        "omegaStdDev": 16.927
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 111.777,
-                        "alphaStdDev": 4.176,
-                        "betaMean": 112.14,
-                        "betaStdDev": 4.176,
-                        "gammaMean": 114.921,
-                        "gammaStdDev": 1.929
+                        "alphaMean": 111.884,
+                        "alphaStdDev": 3.674,
+                        "betaMean": 112.374,
+                        "betaStdDev": 3.674,
+                        "gammaMean": 115.079,
+                        "gammaStdDev": 2.103
                     },
                     "torsions": {
-                        "phiMean": 76.691,
-                        "phiStdDev": 17.032,
-                        "psiMean": 120.879,
-                        "psiStdDev": 18.587,
-                        "omegaMean": 63.32,
-                        "omegaStdDev": 6.55
-                    }
+                        "phiMean": 79.668,
+                        "phiStdDev": 22.254,
+                        "psiMean": 122.875,
+                        "psiStdDev": 21.525,
+                        "omegaMean": 63.173,
+                        "omegaStdDev": 6.833
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 116.704,
+                        "alphaStdDev": 2.744,
+                        "betaMean": 110.516,
+                        "betaStdDev": 2.744,
+                        "gammaMean": 114.326,
+                        "gammaStdDev": 1.492
+                    },
+                    "torsions": {
+                        "phiMean": 115.031,
+                        "phiStdDev": 15.957,
+                        "psiMean": -45.776,
+                        "psiStdDev": 18.655,
+                        "omegaMean": 60.43,
+                        "omegaStdDev": 5.04
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -661,39 +811,60 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 111.245,
-                        "alphaStdDev": 5.137,
-                        "betaMean": 111.618,
-                        "betaStdDev": 5.137,
-                        "gammaMean": 114.578,
-                        "gammaStdDev": 2.196
+                        "alphaMean": 111.97,
+                        "alphaStdDev": 6.422,
+                        "betaMean": 112.206,
+                        "betaStdDev": 6.422,
+                        "gammaMean": 114.618,
+                        "gammaStdDev": 2.526
                     },
                     "torsions": {
-                        "phiMean": 91.041,
-                        "phiStdDev": 36.251,
-                        "psiMean": -165.287,
-                        "psiStdDev": 29.928,
-                        "omegaMean": 62.662,
-                        "omegaStdDev": 6.365
-                    }
+                        "phiMean": 121.737,
+                        "phiStdDev": 59.772,
+                        "psiMean": -161.178,
+                        "psiStdDev": 59.274,
+                        "omegaMean": 67.007,
+                        "omegaStdDev": 11.904
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 111.215,
-                        "alphaStdDev": 5.15,
-                        "betaMean": 111.891,
-                        "betaStdDev": 5.15,
-                        "gammaMean": 114.514,
-                        "gammaStdDev": 1.803
+                        "alphaMean": 111.083,
+                        "alphaStdDev": 3.186,
+                        "betaMean": 111.653,
+                        "betaStdDev": 3.186,
+                        "gammaMean": 114.791,
+                        "gammaStdDev": 1.861
                     },
                     "torsions": {
-                        "phiMean": 99.177,
-                        "phiStdDev": 38.324,
-                        "psiMean": 122.388,
-                        "psiStdDev": 28.196,
-                        "omegaMean": 62.79,
-                        "omegaStdDev": 6.586
-                    }
+                        "phiMean": 75.669,
+                        "phiStdDev": 23.342,
+                        "psiMean": 178.455,
+                        "psiStdDev": 13.232,
+                        "omegaMean": 61.6,
+                        "omegaStdDev": 5.504
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 112.288,
+                        "alphaStdDev": 3.591,
+                        "betaMean": 113.29,
+                        "betaStdDev": 3.591,
+                        "gammaMean": 114.578,
+                        "gammaStdDev": 1.955
+                    },
+                    "torsions": {
+                        "phiMean": 84.192,
+                        "phiStdDev": 19.648,
+                        "psiMean": 87.973,
+                        "psiStdDev": 8.041,
+                        "omegaMean": 59.971,
+                        "omegaStdDev": 5.414
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -706,39 +877,60 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 113.427,
-                        "alphaStdDev": 3.654,
-                        "betaMean": 110.13,
-                        "betaStdDev": 3.654,
-                        "gammaMean": 114.421,
-                        "gammaStdDev": 1.585
+                        "alphaMean": 115.429,
+                        "alphaStdDev": 6.779,
+                        "betaMean": 112.096,
+                        "betaStdDev": 6.779,
+                        "gammaMean": 114.219,
+                        "gammaStdDev": 2.552
                     },
                     "torsions": {
-                        "phiMean": 149.427,
-                        "phiStdDev": 29.129,
-                        "psiMean": 166.702,
-                        "psiStdDev": 28.999,
-                        "omegaMean": 62.546,
-                        "omegaStdDev": 7.578
-                    }
+                        "phiMean": 106.363,
+                        "phiStdDev": 45.966,
+                        "psiMean": 139.652,
+                        "psiStdDev": 51.135,
+                        "omegaMean": 65.193,
+                        "omegaStdDev": 9.841
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 111.736,
-                        "alphaStdDev": 3.807,
-                        "betaMean": 111.726,
-                        "betaStdDev": 3.807,
-                        "gammaMean": 114.934,
-                        "gammaStdDev": 1.849
+                        "alphaMean": 111.999,
+                        "alphaStdDev": 3.669,
+                        "betaMean": 111.888,
+                        "betaStdDev": 3.669,
+                        "gammaMean": 114.916,
+                        "gammaStdDev": 1.883
                     },
                     "torsions": {
-                        "phiMean": 81.341,
-                        "phiStdDev": 15.082,
-                        "psiMean": 127.531,
-                        "psiStdDev": 21.67,
-                        "omegaMean": 62.113,
-                        "omegaStdDev": 5.308
-                    }
+                        "phiMean": 81.869,
+                        "phiStdDev": 11.331,
+                        "psiMean": 135.629,
+                        "psiStdDev": 18.959,
+                        "omegaMean": 61.031,
+                        "omegaStdDev": 4.842
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 116.877,
+                        "alphaStdDev": 2.86,
+                        "betaMean": 114.58,
+                        "betaStdDev": 2.86,
+                        "gammaMean": 114.957,
+                        "gammaStdDev": 2.177
+                    },
+                    "torsions": {
+                        "phiMean": 61.352,
+                        "phiStdDev": 3.213,
+                        "psiMean": 68.128,
+                        "psiStdDev": 4.275,
+                        "omegaMean": 61.197,
+                        "omegaStdDev": 3.494
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -751,39 +943,60 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 111.267,
-                        "alphaStdDev": 4.451,
-                        "betaMean": 112.338,
-                        "betaStdDev": 4.451,
-                        "gammaMean": 115.005,
-                        "gammaStdDev": 1.642
+                        "alphaMean": 157.741,
+                        "alphaStdDev": -0.0,
+                        "betaMean": 84.781,
+                        "betaStdDev": -0.0,
+                        "gammaMean": 115.292,
+                        "gammaStdDev": -0.0
                     },
                     "torsions": {
-                        "phiMean": 87.585,
-                        "phiStdDev": 26.284,
-                        "psiMean": 127.542,
-                        "psiStdDev": 21.99,
-                        "omegaMean": 63.792,
-                        "omegaStdDev": 6.819
-                    }
+                        "phiMean": -162.431,
+                        "phiStdDev": -0.0,
+                        "psiMean": -45.792,
+                        "psiStdDev": -0.0,
+                        "omegaMean": 85.172,
+                        "omegaStdDev": -0.0
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 117.959,
-                        "alphaStdDev": 8.512,
-                        "betaMean": 110.22,
-                        "betaStdDev": 8.512,
-                        "gammaMean": 114.023,
-                        "gammaStdDev": 1.649
+                        "alphaMean": 112.28,
+                        "alphaStdDev": 4.978,
+                        "betaMean": 112.174,
+                        "betaStdDev": 4.978,
+                        "gammaMean": 114.722,
+                        "gammaStdDev": 1.941
                     },
                     "torsions": {
-                        "phiMean": 109.582,
-                        "phiStdDev": 28.224,
-                        "psiMean": -37.08,
-                        "psiStdDev": 30.971,
-                        "omegaMean": 60.351,
-                        "omegaStdDev": 8.854
-                    }
+                        "phiMean": 81.551,
+                        "phiStdDev": 19.6,
+                        "psiMean": 130.234,
+                        "psiStdDev": 22.768,
+                        "omegaMean": 61.843,
+                        "omegaStdDev": 6.198
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 116.969,
+                        "alphaStdDev": 2.361,
+                        "betaMean": 110.661,
+                        "betaStdDev": 2.361,
+                        "gammaMean": 114.473,
+                        "gammaStdDev": 1.862
+                    },
+                    "torsions": {
+                        "phiMean": 108.755,
+                        "phiStdDev": 22.812,
+                        "psiMean": -41.195,
+                        "psiStdDev": 22.631,
+                        "omegaMean": 59.388,
+                        "omegaStdDev": 7.295
+                    },
+                    "priority": false
                 }
             ]
         },
@@ -796,38 +1009,86 @@
             "clusters": [
                 {
                     "angles": {
-                        "alphaMean": 112.164,
-                        "alphaStdDev": 5.285,
-                        "betaMean": 111.948,
-                        "betaStdDev": 5.285,
-                        "gammaMean": 114.89,
-                        "gammaStdDev": 1.67
+                        "alphaMean": 112.833,
+                        "alphaStdDev": 8.327,
+                        "betaMean": 112.546,
+                        "betaStdDev": 8.327,
+                        "gammaMean": 114.25,
+                        "gammaStdDev": 2.213
                     },
                     "torsions": {
-                        "phiMean": 69.439,
-                        "phiStdDev": 16.826,
-                        "psiMean": 178.823,
-                        "psiStdDev": 36.578,
-                        "omegaMean": 63.355,
-                        "omegaStdDev": 7.64
-                    }
+                        "phiMean": 99.941,
+                        "phiStdDev": 58.35,
+                        "psiMean": -179.936,
+                        "psiStdDev": 55.528,
+                        "omegaMean": 67.324,
+                        "omegaStdDev": 12.981
+                    },
+                    "priority": false
                 },
                 {
                     "angles": {
-                        "alphaMean": 110.925,
-                        "alphaStdDev": 3.37,
-                        "betaMean": 110.781,
-                        "betaStdDev": 3.37,
-                        "gammaMean": 114.455,
-                        "gammaStdDev": 1.614
+                        "alphaMean": 111.914,
+                        "alphaStdDev": 3.471,
+                        "betaMean": 111.639,
+                        "betaStdDev": 3.471,
+                        "gammaMean": 114.69,
+                        "gammaStdDev": 2.042
                     },
                     "torsions": {
-                        "phiMean": 145.024,
-                        "phiStdDev": 29.365,
-                        "psiMean": -169.354,
-                        "psiStdDev": 54.477,
-                        "omegaMean": 63.742,
-                        "omegaStdDev": 7.224
+                        "phiMean": 69.712,
+                        "phiStdDev": 11.052,
+                        "psiMean": -174.851,
+                        "psiStdDev": 12.285,
+                        "omegaMean": 60.498,
+                        "omegaStdDev": 5.127
+                    },
+                    "priority": true
+                },
+                {
+                    "angles": {
+                        "alphaMean": 107.91,
+                        "alphaStdDev": 1.048,
+                        "betaMean": 110.222,
+                        "betaStdDev": 1.048,
+                        "gammaMean": 115.455,
+                        "gammaStdDev": 0.482
+                    },
+                    "torsions": {
+                        "phiMean": 120.209,
+                        "phiStdDev": 10.104,
+                        "psiMean": -143.923,
+                        "psiStdDev": 5.034,
+                        "omegaMean": 67.549,
+                        "omegaStdDev": 2.056
+                    },
+                    "priority": false
+                }
+            ]
+        },
+        {
+            "donorResidue": "MAN",
+            "acceptorResidue": "NAG",
+            "donorNumber": 2,
+            "acceptorNumber": 1,
+            "length": 1.4,
+            "clusters": [
+                {
+                    "angles": {
+                        "alphaMean": 112.374,
+                        "alphaStdDev": 4.559,
+                        "betaMean": 110.391,
+                        "betaStdDev": 4.559,
+                        "gammaMean": 113.604,
+                        "gammaStdDev": 1.857
+                    },
+                    "torsions": {
+                        "phiMean": -85.243,
+                        "phiStdDev": 20.485,
+                        "psiMean": 148.418,
+                        "psiStdDev": 20.213,
+                        "omegaMean": 178.521,
+                        "omegaStdDev": 5.397
                     }
                 }
             ]
