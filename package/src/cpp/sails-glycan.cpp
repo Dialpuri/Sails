@@ -141,7 +141,8 @@ std::set<Sails::Glycosite> Sails::Glycan::operator-(const Glycan& glycan) {
 
 std::vector<Sails::Sugar *> Sails::Glycan::get_terminal_sugars(Glycosite &root_seq_id) {
     if (sugars.find(root_seq_id) == sugars.end()) {
-        throw std::runtime_error("Root SeqId is not valid");
+        // throw std::runtime_error("Root SeqId is not valid");
+        return {};
     }
     std::vector<Sugar *> terminal_sugars;
     dfs_terminal(sugars[root_seq_id].get(), terminal_sugars);

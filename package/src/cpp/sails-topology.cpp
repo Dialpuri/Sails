@@ -32,6 +32,12 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
     auto database_entry = m_database[residue.name];
 
     for (const auto &donor: database_entry.donors) {
+        // check if at least one atom, if not add the root but no further sugars
+        gemmi::Atom* atom = residue.find_atom(donor.atom3, '*');
+        if (atom == nullptr) {
+            continue;
+        }
+
         // get donor atoms with that name, could return > 1 with altconfs
         gemmi::AtomGroup donor_atoms = residue.get(donor.atom3);
         for (const auto &donor_atom: donor_atoms) {
