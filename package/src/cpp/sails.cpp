@@ -315,9 +315,9 @@ Sails::Output run_cycle(Sails::Glycosites &glycosites, gemmi::Structure &structu
             std::set<Sails::Glycosite> differences = old_glycan - new_glycan;
             telemetry >> differences;
 
-            // std::string snfg_string = snfg.create_snfg(new_glycan, glycosite);
+            std::string snfg_string = snfg.create_snfg(new_glycan, glycosite);
             std::string glycosite_key = Sails::Utils::format_residue_from_site(glycosite, &structure);
-            // telemetry.save_snfg(i, glycosite_key, snfg_string);
+            telemetry.save_snfg(i, glycosite_key, snfg_string);
         }
 
         if (verbose && !unmodellable_sites.empty()) {

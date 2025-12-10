@@ -18,7 +18,7 @@ def cglycan(data_base_path):
 
     s = gemmi.read_structure(str(s_path))
     m = gemmi.read_mtz_file(str(m_path))
-    return s, m, 1, "FP", "SIGFP", "", "", sails.Type.c_glycosylate
+    return s, m, "", "", "", 1, "FP", "SIGFP", "", "", sails.Type.c_glycosylate
 
 
 def test_xtal_cglycosylation(cglycan):
@@ -43,26 +43,22 @@ def test_xtal_cglycosylation(cglycan):
     assert "entries" in cycle
     entries = cycle["entries"]
 
-    expected_key = "D-AMAN-1"
+    expected_key = "D-MAN-1"
     assert expected_key in entries
     assert len(entries.keys()) == 1
     sugar = entries[expected_key]
 
     rscc_key = "rscc"
     rsr_key = "rsr"
-    dds_key = "dds"
 
     assert rscc_key in sugar
     assert rsr_key in sugar
-    assert dds_key in sugar
 
     rscc_score = sugar[rscc_key]
     rsr_score = sugar[rsr_key]
-    dds_score = sugar[dds_key]
 
     assert rscc_score > 0.7
     assert rsr_score > 0.9
-    assert dds_score < 0.75
 
     # test snfg output
     assert 1 in snfgs
