@@ -178,16 +178,16 @@ def extract_model_names(models: List[Path]) -> List[str]:
     return model_names
 
 
-def find_model(model: ModelType | str | None) -> Path | None:
+def find_model(model: ModelType | str | None) -> Tuple[Path, ModelType] | None:
     """Search through site-packages and CCP4/lib/data for a potential model"""
     potential_models = find_all_potential_models()
     if not potential_models:
         sys.exit(1)
 
-    if not model and len(potential_models) == 1:
-        return Path(potential_models[0])
-
     model_names = extract_model_names(potential_models)
+    if not model and len(potential_models) == 1:
+        return Path(potential_models[0]), ModelType[model_names[0]]
+
     if not model:
         show_multiple_model_error(model_names)
         sys.exit(1)
@@ -199,7 +199,7 @@ def find_model(model: ModelType | str | None) -> Path | None:
 
     for name in model_names:
         if name == specified_model_name:
-            return Path(potential_models[model_names.index(name)])
+            return Path(potential_models[model_names.index(name)]), ModelType[name]
 
     show_missing_specified_model_error(specified_model_name)
     sys.exit(1)

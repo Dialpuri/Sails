@@ -176,8 +176,7 @@ def run():
     """Run prediction from command line arguments"""
     setup_logging()
     args = parse_arguments()
-    model = ModelType[args.model]
-    model_path = find_model(model)
+    model_path, model = find_model(args.model)
     model_configuration = get_model_config(model_path, args.overlap)
     configuration = Configuration(
         use_gpu=args.gpu,
@@ -216,7 +215,7 @@ def predict_map(
     )
 
     model = ModelType[model]
-    model_path = find_model(model)
+    model_path, _ = find_model(model)
     model_configuration = get_model_config(model_path, overlap)
     configuration = Configuration(
         use_gpu=False,

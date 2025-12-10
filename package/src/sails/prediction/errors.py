@@ -21,7 +21,7 @@ def show_multiple_model_error(model_names: List[str]):
     """Show warning when multiple models are found"""
     multiple_model_names = ""
     for model_name in model_names:
-        multiple_model_names += f"\t-model {model_name}\n"
+        multiple_model_names += f"\t-m {model_name}\n"
 
     logging.warning(f"""
     Multiple models have been found in either site_packages or CCP4/lib/data.
