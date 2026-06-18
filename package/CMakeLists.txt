@@ -50,7 +50,7 @@ FetchContent_Declare(
 # Download Gemmi
 FetchContent_Declare(
         gemmi-dependencies
-        URL http://www.ysbl.york.ac.uk/jsd523/gemmi-0.6.5.tar.gz
+        URL https://github.com/Dialpuri/gemmi-bundles/raw/refs/heads/main/gemmi-0.7.3.tar.gz
 )
 
 FetchContent_MakeAvailable(clipper-dependencies mmdb2-dependencies fftw-dependencies ccp4-dependencies gemmi-dependencies)
@@ -101,8 +101,10 @@ add_library(
         ${WRK_DIR}/src/cpp/sails-telemetry.cpp
         ${WRK_DIR}/src/cpp/sails-solvent.cpp
         ${WRK_DIR}/src/cpp/sails-wurcs.cpp
-
+        ${WRK_DIR}/src/cpp/sails-predictions.cpp
         ${WRK_DIR}/src/cpp/sails-morph.cpp
+        ${WRK_DIR}/src/cpp/sails-score.cpp
+
         # Density
         ${WRK_DIR}/src/cpp/density/sails-density.cpp
         ${WRK_DIR}/src/cpp/density/sails-xtal-density.cpp

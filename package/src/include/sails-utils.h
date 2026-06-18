@@ -257,6 +257,36 @@ namespace Sails::Utils {
      * @return a vector of strings split by the delimiter
      */
     std::vector<std::string> split(const std::string &string, char delimiter);
+
+    gemmi::Model create_model(gemmi::Residue& residue);
+
+
+    template <typename T>
+    std::pair<std::vector<T>, std::vector<T>> split_pairs(const std::vector<std::pair<T, T>> &pairs) {
+        std::vector<T> firsts;
+        std::vector<T> seconds;
+        firsts.reserve(pairs.size());
+        seconds.reserve(pairs.size());
+        for (const auto& p : pairs) {
+            firsts.push_back(p.first);
+            seconds.push_back(p.second);
+        }
+        return {std::move(firsts), std::move(seconds)};
+    }
+
+    inline double calculate_average_bfactor(const Glycosite &site, gemmi::Structure * structure) {
+        gemmi::Residue* residue_ptr = get_residue_ptr_from_glycosite(site, structure);
+        const double sum = std::accumulate(residue_ptr->atoms.begin(), residue_ptr->atoms.end(), 0.0, [](const double current, gemmi::Atom& atom) {
+            return current + atom.b_iso;
+        });
+        return sum / residue_ptr->atoms.size();
+    }
+
+    inline void set_all_bfactors(gemmi::Residue * residue, double b_factor) {
+        for (auto & atom : residue->atoms) {
+            atom.b_iso = b_factor;
+        }
+    }
 } // namespace Sails::Utils
 
 

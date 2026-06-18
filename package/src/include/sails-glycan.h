@@ -245,6 +245,26 @@ namespace Sails {
         }
 
         /**
+         * @brief Returns the DFS order of the sugars sites.
+         *
+         * @return A vector of Glycosites in DFS order
+         */
+        [[nodiscard]] std::vector<Sails::Glycosite> get_sugar_site_dfs_order_without_root() {
+            std::vector<Glycosite> sites;
+            dfs_sites(root_sugar, sites, 0);
+            sites.erase(sites.begin());
+            return sites;
+        }
+
+        void renumber() {
+            std::vector<Glycosite> sites = get_sugar_site_dfs_order_without_root();
+            for (int i = 0; i < sites.size(); i++) {
+                gemmi::Residue* residue_ptr = Utils::get_residue_ptr_from_glycosite(sites[i], m_structure);
+                residue_ptr->seqid.num.value = i+1;
+            }
+        }
+
+        /**
          * @brief Returns the order of the sugars.
          *
          * @return A vector of names of sugars in order e.g. NAG,NAG,BMA,MAN
@@ -298,6 +318,25 @@ namespace Sails {
             return count-1;
         }
 
+
+        [[nodiscard]] std::vector<Sugar*> get_downstream_sugars(Sugar* sugar) {
+            std::vector<Sugar*> downstream_sugars;
+            dfs_sugars(sugar, downstream_sugars, 0);
+            // downstream_sugars.erase(downstream_sugars.begin());
+            return downstream_sugars;
+        }
+
+        [[nodiscard]] std::vector<Sugar*> get_downstream_sugars(Glycosite& site) {
+            std::vector<Sugar*> downstream_sugars;
+            if (sugars.count(site) == 0) {
+                return {};
+            }
+            Sugar* sugar = sugars.at(site).get();
+            dfs_sugars(sugar, downstream_sugars, 0);
+            // downstream_sugars.erase(downstream_sugars.begin());
+            return downstream_sugars;
+        }
+
         /**
          * @brief Returns internal adjacency list.
          *
@@ -324,6 +363,24 @@ namespace Sails {
         [[nodiscard]] const std::map<Glycosite, std::unique_ptr<Sugar>>* get_sugars() const {
             return &sugars;
         }
+
+
+        /**
+         * @brief Returns the sites in this glycan.
+         *
+         * @return A ptr to all sugars in this glycan.
+         */
+        [[nodiscard]] std::vector<Glycosite> get_sites() const {
+            std::vector<Glycosite> sites;
+            sites.reserve(sugars.size());
+            for(const auto&[fst, snd]: sugars) {
+                Glycosite site = fst;
+                site.atom_idx = 0; // set to 0 for later comparisons
+                sites.emplace_back(site);
+            }
+            return sites;
+        }
+
 
         /**
          * @brief Adds linkage between two sugars.
@@ -541,7 +598,7 @@ namespace Sails {
          * @param terminal_sugars - A vector to store the terminal sugar molecules found.
          * @param depth - The depth of the current search
          */
-        [[maybe_unused]] void dfs(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
+        [[maybe_unused]] void dfs_terminal(Sugar *current_sugar, std::vector<Sugar *> &terminal_sugars, int depth);
 
         /**
          * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
@@ -553,6 +610,16 @@ namespace Sails {
          */
         [[maybe_unused]] void dfs_sites(Sugar *current_sugar, std::vector<Glycosite> &sites, int depth);
 
+
+        /**
+         * Performs a depth-first search (DFS) on a graph of sugar molecules, starting from
+         * a given sugar and collecting terminal sugars.
+         *
+         * @param current_sugar - The current sugar molecule being visited.
+         * @param sites - A vector to store the sites
+         * @param depth - The depth of the current search
+         */
+        [[maybe_unused]] void dfs_sugars(Sugar *current_sugar, std::vector<Sugar *> &sugars, int depth);
 
         /**
          * @brief Get the structure associated with the glycan.

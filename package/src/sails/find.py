@@ -1,9 +1,17 @@
+import importlib
+import time
+from argparse import ArgumentError
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Tuple
 import gemmi
 import argparse
 import json
+from sails import identify_predicted_sites, GlycoSite
+from .interface import get_sails_structure, get_sails_map
+from .glycosylate import read_prediction_dir, save_log
+from .prediction.model import ModelType
+from .prediction.predict import predict_map
 
 
 def find_n_glycosylation_sites(structure: gemmi.Structure):
@@ -94,27 +102,7 @@ def format_sites(
     return d
 
 
-def run():
-    """
-    Parse command-line arguments, read PDB model, find glycosylation sites,
-    and write the results to an output file in JSON format.
-
-    :return: None
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-modelin", required=True, type=str, help="Path to a model in PDB or CIF format"
-    )
-    parser.add_argument(
-        "-logout",
-        required=False,
-        default="sites.json",
-        type=str,
-        help="Path to output file",
-    )
-
-    args = parser.parse_args()
-
+def sequence_find(args: argparse.Namespace):
     pdb_path = Path(args.modelin)
     if not pdb_path.exists():
         raise FileNotFoundError("Could not find specified file")
@@ -132,3 +120,240 @@ def run():
 
     with open(args.logout, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def convert_residue_name_to_type(residue_name: str) -> str:
+    n_glycans = ["ASN"]
+    o_glycans = ["SER", "THR"]
+    c_glycans = ["TRP"]
+
+    if residue_name in n_glycans:
+        return "n-glycan"
+    elif residue_name in o_glycans:
+        return "o-glycan"
+    elif residue_name in c_glycans:
+        return "c-glycan"
+    return "x-glycan"
+
+
+def convert_glycosites_to_log(
+    glycosites: List[GlycoSite], structure: gemmi.Structure | Path | str
+):
+    if isinstance(structure, str) or isinstance(structure, Path):
+        structure = gemmi.read_structure(str(structure))
+
+    keys = defaultdict(list)
+    for glycosite in glycosites:
+        model = structure[glycosite.model_idx]
+        chain = model[glycosite.chain_idx]
+        residue = chain[glycosite.residue_idx]
+        key = f"{chain.name}-{residue.name}-{residue.seqid.num}"
+        keys[convert_residue_name_to_type(residue.name)].append(key)
+
+    return keys
+
+
+def get_amplitude_phase(args):
+    if "," not in args.colin_fwt:
+        raise ArgumentError("FWT column should be comma separated")
+    return args.colin_fwt.split(",")
+
+
+def xray(args):
+    sails_structure = get_sails_structure(args.modelin)
+    resource = importlib.resources.files("sails").joinpath("data")
+    model = ModelType[args.modeltype]
+    if args.preddirin:
+        predictions = read_prediction_dir(args.preddirin, model)
+    else:
+        amplitude, phase = get_amplitude_phase(args)
+        predictions = predict_map(
+            model.name,
+            args.mtzin,
+            "output",
+            nthreads=8,
+            amplitude=amplitude,
+            phase=phase,
+            save_map=True,
+        )
+
+    if model == ModelType.binary:
+        glycan_predicted_map = predictions
+        sails_grid = get_sails_map(glycan_predicted_map)
+        result = identify_predicted_sites(sails_structure, sails_grid, str(resource))
+    else:
+        glycan_predicted_map, protein_predicted_map = predictions
+        sails_glycan_grid = get_sails_map(glycan_predicted_map)
+        sails_protein_grid = get_sails_map(protein_predicted_map)
+        searchtype = args.searchtype
+        result = identify_predicted_sites(
+            sails_structure,
+            sails_glycan_grid,
+            sails_protein_grid,
+            searchtype == "glycan",
+            str(resource),
+        )
+
+    log = convert_glycosites_to_log(result, args.modelin)
+    save_log(log, args)
+
+
+def em(args):
+    sails_structure = get_sails_structure(args.modelin)
+    resource = importlib.resources.files("sails").joinpath("data")
+    model = ModelType[args.modeltype]
+
+    if args.preddirin:
+        predictions = read_prediction_dir(args.preddirin, model)
+    else:
+        predictions = predict_map(
+            model.name,
+            args.mapin,
+            "output",
+            nthreads=8,
+            save_map=True,
+        )
+
+    if model == ModelType.binary:
+        glycan_predicted_map = predictions
+        sails_grid = get_sails_map(glycan_predicted_map)
+        result = identify_predicted_sites(sails_structure, sails_grid, str(resource))
+    else:
+        glycan_predicted_map, protein_predicted_map = predictions
+        sails_glycan_grid = get_sails_map(glycan_predicted_map)
+        sails_protein_grid = get_sails_map(protein_predicted_map)
+        searchtype = args.searchtype
+        result = identify_predicted_sites(
+            sails_structure,
+            sails_glycan_grid,
+            sails_protein_grid,
+            searchtype == "glycan",
+            str(resource),
+        )
+
+    log = convert_glycosites_to_log(result, args.modelin)
+    save_log(log, args)
+
+
+def density_find(args: argparse.Namespace):
+    t0 = time.time()
+
+    if args.source == "xray":
+        xray(args)
+    elif args.source == "em":
+        em(args)
+    else:
+        raise RuntimeError("Unknown mode")
+
+    t1 = time.time()
+    print(f"Sails Density Identification - Time Taken = {(t1 - t0)} seconds")
+
+
+def run():
+    """
+    Parse command-line arguments, read PDB model, find glycosylation sites,
+    and write the results to an output file in JSON format.
+
+    :return: None
+    """
+
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers(dest="mode", required=True)
+
+    seq_parser = subparsers.add_parser("seq")
+    seq_parser.add_argument(
+        "--modelin",
+        required=True,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    seq_parser.add_argument(
+        "--logout",
+        required=False,
+        default="sites.json",
+        type=str,
+        help="Path to output file",
+    )
+
+    density_parser = subparsers.add_parser("density")
+    density_subparser = density_parser.add_subparsers(dest="source", required=True)
+    xray_parser = density_subparser.add_parser("xray")
+    xray_parser.add_argument(
+        "--mtzin", required=True, type=str, help="Path to mtz file"
+    )
+    xray_parser.add_argument(
+        "--modelin",
+        required=True,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    xray_parser.add_argument(
+        "--preddirin",
+        required=False,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    xray_parser.add_argument(
+        "--logout",
+        required=False,
+        default="sites.json",
+        type=str,
+        help="Path to output file",
+    )
+    xray_parser.add_argument(
+        "--modeltype",
+        required=True,
+        choices=[type.name for type in ModelType],
+        help="Binary or Multiclass model",
+    )
+    xray_parser.add_argument(
+        "--searchtype",
+        required=True,
+        choices=["protein", "glycan"],
+        help="Search for protein or glycan, only used if modeltype is multiclass",
+    )
+    xray_parser.add_argument("--colin-fo", type=str, required=False, default="FP,SIGFP")
+    xray_parser.add_argument(
+        "--colin-fwt", type=str, required=False, default="FWT,PHWT"
+    )
+
+    em_parser = density_subparser.add_parser("em")
+    em_parser.add_argument("--mapin", type=str, required=True)
+    em_parser.add_argument(
+        "--modelin",
+        required=True,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    em_parser.add_argument(
+        "--logout",
+        required=False,
+        default="sites.json",
+        type=str,
+        help="Path to output file",
+    )
+    em_parser.add_argument(
+        "--preddirin",
+        required=False,
+        type=str,
+        help="Path to a model in PDB or CIF format",
+    )
+    em_parser.add_argument(
+        "--modeltype",
+        required=True,
+        choices=[type.name for type in ModelType],
+        help="Binary or Multiclass model",
+    )
+    em_parser.add_argument(
+        "--searchtype",
+        required=True,
+        choices=["protein", "glycan"],
+        help="Search for protein or glycan, only used if modeltype is multiclass",
+    )
+
+    args = parser.parse_args()
+    if args.mode == "seq":
+        sequence_find(args)
+    elif args.mode == "density":
+        density_find(args)

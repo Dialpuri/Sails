@@ -7,7 +7,8 @@
 
 #include <map>
 #include <optional>
-
+#include <algorithm>
+#include <set>
 #include <gemmi/neighbor.hpp>
 
 namespace Sails {
@@ -60,13 +61,15 @@ namespace Sails {
 
         ResidueData(const std::vector<AtomSet> &acceptors, const std::vector<AtomSet> &donors, std::string &snfg_shape,
                     std::string &snfg_colour, std::vector<int> &preferred_depths, std::string &anomer,
-                    std::string &wurcs, bool special
+                    std::string &wurcs, bool special, bool is_sugar
         ) : acceptors(acceptors), donors(donors),
             snfg_shape(std::move(snfg_shape)),
             snfg_colour(std::move(snfg_colour)),
             preferred_depths(preferred_depths),
             anomer(anomer),
-            special(special) {
+            special(special),
+            is_sugar(is_sugar)
+        {
 
             if (!wurcs.empty()) {wurcs_code = wurcs;}
 
@@ -89,6 +92,7 @@ namespace Sails {
         std::vector<int> preferred_depths;
         std::string anomer;
         bool special;
+        bool is_sugar;
         std::optional<std::string> wurcs_code = std::nullopt;
     };
 
@@ -218,6 +222,25 @@ namespace Sails {
     };
 
     typedef std::map<std::string, std::vector<LinkageData> > LinkageDatabase;
+
+    /** @brief Find protein donors in LinkageDatabase
+     *
+     */
+    inline std::set<std::string> find_protein_donors(LinkageDatabase &linkage_database) {
+        std::set<std::string> acceptor_names = {};
+        std::set<std::string> donor_names = {};
+        for (const auto& [donor_name, linkages]: linkage_database) {
+            for (auto& linkage: linkages) {
+                acceptor_names.insert(linkage.acceptor);
+            }
+            donor_names.insert(donor_name);
+        }
+        std::set<std::string> difference = {};
+        std::set_difference(donor_names.begin(), donor_names.end(), acceptor_names.begin(),
+            acceptor_names.end(), std::inserter(difference, difference.begin()));
+        return difference;
+    }
+
 
     /**
      * @class Glycosite

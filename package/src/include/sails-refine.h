@@ -12,7 +12,7 @@
 #include <gemmi/modify.hpp>
 #include <gemmi/model.hpp>
 
-#include <chrono>
+#include <cmath>
 
 
 namespace Sails {

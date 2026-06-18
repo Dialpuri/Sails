@@ -39,12 +39,12 @@ Sails::TelemetryLog Sails::Telemetry::calculate_log(gemmi::Structure *structure,
             if (residue.atoms.empty()) {continue;}
             const double rscc_score = density->score_residue(residue, rscc);
             const double rsr_score = density->score_residue(residue, rsr);
-            const double dds_score = density->score_residue(residue, dds);
+            const double q_score = density->score_residue(residue, q);
             log[cycle].emplace_back(
                 Utils::format_residue_from_site(site, structure),
                 rscc_score,
                 rsr_score,
-                dds_score);
+                q_score);
         }
     }
     return log;
@@ -62,6 +62,24 @@ std::optional<std::string> Sails::Telemetry::format_log(gemmi::Structure *struct
     } else {
         std::stringstream stream;
         writer.write_json_file(log, stream);
+        return stream.str();
+    }
+    return std::nullopt;
+}
+
+
+std::optional<std::string> Sails::Telemetry::format_log(std::vector<TelemetryFormat> &log, bool write, const std::string& filepath) {
+    JSONWriter writer;
+    TelemetryLog telemetry_log;
+    telemetry_log[1] = log;
+
+    if (write) {
+        std::ofstream stream(filepath);
+        writer.write_json_file(telemetry_log, stream);
+        stream.close();
+    } else {
+        std::stringstream stream;
+        writer.write_json_file(telemetry_log, stream);
         return stream.str();
     }
     return std::nullopt;

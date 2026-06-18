@@ -32,6 +32,7 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
     const char *anomer_key = "anomer";
     const char *wurcs_code_key = "wurcsCode";
     const char *special_key = "special";
+    const char *is_sugar_key = "isSugar";
 
 
     ResidueDatabase database;
@@ -54,7 +55,9 @@ Sails::ResidueDatabase Sails::JSONLoader::load_residue_database() {
         std::string wurcs_code = std::string(value[wurcs_code_key].get_string().value());
 
         bool special = value[special_key].get_bool();
-        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer, wurcs_code, special};
+        bool is_sugar = value[is_sugar_key].get_bool();
+
+        ResidueData data = {acceptors_sets, donor_sets, snfg_shape, snfg_colour, preferred_depths, anomer, wurcs_code, special, is_sugar};
         database.insert({name, data});
     }
 
@@ -150,6 +153,7 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
     stream << "{\n";
     stream << "\t\"date\": \"" << strtok(ctime(&t_c), "\n") << "\",\n";
     stream << "\t\"cycles\":[\n\t\t";
+    int cycle_index = 0;
     for (const auto &[cycle, entries]: log) {
         stream << "{\n";
         stream << "\t\t\t\"cycle\": " << cycle << ",\n";
@@ -157,14 +161,14 @@ void Sails::JSONWriter::write_json_file(TelemetryLog &log, std::ostream &stream)
         for (int i = 0; i < entries.size(); ++i) {
             stream << "\t\t\t\t\"" << entries[i].residue_id << "\": {\"rscc\": " << entries[i].rscc_score <<
                     ", \"rsr\": " << entries[i].rsr_score <<
-                    ", \"dds\": " << entries[i].dds_score << "}";
+                    ", \"qscore\": " << entries[i].q_score << "}";
             if (i < entries.size() - 1) {
                 stream << ",";
             }
             stream << "\n";
         }
         stream << "\t\t\t}\n\t\t}";
-        if (cycle < log.size()) stream << ",";
+        if (++cycle_index < log.size()) stream << ",";
     }
     stream << "]\n}";
 }

@@ -25,7 +25,7 @@ namespace Sails {
 	typedef clipper::HKL_info::HKL_reference_index HRI;
 
 	enum DensityScoreMethod {
-		atomwise, rscc, rsr, dds
+		atomwise, rscc, rsr, q
 	};
 
 	class Density {
@@ -45,6 +45,48 @@ namespace Sails {
         [[nodiscard]] virtual std::unordered_map<std::string, gemmi::Grid<>>* get_calculated_maps()  = 0;
 
 		[[nodiscard]] virtual const DensityScoreMethod get_score_method() const = 0;
+
+		[[nodiscard]] virtual std::pair<float, float> get_map_stats() = 0;
+
+		/**
+		 * @brief Calculates the density for a given box based on a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density for the specified box
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 * @param box
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const = 0;
+
+		/**
+		 * @brief Calculates the density for a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const = 0;
+
+		/**
+		 * @brief Calculates the density for a gemmi::Residue object.
+		 *
+		 * This method takes a gemmi::Residue object and calculates the density
+		 * using the gemmi::DensityCalculator class. The density calculation is performed using the
+		 * density score method specified in the constructor of the gemmi::DensityCalculator.
+		 *
+		 * @param residue The gemmi::Residue object for which the density is calculated.
+		 *
+		 * @return The calculated density grid for the specified box.
+		 */
+		virtual gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const = 0;
 
         /**
          * @brief Scores a residue based on the specified density score method.
@@ -83,32 +125,7 @@ namespace Sails {
 		 */
         [[nodiscard]] float atomwise_score(const gemmi::Residue &residue) const;
 
-        /**
-         * @brief Calculates the density for a given box based on a gemmi::Residue object.
-         *
-         * This method takes a gemmi::Residue object and calculates the density for the specified box
-         * using the gemmi::DensityCalculator class. The density calculation is performed using the
-         * density score method specified in the constructor of the gemmi::DensityCalculator.
-         *
-         * @param residue The gemmi::Residue object for which the density is calculated.
-         * @param box
-         *
-         * @return The calculated density grid for the specified box.
-         */
-        gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const;
 
-	    /**
-         * @brief Calculates the density for a gemmi::Residue object.
-         *
-         * This method takes a gemmi::Residue object and calculates the density
-         * using the gemmi::DensityCalculator class. The density calculation is performed using the
-         * density score method specified in the constructor of the gemmi::DensityCalculator.
-         *
-         * @param residue The gemmi::Residue object for which the density is calculated.
-         *
-         * @return The calculated density grid for the specified box.
-         */
-	    gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const;
 
         /**
          * @brief Calculates the RSCC (Real Space Correlation Coefficient) score for a given residue.
@@ -135,7 +152,8 @@ namespace Sails {
          *
          * @return The RSCC between the observed and calculated values.
          */
-        static float calculate_rscc(std::vector<float> obs_values, std::vector<float> calc_values) ;
+		template <typename T>
+        static T calculate_rscc(std::vector<T> obs_values, std::vector<T> calc_values) ;
 
         /**
          * @brief Calculates the RSCC score for a given superposition result.
@@ -197,10 +215,11 @@ namespace Sails {
          * This method calculates the difference density score for the given residue using the difference_grid.
          *
          * @param residue The gemmi::Residue object for which the difference density score is to be calculated.
+         * @param map_stats
          *
          * @return The difference density score for the residue.
          */
-        float difference_density_score(gemmi::Residue &residue) const;
+        int check_difference_density(gemmi::Residue &residue, std::pair<float, float> map_stats) const;
 
         /**
          * @brief Scores an atom
@@ -223,6 +242,11 @@ namespace Sails {
          * @return The score of the position based on the density value at that position.
          */
         [[nodiscard]] float score_position(const gemmi::Position& pos) const;
+
+
+		[[nodiscard]] std::pair<float, float> calculate_map_statistics(const gemmi::Grid<> *grid) const;
+
+		[[nodiscard]] double q_score(gemmi::Residue &residue);
 
     };
 

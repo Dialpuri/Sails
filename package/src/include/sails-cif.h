@@ -88,8 +88,8 @@ namespace Sails {
          */
         std::vector<std::string> labels() {
             double distance = (atom1.pos - atom2.pos).length();
-            std::string res1_seqid = residue1.seqid.str();
-            std::string res2_seqid = residue2.seqid.str();
+            std::string res1_seqid = residue1.seqid.num.str();
+            std::string res2_seqid = residue2.seqid.num.str();
 
             return {
                 id,
@@ -130,7 +130,6 @@ namespace Sails {
             };
         }
 
-    private:
         gemmi::Chain chain1;
         gemmi::Chain chain2;
         gemmi::Residue residue1;
@@ -152,6 +151,9 @@ namespace Sails {
      */
     std::vector<Sails::LinkRecord> generate_link_records(gemmi::Structure *structure, Sails::Glycosites *glycosites,
                                                          Sails::Topology *topology);
+
+
+    void add_links_to_structure(gemmi::Structure *structure, std::vector<Sails::LinkRecord>& link_records);
 
 }
 

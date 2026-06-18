@@ -29,6 +29,61 @@ void Sails::Model::print_successful_log(Sails::Density &density, std::optional<S
             rscc << std::endl;
 }
 
+void Sails::Model::standardise_residue_names() const {
+    std::map<std::string, std::string> names = {
+        {
+            "AMAN", "MAN"
+        }
+    };
+
+    for (int m = 0; m < structure->models.size(); m++) {
+        for (int c = 0; c < structure->models[m].chains.size(); c++) {
+            for (int r = 0; r < structure->models[m].chains[c].residues.size(); r++) {
+                gemmi::Residue* residue = &structure->models[m].chains[c].residues[r];
+                if (names.count(residue->name) == 0) continue;
+
+                std::string new_name = names.at(residue->name);
+                residue->name = new_name;
+            }
+        }
+    }
+}
+
+std::set<Sails::Glycosite> Sails::Model::get_all_glycosites() const {
+    std::set<Glycosite> sites = {};
+    for (auto & model : structure->models) {
+        for (int c = 0; c < model.chains.size(); c++) {
+            for (int r = 0; r < model.chains[c].residues.size(); r++) {
+                const gemmi::Residue* residue_ptr = &model.chains[c].residues[r];
+                if (residue_database.count(residue_ptr->name) > 0) {
+                    ResidueData residue_data = residue_database.at(residue_ptr->name);
+                    if (!residue_data.is_sugar) continue;
+                    Glycosite site = {0, c, r, 0};
+                    sites.insert(site);
+                }
+            }
+        }
+    }
+    return sites;
+}
+
+void Sails::Model::remove_free_sites(std::set<Glycosite> &all_sites) const {
+    std::set<Glycosite> all_sites_in_model = get_all_glycosites();
+    std::vector<Glycosite> free_sites;
+    std::set_difference(all_sites_in_model.begin(), all_sites_in_model.end(),
+                        all_sites.begin(), all_sites.end(),
+                        std::back_inserter(free_sites));
+
+    std::sort(free_sites.begin(), free_sites.end(), [](const Sails::Glycosite& a, const Sails::Glycosite& b) {
+        return !(a < b);
+    });
+
+    for (const auto& site: free_sites) {
+        const auto residues = &structure->models[site.model_idx].chains[site.chain_idx].residues;
+        residues->erase(residues->begin() + site.residue_idx);
+    }
+}
+
 
 // UTILITY FUNCTIONS
 std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monomer, bool remove_h) {
@@ -40,7 +95,6 @@ std::optional<gemmi::Residue> Sails::Model::get_monomer(const std::string &monom
     std::string path = monomer_library_path + "/" + char(std::tolower(monomer.front())) + "/" + monomer + ".cif";
 
     if (!Utils::file_exists(path)) {
-        std::cerr << "File " << path << " does not exist" << std::endl;
         path = special_monomer_path + "/" + monomer + ".cif";
         if (!Utils::file_exists(path)) {
             std::cout << path << " monomer does not exist" << std::endl;
@@ -84,7 +138,7 @@ void Sails::Model::save(const std::string &path, std::vector<LinkRecord> &links)
     std::ofstream os(path);
     gemmi::cif::Document document = make_mmcif_document(*structure);
     gemmi::cif::Block *block = &document.sole_block();
-    auto struct_conn = block->find_or_add("_struct_conn", LinkRecord::tags());
+    auto struct_conn = block->find_or_add("", LinkRecord::tags());
 
     for (LinkRecord &link: links) {
         struct_conn.append_row(link.labels());
@@ -186,17 +240,40 @@ void Sails::Model::remove_leaving_atom(Sails::LinkageData &data, gemmi::Residue 
 void Sails::Model::add_sugar_to_structure(const Sugar *terminal_sugar, SuperpositionResult &favoured_addition,
                                           ChainType &chain_type) {
     int chain_idx = terminal_sugar->site.chain_idx;
-
     if (chain_type == protein) {
-        const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
-        chain_idx = static_cast<int>(last_chain_idx);
-        gemmi::Chain chain = gemmi::Chain("");
-        chain.name = Utils::get_next_string(
-            structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
-        structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
+        gemmi::Model* model = &structure->models[terminal_sugar->site.model_idx];
+        const std::vector<gemmi::Chain>* chains = &model->chains;
+
+        if (chains->empty()) {
+            throw std::runtime_error("No existing chains found in the model. Is it empty?");
+        }
+
+        const auto max_it = std::max_element(chains->begin(), chains->end(),
+            [](const gemmi::Chain& a, const gemmi::Chain& b) {
+                if (a.name.length() != b.name.length()) {
+                    return a.name.length() < b.name.length();
+                }
+                return a.name < b.name;
+            });
+
+        auto new_chain = gemmi::Chain("");
+        new_chain.name = Utils::get_next_string(max_it->name);
+
+        model->chains.emplace_back(std::move(new_chain));
+        chain_idx = static_cast<int>(model->chains.size() - 1);
+
+        // const size_t last_chain_idx = structure->models[terminal_sugar->site.model_idx].chains.size();
+        // chain_idx = static_cast<int>(last_chain_idx);
+        // gemmi::Chain chain = gemmi::Chain("");
+        // chain.name = Utils::get_next_string(
+        //     structure->models[terminal_sugar->site.model_idx].chains[last_chain_idx - 1].name);
+        // structure->models[terminal_sugar->site.model_idx].chains.emplace_back(chain);
     }
 
-    auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
+    double average_donor_bfactor = Utils::calculate_average_bfactor(terminal_sugar->site, structure);
+    Utils::set_all_bfactors(&favoured_addition.new_residue, average_donor_bfactor);
+
+    const auto all_residues = &structure->models[terminal_sugar->site.model_idx].chains[chain_idx].residues;
     favoured_addition.new_residue.seqid = gemmi::SeqId(static_cast<int>(all_residues->size()) + 1, '?');
     all_residues->insert(all_residues->end(), std::move(favoured_addition.new_residue));
 }
@@ -252,11 +329,31 @@ Sails::Model::ChainType Sails::Model::find_chain_type(std::vector<Sugar *> sugar
     return result ? non_protein : protein;
 }
 
-double Sails::Model::calculate_clash_score(const SuperpositionResult &result) const {
-    constexpr double radius = 1;
-    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius).populate();
+double Sails::Model::calculate_clash_score(const SuperpositionResult &result, gemmi::Atom *donor_atom) const {
+    return calculate_clash_score(result.new_residue, donor_atom);
+}
+
+double Sails::Model::calculate_clash_score(const gemmi::Residue &residue, gemmi::Atom *donor_atom) const {
+    constexpr double radius = 1.5;
+    gemmi::NeighborSearch ns = gemmi::NeighborSearch(structure->models[0], structure->cell, radius);
+
+    for (auto & model : structure->models) {
+        for (int c = 0; c < model.chains.size(); c++) {
+            for (int r = 0; r < model.chains[c].residues.size(); r++) {
+                const gemmi::Residue* residue_ptr = &model.chains[c].residues[r];
+                gemmi::ResidueInfo residue_info = gemmi::find_tabulated_residue(residue_ptr->name);
+                if (residue_info.is_amino_acid() || residue_database.count(residue_ptr->name) > 0 ) {
+                    for (int a = 0; a < model.chains[c].residues[r].atoms.size(); a++) {
+                        gemmi::Atom* current_atom_ptr = &model.chains[c].residues[r].atoms[a];
+                        if (donor_atom != current_atom_ptr) ns.add_atom(*current_atom_ptr, c, r, a);
+                    }
+                }
+            }
+        }
+    }
+
     double clash_score = 0;
-    for (auto &atom: result.new_residue.atoms) {
+    for (auto &atom: residue.atoms) {
         auto nearest_atoms = ns.find_atoms(atom.pos, '\0', 0, radius);
         clash_score += static_cast<double>(nearest_atoms.size());
     }
@@ -312,6 +409,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
     SuperpositionResult best_result;
     float best_rscc = INT_MIN;
 
+    int i = 0;
     for (auto &cluster: data.clusters) {
         std::vector<double> torsions = cluster.torsions.get_means_in_order();
         std::vector<double> torsion_stddev = cluster.torsions.get_stddev_in_order();
@@ -337,7 +435,8 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(
         }
 
         // calculate clash score
-        double clash_score = calculate_clash_score(result);
+        double clash_score = calculate_clash_score(result, atoms[2]);
+        // std::cout << std::endl << clash_score << std::endl;
         if (clash_score > 1) {
             continue;
         }
@@ -413,7 +512,7 @@ std::optional<Sails::SuperpositionResult> Sails::Model::add_residue(gemmi::Resid
         SuperpositionResult result = {new_monomer, superpose_result, reference_library_monomer};
 
         // calculate clash score
-        double clash_score = calculate_clash_score(result);
+        double clash_score = calculate_clash_score(result, &atoms[2]);
         if (clash_score < best_clash) {
             best_clash = clash_score;
             best_result = std::move(result);

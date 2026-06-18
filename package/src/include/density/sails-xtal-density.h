@@ -14,6 +14,8 @@ namespace Sails {
 
     	explicit XtalDensity(gemmi::Mtz &mtz, const std::string& F, const std::string& SIGF);
 
+		void load_map_coefficients(const std::string& fwt = "FWT", const std::string& phwt = "PHWT");
+
         [[nodiscard]] const gemmi::Mtz *get_mtz() const override { return &m_mtz; }
 
         [[nodiscard]] const gemmi::Grid<> *get_work_grid() const override { return &m_po_pc_grid; }
@@ -22,13 +24,29 @@ namespace Sails {
 
         [[nodiscard]] const gemmi::Grid<> *get_difference_grid() const override { return &m_difference_grid; }
 
-        [[nodiscard]] const double get_resolution() const override { return 2.0; }
+        [[nodiscard]] const double get_resolution() const override { return m_mtz.resolution_high(); }
 
         [[nodiscard]] const DensityScoreMethod get_score_method() const override { return score_method;}
 
         [[nodiscard]] std::unordered_map <std::string, gemmi::Grid<>> *get_calculated_maps() override {
             return &calculated_maps;
         }
+
+    	[[nodiscard]]  std::pair<float, float> get_map_stats() override {
+        	if (map_mean == INT_MIN || map_stddev == INT_MIN ) {
+        		auto [mean, stddev] = calculate_map_statistics(get_best_grid());
+        		map_mean = mean;
+        		map_stddev = stddev;
+        		return std::make_pair(map_mean, map_stddev);
+        	}
+        	return std::make_pair(map_mean, map_stddev);
+        }
+
+    	gemmi::Grid<> calculate_density_for_box(gemmi::Residue &residue, gemmi::Box<gemmi::Position> &box) const override;
+
+    	gemmi::Grid<> calculate_density_for_grid(gemmi::Residue &residue) const override;
+
+    	gemmi::Grid<> calculate_density_for_structure(gemmi::Structure &structure) const override;
 
         /**
          * @brief Recalculates the map based on the given structure.
@@ -165,5 +183,9 @@ namespace Sails {
          * Clipper best map
          */
         clipper::Xmap<float> m_best_map;
+
+    	float map_mean = INT_MIN;
+    	float map_stddev = INT_MIN;
+
     };
 }

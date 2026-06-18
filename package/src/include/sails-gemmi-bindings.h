@@ -152,11 +152,13 @@ namespace Sails {
      * log string.
      */
     struct Output {
-        Output(gemmi::Structure& structure, MTZ& mtz, std::string log, std::map<int, std::map<std::string, std::string>>& snfgs):
+        Output(gemmi::Structure& structure, MTZ& mtz, std::string& log, std::map<int, std::map<std::string, std::string>>& snfgs):
         structure(structure), mtz(mtz), log(std::move(log)), snfgs(snfgs){};
 
-        Output(gemmi::Structure& structure, std::string log, std::map<int, std::map<std::string, std::string>>& snfgs):
+        Output(gemmi::Structure& structure, std::string& log, std::map<int, std::map<std::string, std::string>>& snfgs):
             structure(structure), log(std::move(log)), snfgs(snfgs){};
+
+        Output(gemmi::Structure& structure, std::string& log): structure(structure), log(std::move(log)) {};
 
         gemmi::Structure structure ;
         MTZ mtz{};

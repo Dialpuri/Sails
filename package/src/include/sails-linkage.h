@@ -14,6 +14,7 @@
 
 #include <string>
 #include <optional>
+#include <algorithm>
 #include <filesystem>
 #include <stack>
 
@@ -142,6 +143,13 @@ namespace Sails {
 
   static gemmi::Residue replace_residue(gemmi::Residue *target_residue,
                                         const std::string &replacement_residue_name);
+
+
+
+  void standardise_residue_names() const;
+
+  void remove_free_sites(std::set<Glycosite>& all_sites) const;
+
  private:
   typedef std::map<int, std::vector<Sails::SuperpositionResult> > PossibleAdditions;
 
@@ -217,9 +225,21 @@ namespace Sails {
    * SuperpositionResult. Nearby atoms are found using a NeighborSearch with a given radius.
    *
    * @param result The SuperpositionResult from which to calculate the clash score.
+   * @param donor_atom
    * @return The calculated clash score.
    */
-  [[nodiscard]] double calculate_clash_score(const SuperpositionResult &result) const;
+  [[nodiscard]] double calculate_clash_score(const SuperpositionResult &result, gemmi::Atom *donor_atom) const;
+
+  /** @brief Calculates the clash score for the given SuperpositionResult.
+   *
+   * The clash score is calculated by finding the number of nearby atoms for each atom in the
+   * SuperpositionResult. Nearby atoms are found using a NeighborSearch with a given radius.
+   *
+   * @param result The SuperpositionResult from which to calculate the clash score.
+   * @param donor_atom
+   * @return The calculated clash score.
+   */
+  [[nodiscard]] double calculate_clash_score(const gemmi::Residue &residue, gemmi::Atom *donor_atom) const;
 
 
   /**
@@ -251,6 +271,10 @@ namespace Sails {
   template <typename T>
   static void move_acceptor_atomic_positions(std::vector<T> &atoms, double length,
                                              std::vector<double> &angles, std::vector<double> &torsions);
+
+
+  [[nodiscard]] std::set<Glycosite> get_all_glycosites() const;
+
 
   // /**
   //  * @brief Move the positions of acceptor atoms based on given parameters.

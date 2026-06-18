@@ -38,6 +38,58 @@ NB_MODULE(sails_module, m) {
                         .def_rw("delfwt_phdelwt", &Sails::Reflection::delfwt_phdelwt);
 
 
+        nb::class_<gemmi::ResidueId>(m, "ResidueId")
+            .def_rw("seqid", &gemmi::ResidueId::seqid)
+            .def_rw("segment", &gemmi::ResidueId::segment)
+            .def_rw("name", &gemmi::ResidueId::name);
+
+        nb::class_<gemmi::AtomAddress>(m, "AtomAddress")
+            .def(nb::init<>())
+            .def(nb::init<const std::string&, const gemmi::ResidueId&, const std::string&, char>(),
+                 nb::arg("chain_name"), nb::arg("res_id"), nb::arg("atom_name"), nb::arg("altloc") = '\0')
+            .def(nb::init<const std::string&, const gemmi::SeqId&, const std::string&, const std::string&, char>(),
+                 nb::arg("chain_name"), nb::arg("seq_id"), nb::arg("res"), nb::arg("atom_name"), nb::arg("altloc") = '\0')
+            .def_rw("chain_name", &gemmi::AtomAddress::chain_name)
+            .def_rw("res_id", &gemmi::AtomAddress::res_id)
+            .def_rw("atom_name", &gemmi::AtomAddress::atom_name)
+            .def_rw("altloc", &gemmi::AtomAddress::altloc)
+            .def("__eq__", &gemmi::AtomAddress::operator==)
+            .def("__str__", &gemmi::AtomAddress::str);
+
+        nb::enum_<gemmi::Connection::Type>(m, "ConnectionType")
+            .value("Covale", gemmi::Connection::Type::Covale)
+            .value("Disulf", gemmi::Connection::Type::Disulf)
+            .value("Hydrog", gemmi::Connection::Type::Hydrog)
+            .value("MetalC", gemmi::Connection::Type::MetalC)
+            .value("Unknown", gemmi::Connection::Type::Unknown);
+
+        nb::bind_vector<std::vector<gemmi::Connection> >(m, "Connections");
+
+        nb::class_<gemmi::Connection>(m, "Connection")
+            .def(nb::init<>())
+            .def_rw("name", &gemmi::Connection::name)
+            .def_rw("link_id", &gemmi::Connection::link_id)
+            .def_rw("type", &gemmi::Connection::type)
+            .def_rw("asu", &gemmi::Connection::asu)
+            .def_rw("partner1", &gemmi::Connection::partner1)
+            .def_rw("partner2", &gemmi::Connection::partner2)
+            .def_rw("reported_distance", &gemmi::Connection::reported_distance)
+            .def_prop_rw(
+                "reported_sym",
+                [](gemmi::Connection &self) {
+                    return nb::cast(std::array<short, 4>{
+                        self.reported_sym[0],
+                        self.reported_sym[1],
+                        self.reported_sym[2],
+                        self.reported_sym[3]
+                    });
+                },
+                [](gemmi::Connection &self, const std::array<short, 4> &arr) {
+                    for (size_t i = 0; i < 4; ++i)
+                        self.reported_sym[i] = arr[i];
+                });
+
+
         // gemmi Structure
         nb::class_<gemmi::Structure>(m, "Structure")
                         .def(nb::init<>())
@@ -45,6 +97,8 @@ NB_MODULE(sails_module, m) {
                         .def("cell", [](const gemmi::Structure &structure) {
                                 return Sails::Cell(structure.cell);
                         })
+                        .def_rw("connections", &gemmi::Structure::connections)
+                        .def_rw("spacegroup_hm", &gemmi::Structure::spacegroup_hm)
                         .def("set_cell", [](gemmi::Structure &structure, const Sails::Cell &cell) {
                                 structure.cell = gemmi::UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta,
                                                                  cell.gamma);
@@ -54,7 +108,7 @@ NB_MODULE(sails_module, m) {
 
         nb::class_<gemmi::Model>(m, "Model")
                         .def(nb::init<>())
-                        .def_rw("name", &gemmi::Model::name)
+                        .def_rw("num", &gemmi::Model::num)
                         .def_rw("chains", &gemmi::Model::chains);
         nb::bind_vector<std::vector<gemmi::Chain> >(m, "Chains");
 
@@ -139,6 +193,7 @@ NB_MODULE(sails_module, m) {
                         .def_rw("chain_idx", &Sails::Glycosite::chain_idx)
                         .def_rw("residue_idx", &Sails::Glycosite::residue_idx)
                         .def_rw("atom_idx", &Sails::Glycosite::atom_idx);
+        nb::bind_vector<std::vector<Sails::Glycosite> >(m, "GlycoSites");
 
         nb::class_<Sails::Dot>(m, "Dot")
                         .def(nb::init<gemmi::Structure &>())
@@ -188,20 +243,49 @@ NB_MODULE(sails_module, m) {
           "mtz"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
 
     m.def("n_glycosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&n_glycosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&n_glycosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
     m.def("c_glycosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&c_glycosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&c_glycosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
     m.def("o_mannosylate",
-          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, int, std::string &, bool>(&o_mannosylate),
-          "structure"_a, "grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+          nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, int, std::string &, bool>(&o_mannosylate),
+          "structure"_a, "grid"_a, "resolution"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("auto_glycosylate",
+      nb::overload_cast<gemmi::Structure &, Sails::MTZ &, gemmi::Grid<>&, gemmi::Grid<>&, int, std::string &, bool>(&auto_glycosylate), "structure"_a,
+      "mtz"_a, "glycan_grid"_a, "protein_grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("auto_glycosylate",
+        nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, gemmi::Grid<>&, gemmi::Grid<>&, int, std::string &, bool>(&auto_glycosylate), "structure"_a,
+        "grid"_a, "resolution"_a, "glycan_grid"_a, "protein_grid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("glycosylate_site",
+      nb::overload_cast<gemmi::Structure &, Sails::MTZ &, std::string&, int, int, std::string &, bool>(&glycosylate_site), "structure"_a,
+      "mtz"_a, "chain"_a, "seqid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("glycosylate_site",
+      nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, std::string&, int, int, std::string &, bool>(&glycosylate_site), "structure"_a,
+      "grid"_a, "resolution"_a, "chain"_a, "seqid"_a, "cycles"_a, "resource_dir"_a, "verbose"_a);
+
+    m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, std::string &>(&identify_predicted_sites),
+        "structure"_a, "glycan_grid"_a, "resource_dir"_a);
+    m.def("identify_predicted_sites", nb::overload_cast<gemmi::Structure &, gemmi::Grid<>&, gemmi::Grid<>&, bool, std::string &>(&identify_predicted_sites),
+        "structure"_a, "glycan_grid"_a, "protein_grid"_a, "use_glycan"_a, "resource_dir"_a);
+
 
     m.def("find_all_wurcs", &find_all_wurcs, "structure"_a, "resource_dir"_a);
     m.def("find_wurcs", &find_wurcs, "structure"_a, "chain"_a, "seqid"_a,  "resource_dir"_a);
     m.def("model_wurcs", &model_wurcs, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
 
     m.def("morph", &morph, "structure"_a, "wurcs"_a, "chain"_a, "seqid"_a, "resource_dir"_a);
+
+    // XRAY
+    m.def("validate", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, bool, float, std::string &>(&validate), "structure"_a, "mtz"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+    m.def("validate_site", nb::overload_cast<gemmi::Structure &, Sails::MTZ &, std::string&, int, bool, float, std::string &>(&validate_site), "structure"_a, "mtz"_a, "chain"_a, "seqid"_a, "remove"_a, "threshold"_a, "resource_dir"_a);
+
+    // EM
+    m.def("validate", nb::overload_cast<gemmi::Structure &, gemmi::Grid<> &, float, bool, float, bool, std::string &>(&validate), "structure"_a, "grid"_a, "resolution"_a, "remove"_a, "threshold"_a, "use_q"_a, "resource_dir"_a);
 
     m.def("test_snfg", &test);
 

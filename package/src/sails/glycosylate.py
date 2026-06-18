@@ -8,13 +8,24 @@ from pathlib import Path
 from typing import Tuple, List
 
 import gemmi
-from sails import interface, n_glycosylate, c_glycosylate, o_mannosylate, __version__
+from sails import (
+    interface,
+    n_glycosylate,
+    c_glycosylate,
+    o_mannosylate,
+    __version__,
+    auto_glycosylate,
+    glycosylate_site,
+)
+from .prediction.model import ModelType
+from .prediction.predict import predict_map
 
 
 class Type(enum.IntEnum):
     n_glycosylate = 1
     c_glycosylate = 2
     o_mannosylate = 3
+    auto = 4
 
     def __str__(self):
         return self.name
@@ -37,12 +48,40 @@ def map_type_to_function(type: Type):
     if type == Type.o_mannosylate:
         return o_mannosylate
 
+    if type == Type.auto:
+        return auto_glycosylate
+
     raise TypeError("Type not found")
+
+
+def read_prediction_dir(
+    path: Path | str, model_type: ModelType
+) -> gemmi.FloatGrid | Tuple[gemmi.FloatGrid, gemmi.FloatGrid]:
+    path = Path(path)
+    glycan_path = path / "sails-glycan.map"
+    protein_path = path / "sails-protein.map"
+
+    if not glycan_path.exists():
+        raise FileNotFoundError(glycan_path)
+
+    if model_type == ModelType.multiclass:
+        if not protein_path.exists():
+            raise FileNotFoundError(protein_path)
+
+    glycan_map = gemmi.read_ccp4_map(str(glycan_path))
+
+    if model_type == ModelType.multiclass:
+        protein_map = gemmi.read_ccp4_map(str(protein_path))
+        return glycan_map.grid, protein_map.grid
+    return glycan_map.grid
 
 
 def glycosylate_xtal(
     structure: gemmi.Structure | Path | str,
     mtz: gemmi.Mtz | Path | str,
+    preddirin: Path | str,
+    chain: str,
+    seqid: int | str,
     cycles: int,
     f: str,
     sigf: str,
@@ -68,8 +107,48 @@ def glycosylate_xtal(
     sails_mtz = interface.get_sails_mtz(mtz, f, sigf, fwt, phwt)
     resource = importlib.resources.files("sails").joinpath("data")
 
-    func = map_type_to_function(type)
-    result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
+    if chain and seqid:
+        result = glycosylate_site(
+            sails_structure,
+            sails_mtz,
+            chain,
+            int(seqid),
+            cycles,
+            str(resource),
+            verbose,
+        )
+        return (
+            interface.extract_sails_structure(result.structure),
+            interface.extract_sails_mtz(result.mtz),
+            json.loads(result.log),
+            result.snfgs,
+        )
+
+    if type == Type.auto:
+        if preddirin:
+            predictions = read_prediction_dir(
+                preddirin, model_type=ModelType.multiclass
+            )
+        else:
+            predictions = predict_map(
+                "multiclass", mtz, "output", nthreads=8, save_map=True
+            )
+        glycan, protein = predictions
+        sails_glycan = interface.get_sails_map(glycan)
+        sails_protein = interface.get_sails_map(protein)
+
+        result = auto_glycosylate(
+            sails_structure,
+            sails_mtz,
+            sails_glycan,
+            sails_protein,
+            cycles,
+            str(resource),
+            verbose,
+        )
+    else:
+        func = map_type_to_function(type)
+        result = func(sails_structure, sails_mtz, cycles, str(resource), verbose)
 
     return (
         interface.extract_sails_structure(result.structure),
@@ -82,6 +161,10 @@ def glycosylate_xtal(
 def glycosylate_em(
     structure: gemmi.Structure | Path | str,
     map: gemmi.Ccp4Map | gemmi.FloatGrid | Path | str,
+    preddirin: Path | str,
+    resolution: float,
+    chain: str,
+    seqid: int | str,
     cycles: int,
     type: Type = Type.n_glycosylate,
     verbose: bool = False,
@@ -90,8 +173,51 @@ def glycosylate_em(
     sails_grid = interface.get_sails_map(map)
     resource = importlib.resources.files("sails").joinpath("data")
 
-    func = map_type_to_function(type)
-    result = func(sails_structure, sails_grid, cycles, str(resource), verbose)
+    if chain and seqid:
+        result = glycosylate_site(
+            sails_structure,
+            sails_grid,
+            resolution,
+            chain,
+            int(seqid),
+            cycles,
+            str(resource),
+            verbose,
+        )
+        return (
+            interface.extract_sails_structure(result.structure),
+            json.loads(result.log),
+            result.snfgs,
+        )
+
+    if type == Type.auto:
+        if preddirin:
+            predictions = read_prediction_dir(
+                preddirin, model_type=ModelType.multiclass
+            )
+        else:
+            predictions = predict_map(
+                "multiclass", map, "output", nthreads=8, save_map=True
+            )
+        glycan, protein = predictions
+        sails_glycan = interface.get_sails_map(glycan)
+        sails_protein = interface.get_sails_map(protein)
+
+        result = auto_glycosylate(
+            sails_structure,
+            sails_grid,
+            resolution,
+            sails_glycan,
+            sails_protein,
+            cycles,
+            str(resource),
+            verbose,
+        )
+    else:
+        func = map_type_to_function(type)
+        result = func(
+            sails_structure, sails_grid, resolution, cycles, str(resource), verbose
+        )
 
     return (
         interface.extract_sails_structure(result.structure),
@@ -160,9 +286,19 @@ def save_snfgs(snfgs: dict, snfg_path: Path):
 def xray(args):
     labels = get_column_labels(args.colin_fo, args.colin_fwt)
 
-    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    cycles = (
+        args.cycles if args.type == Type.n_glycosylate or args.type == Type.auto else 1
+    )
     structure, mtz, log, snfgs = glycosylate_xtal(
-        args.modelin, args.mtzin, cycles, *labels, args.type, args.v
+        args.modelin,
+        args.mtzin,
+        args.preddirin,
+        args.chain,
+        args.seqid,
+        cycles,
+        *labels,
+        args.type,
+        args.v,
     )
 
     if args.snfgout:
@@ -175,9 +311,19 @@ def xray(args):
 
 
 def em(args):
-    cycles = args.cycles if args.type == Type.n_glycosylate else 1
+    cycles = (
+        args.cycles if args.type == Type.n_glycosylate or args.type == Type.auto else 1
+    )
     structure, log, snfgs = glycosylate_em(
-        args.modelin, args.mapin, cycles, args.type, args.v
+        args.modelin,
+        args.mapin,
+        args.preddirin,
+        args.resolution,
+        args.chain,
+        args.seqid,
+        cycles,
+        args.type,
+        args.v,
     )
     structure.make_mmcif_block().write_file(args.modelout)
     save_log(log, args)
@@ -207,16 +353,19 @@ def parse_args():
     parent = argparse.ArgumentParser(add_help=False)
     group = parent.add_argument_group("Required arguments for all modes")
     group.add_argument("-v", action=argparse.BooleanOptionalAction, default=False)
-    group.add_argument("-modelin", type=str, required=True)
+    group.add_argument("--modelin", type=str, required=True)
+    group.add_argument("--preddirin", type=str, required=False)
     group.add_argument(
-        "-modelout", type=str, required=False, default="sails-model-out.cif"
+        "--modelout", type=str, required=False, default="sails-model-out.cif"
     )
-    group.add_argument("-logout", type=str, default="sails-log.json")
-    group.add_argument("-snfgout", type=str)
-    group.add_argument("-cycles", type=int, required=False, default=2)
+    group.add_argument("--logout", type=str, default="sails-log.json")
+    group.add_argument("--snfgout", type=str)
+    group.add_argument("--cycles", type=int, required=False, default=2)
     group.add_argument(
-        "-type", type=Type.from_string, choices=list(Type), default=Type.n_glycosylate
+        "--type", type=Type.from_string, choices=list(Type), default=Type.auto
     )
+    group.add_argument("--chain", type=str, required=False)
+    group.add_argument("--seqid", type=str, required=False)
 
     formatter = argparse.ArgumentDefaultsHelpFormatter
     xray_parser = subparsers.add_parser(
@@ -225,17 +374,18 @@ def parse_args():
     xray_parser_group = xray_parser.add_argument_group(
         "Required arguments in X-ray mode"
     )
-    xray_parser_group.add_argument("-mtzin", type=str, required=True)
+    xray_parser_group.add_argument("--mtzin", type=str, required=True)
     xray_parser_group.add_argument(
-        "-mtzout", type=str, required=False, default="sails-refln-out.mtz"
+        "--mtzout", type=str, required=False, default="sails-refln-out.mtz"
     )
     xray_parser_group.add_argument(
-        "-colin-fo", type=str, required=False, default="FP,SIGFP"
+        "--colin-fo", type=str, required=False, default="FP,SIGFP"
     )
-    xray_parser_group.add_argument("-colin-fwt", type=str, required=False, default="")
+    xray_parser_group.add_argument("--colin-fwt", type=str, required=False, default="")
 
     em_parser = subparsers.add_parser("em", parents=[parent], formatter_class=formatter)
     em_parser_group = em_parser.add_argument_group("Required arguments in EM mode")
-    em_parser_group.add_argument("-mapin", type=str, required=True)
+    em_parser_group.add_argument("--mapin", type=str, required=True)
+    em_parser_group.add_argument("--resolution", type=float, required=True)
 
     return parser.parse_args()

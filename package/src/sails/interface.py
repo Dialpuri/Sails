@@ -122,7 +122,7 @@ def extract_gemmi_structure(structure: gemmi.Structure) -> sails.Structure:
         )
     )
     om = sails.Model()
-    om.name = structure[0].name
+    om.num = structure[0].num
     for chain in structure[0]:
         oc = sails.Chain()
         oc.name = chain.name
@@ -148,6 +148,36 @@ def extract_gemmi_structure(structure: gemmi.Structure) -> sails.Structure:
         om.chains.append(oc)
     os.models.append(om)
     return os
+
+
+def extract_sails_atom_address(atom_address: sails.AtomAddress):
+    oa = gemmi.AtomAddress()
+    oa.chain_name = atom_address.chain_name
+    oa.atom_name = atom_address.atom_name
+
+    oseqid = gemmi.SeqId(
+        atom_address.res_id.seqid.num(), atom_address.res_id.seqid.icode()
+    )
+
+    oresid = gemmi.ResidueId()
+    oresid.seqid = oseqid
+    oresid.name = atom_address.res_id.name
+    oa.res_id = oresid
+
+    return oa
+
+
+def extract_sails_connections(connections: sails.Connections):
+    connection_list = gemmi.ConnectionList()
+
+    for connection in connections:
+        oconnection = gemmi.Connection()
+        oconnection.type = gemmi.ConnectionType[connection.type.__name__]
+        oconnection.partner1 = extract_sails_atom_address(connection.partner1)
+        oconnection.partner2 = extract_sails_atom_address(connection.partner2)
+
+        connection_list.append(oconnection)
+    return connection_list
 
 
 def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
@@ -178,6 +208,8 @@ def extract_sails_structure(structure: sails.Structure) -> gemmi.Structure:
 
     cell = structure.cell()
     os.cell = gemmi.UnitCell(cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma)
+    os.spacegroup_hm = structure.spacegroup_hm
+    os.connections = extract_sails_connections(structure.connections)
 
     return os
 

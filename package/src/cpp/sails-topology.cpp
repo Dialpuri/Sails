@@ -25,10 +25,19 @@ void Sails::Topology::find_residue_near_donor(Glycosite &glycosite, Glycan &glyc
     gemmi::Residue residue = Utils::get_residue_from_glycosite(glycosite, m_structure);
 
     // std::cout << "Searching near " << Utils::get_chain_from_glycosite(glycosite, m_structure).name << "-" << Utils::format_residue_key(&residue) << std::endl;
-    if (m_database.find(residue.name) == m_database.end()) { throw std::runtime_error("Glycosite is not in database"); }
+    if (m_database.find(residue.name) == m_database.end()) {
+        std::cout << residue.name << std::endl;
+        throw std::runtime_error("Glycosite is not in database");
+    }
     auto database_entry = m_database[residue.name];
 
     for (const auto &donor: database_entry.donors) {
+        // check if at least one atom, if not add the root but no further sugars
+        gemmi::Atom* atom = residue.find_atom(donor.atom3, '*');
+        if (atom == nullptr) {
+            continue;
+        }
+
         // get donor atoms with that name, could return > 1 with altconfs
         gemmi::AtomGroup donor_atoms = residue.get(donor.atom3);
         for (const auto &donor_atom: donor_atoms) {
